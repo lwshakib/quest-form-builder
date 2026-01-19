@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  quests        Quest[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Quest {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("Draft")
+  published   Boolean  @default(false)
+  acceptingResponses Boolean @default(true)
+  shortId     String?  @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  responses   Response[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Settings
+  isQuiz                    Boolean @default(false)
+  showProgressBar           Boolean @default(true)
+  shuffleQuestionOrder      Boolean @default(false)
+  confirmationMessage       String? @default("Your response has been recorded.")
+  showLinkToSubmitAnother   Boolean @default(true)
+  limitToOneResponse        Boolean @default(false)
+  viewResultsSummary        Boolean @default(false)
+  questionsRequiredByDefault Boolean @default(false)
+
+  // Webhook fields
+  webhookEnabled            Boolean @default(false)
+  webhookUrl                String?
+
+  @@map("quest")
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  type        String   // MULTIPLE_CHOICE, SHORT_TEXT, PARAGRAPH, CHECKBOXES, DROPDOWN, DATE, TIME
+  title       String
+  description String?
+  order       Int
+  required    Boolean  @default(false)
+  options     Json?    // For choice-based questions
+  questId     String
+  quest       Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Quiz fields
+  points       Int     @default(0)
+  correctAnswer Json?
+  feedback     String?
+
+  @@map("question")
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  questId   String
+  quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  answers   Answer[]
+  duration  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("response")
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  responseId String
+  response   Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  value      Json     // The answer value
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("answer")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
