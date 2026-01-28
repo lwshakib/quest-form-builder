@@ -2,12 +2,33 @@
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics and seamless user experience.
 
-![Quest Banner](https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop)
+
+## 📱 App Demo
+
+### Dashboard
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Dashboard Light](public/app-demo/dashboard-light.png) | ![Dashboard Dark](public/app-demo/dashboard-dark.png) |
+
+### Form
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Form Light](public/app-demo/form-light.png) | ![Form Dark](public/app-demo/form-dark.png) |
+
+## 🧩 How it Works
+
+```mermaid
+graph TD
+    A[Create Quest] --> B[Share Link]
+    B --> C[Participants Respond]
+    C --> D[Real-time Analytics]
+    D --> E[Export Data]
+```
 
 ## ✨ Features
 
 - **🚀 Professional Editor**: Intuitive drag-and-drop interface for building complex forms in minutes.
-- **🧠 Quiz Mode**: Integrated scoring, correct answers, and instant participant feedback.
+- **🧠 AI Powered**: Leverages Google Gemini for smart form generation and analysis.
 - **⚡ Real-time Analytics**: Monitor responses and trends as they happen with beautiful charts.
 - **🔗 Smart Sharing**: Short urls, custom responder links, and social-ready previews.
 - **🛡️ Secure Access**: Limit to one response per user with Google Sign-in integration.
@@ -16,11 +37,12 @@ Quest is a premium, high-performance form builder designed for researchers, mark
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
+- **Framework**: [Next.js 15+](https://nextjs.org/)
+- **AI Engine**: [Google Gemini (AI SDK)](https://sdk.vercel.ai/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL (Neon)
+- **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL
 - **Auth**: [Better-Auth](https://better-auth.com/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Framer Motion](https://www.framer.com/motion/), & [Lucide Icons](https://lucide.dev/)
 - **Runtime**: [Bun](https://bun.sh/)
 
 ## 🚀 Getting Started
@@ -29,7 +51,8 @@ Quest is a premium, high-performance form builder designed for researchers, mark
 
 - Node.js / Bun installed
 - PostgreSQL database
-- Google OAuth credentials (for authentication)
+- Google OAuth credentials
+- Google Gemini API Key
 
 ### Installation
 
