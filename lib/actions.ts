@@ -90,6 +90,7 @@ export async function updateQuest(id: string, data: {
   questionsRequiredByDefault?: boolean;
   webhookEnabled?: boolean;
   webhookUrl?: string;
+  backgroundImageUrl?: string;
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -201,7 +202,7 @@ export async function deleteQuest(id: string) {
 }
 
 // Question Actions
-export async function createQuestion(questId: string, type: string, order: number, title?: string) {
+export async function createQuestion(questId: string, type: string, order: number, title?: string, description?: string, required?: boolean, options?: string[]) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -218,9 +219,10 @@ export async function createQuestion(questId: string, type: string, order: numbe
       questId,
       type,
       title: title || `Untitled ${type.toLowerCase().replace('_', ' ')}`,
+      description,
       order,
-      required: quest?.questionsRequiredByDefault || false,
-      options: type === 'MULTIPLE_CHOICE' || type === 'CHECKBOXES' || type === 'DROPDOWN' ? ["Option 1"] : type === 'VIDEO' || type === 'IMAGE' ? [""] : undefined,
+      required: required ?? quest?.questionsRequiredByDefault ?? false,
+      options: options || (type === 'MULTIPLE_CHOICE' || type === 'CHECKBOXES' || type === 'DROPDOWN' ? ["Option 1"] : type === 'VIDEO' || type === 'IMAGE' ? [""] : undefined),
     },
   });
 
