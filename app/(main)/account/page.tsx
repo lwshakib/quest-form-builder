@@ -43,7 +43,7 @@ export default function AccountPage() {
   if (!session) return null;
 
   return (
-    <div className="container max-w-4xl py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="container mx-auto max-w-4xl py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
         <p className="text-muted-foreground">Manage your account settings and preferences.</p>
