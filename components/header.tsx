@@ -7,10 +7,10 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 
 const menuItems = [
-    { name: 'Features', href: '#link' },
-    { name: 'Solution', href: '#link' },
-    { name: 'Pricing', href: '#link' },
-    { name: 'About', href: '#link' },
+    { name: 'Features', href: '#features' },
+    { name: 'How it Works', href: '#how-it-works' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'FAQ', href: '#faq' },
 ]
 
 import { authClient } from '@/lib/auth-client'
@@ -84,7 +84,7 @@ export const HeroHeader = () => {
                                 {session ? (
                                     <div className="flex items-center gap-4">
                                         <Button asChild variant="ghost" size="sm">
-                                            <Link href="/quests">Dashoard</Link>
+                                            <Link href="/quests">Quests</Link>
                                         </Button>
                                         <UserMenu />
                                     </div>

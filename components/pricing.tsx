@@ -26,16 +26,15 @@ const plans = [
       yearly: "Free forever",
     },
     description:
-      "Perfect for students and hobbyists getting started with web development.",
+      "Perfect for individuals and small projects getting started.",
     features: [
-      "150K AI tokens / day",
-      "5 active workspaces",
-      "AI code completions",
-      "In-browser terminal",
-      "Live preview",
+      "UNlimited forms & quests",
+      "AI-assisted generation",
+      "Standard analytics",
+      "Up to 100 submissions/mo",
       "Community support",
     ],
-    cta: "Get started for free",
+    cta: "Start for free",
   },
   {
     id: "pro",
@@ -45,17 +44,17 @@ const plans = [
       monthly: 19,
       yearly: 15,
     },
-    description: "For professional developers building production apps.",
+    description: "For professionals and growing businesses.",
     features: [
-      "Unlimited AI tokens",
-      "Unlimited workspaces",
+      "Everything in Free",
+      "Unlimited submissions",
       "Priority AI processing",
-      "GitHub integration",
-      "Custom domains",
-      "Advanced analytics",
+      "Custom branding & themes",
+      "Advanced logic & branching",
+      "Detailed export options",
       "Priority email support",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Get Pro Now",
     popular: true,
   },
   {
@@ -69,14 +68,14 @@ const plans = [
     description: "For teams and organizations with advanced needs.",
     features: [
       "Everything in Pro",
-      "Dedicated AI resources",
-      "Team collaboration",
+      "Dedicated account manager",
+      "Team collaboration & permissions",
       "SSO & advanced security",
-      "Custom integrations",
-      "SLA guarantees",
+      "Custom integrations & API",
+      "White-label solutions",
       "24/7 dedicated support",
     ],
-    cta: "Contact sales",
+    cta: "Contact Sales",
   },
 ];
 
@@ -125,7 +124,7 @@ export default function SimplePricing() {
             className="text-muted-foreground max-w-md pt-2 text-lg"
           >
             Start free and scale as you grow. All plans include AI-powered
-            coding and in-browser development.
+            quest generation and real-time analytics.
           </motion.p>
         </div>
 

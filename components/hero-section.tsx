@@ -108,7 +108,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                                    Modern Solutions for Customer Engagement
+                                    Build Stunning Quests & Forms with AI
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -116,8 +116,8 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     delay={0.5}
                                     as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg">
-                                    Highly customizable components for building modern websites and applications that look and feel the way you mean it.
+                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg font-medium text-muted-foreground">
+                                    Create interactive quests, sophisticated forms, and personalized surveys in seconds. The most powerful way to engage your audience.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -140,8 +140,8 @@ export default function HeroSection() {
                                             asChild
                                             size="lg"
                                             className="rounded-xl px-5 text-base">
-                                            <Link href="#link">
-                                                <span className="text-nowrap">Start Building</span>
+                                            <Link href="/sign-up">
+                                                <span className="text-nowrap">Start Building Free</span>
                                             </Link>
                                         </Button>
                                     </div>
@@ -151,8 +151,8 @@ export default function HeroSection() {
                                         size="lg"
                                         variant="ghost"
                                         className="h-10.5 rounded-xl px-5">
-                                        <Link href="#link">
-                                            <span className="text-nowrap">Request a demo</span>
+                                        <Link href="#features">
+                                            <span className="text-nowrap">Explore Features</span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
