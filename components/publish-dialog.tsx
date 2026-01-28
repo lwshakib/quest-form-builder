@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Share2, 
   Globe, 
+  Send,
   BellOff, 
   Link as LinkIcon, 
   Check, 
@@ -105,7 +106,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
           <div className="p-8 space-y-8">
             <DialogHeader className="space-y-3">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Share2 className="h-6 w-6 text-primary" />
+                {isPublished ? <Share2 className="h-6 w-6 text-primary" /> : <Send className="h-6 w-6 text-primary" />}
               </div>
               <DialogTitle className="text-2xl font-black tracking-tight">
                 {isPublished ? "Quest is Live" : "Publish Quest"}
