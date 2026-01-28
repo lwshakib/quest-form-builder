@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { TEMPLATES } from "./templates";
 
@@ -582,4 +582,75 @@ export async function getQuestResponses(questId: string) {
   });
 
   return responses;
+}
+
+export async function getUnreadNotifications() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return [];
+  }
+
+  const quests = await prisma.quest.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    select: {
+      id: true,
+      title: true,
+      updatedAt: true,
+      lastViewedResponsesAt: true,
+    }
+  });
+
+  const unreadQuests = [];
+  
+  for (const quest of quests) {
+    const lastViewed = quest.lastViewedResponsesAt || new Date(0);
+    
+    const newCount = await prisma.response.count({
+      where: {
+        questId: quest.id,
+        createdAt: {
+          gt: lastViewed
+        }
+      }
+    });
+
+    if (newCount > 0) {
+      unreadQuests.push({
+        id: quest.id,
+        title: quest.title,
+        newCount,
+        updatedAt: quest.updatedAt
+      });
+    }
+  }
+
+  return unreadQuests;
+}
+
+export async function markQuestResponsesAsRead(questId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.quest.update({
+    where: {
+      id: questId,
+      userId: session.user.id,
+    },
+    data: {
+      lastViewedResponsesAt: new Date(),
+    },
+  });
+
+  revalidatePath("/quests");
+  revalidatePath(`/quests/${questId}`);
 }

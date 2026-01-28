@@ -184,9 +184,9 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
                       className="w-full h-10 rounded-none border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all gap-2"
                       asChild
                     >
-                      <a href={`/preview/${quest.id}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`/share/${quest.id}`} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5">Live Preview</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5">Go to the quest</span>
                       </a>
                     </Button>
                   </div>

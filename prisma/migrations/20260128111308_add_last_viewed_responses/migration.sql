@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "quest" ADD COLUMN     "lastViewedResponsesAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;

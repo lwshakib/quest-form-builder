@@ -31,6 +31,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PublishDialog } from "@/components/publish-dialog";
 import { GlobalSearch } from "@/components/global-search";
+import { NotificationsMenu } from "@/components/notifications-menu";
+import { InfoMenu } from "@/components/info-menu";
 
 export default function ClientLayout({
   children,
@@ -331,13 +333,8 @@ export default function ClientLayout({
 
               <div className="flex items-center gap-1 sm:gap-2">
                 <ModeToggle />
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary rounded-full transition-all h-10 w-10">
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary relative rounded-full transition-all h-10 w-10">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-primary rounded-full border-2 border-background" />
-                </Button>
+                <InfoMenu />
+                <NotificationsMenu />
                 
                 <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
                 

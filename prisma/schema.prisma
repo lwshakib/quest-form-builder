@@ -59,6 +59,7 @@ model Quest {
   // Webhook fields
   webhookEnabled            Boolean @default(false)
   webhookUrl                String?
+  lastViewedResponsesAt     DateTime? @default(now())
 
   @@map("quest")
 }

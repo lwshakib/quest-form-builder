@@ -81,7 +81,8 @@ import {
   updateQuestionsOrder,
   updateQuest,
   getQuestResponses,
-  duplicateQuestion
+  duplicateQuestion,
+  markQuestResponsesAsRead
 } from '@/lib/actions';
 import { toast } from 'sonner';
 import { QuestionCard } from '@/components/question-card';
@@ -159,6 +160,9 @@ export default function QuestDetailPage() {
   const { messages, sendMessage, status, setMessages } = useChat({
     onFinish: async () => {
       await loadQuestData();
+    },
+    onError: (error) => {
+      toast.error("Failed to generate quest");
     }
   });
 
@@ -222,6 +226,8 @@ export default function QuestDetailPage() {
       try {
         const data = await getQuestResponses(id as string);
         setResponses(data);
+        // Clear notifications for this quest
+        await markQuestResponsesAsRead(id as string);
       } catch (error) {
         toast.error("Failed to load responses");
       } finally {
