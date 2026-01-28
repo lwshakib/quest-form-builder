@@ -12,7 +12,6 @@ import {
   ArrowLeft, 
   Play, 
   Share2, 
-  Send,
   Copy, 
   Check, 
   FileText, 
@@ -31,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PublishDialog } from "@/components/publish-dialog";
+import { GlobalSearch } from "@/components/global-search";
 
 export default function ClientLayout({
   children,
@@ -229,7 +229,7 @@ export default function ClientLayout({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" asChild>
-                        <Link href={`/share/${params.id}`} target="_blank">
+                        <Link href={`/preview/${params.id}`} target="_blank">
                           <Play className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -298,7 +298,7 @@ export default function ClientLayout({
                           </>
                         ) : (
                           <>
-                            <Send className="h-4 w-4" />
+                            <Settings2 className="h-4 w-4" />
                             <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">Publish</span>
                           </>
                         )}
@@ -326,13 +326,7 @@ export default function ClientLayout({
               </div>
 
               <div className="flex flex-1 items-center justify-center px-6 max-w-xl hidden lg:flex">
-                <div className="relative w-full group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    placeholder="Find anything..." 
-                    className="pl-10 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/30 transition-all rounded-full h-10"
-                  />
-                </div>
+                <GlobalSearch />
               </div>
 
               <div className="flex items-center gap-1 sm:gap-2">

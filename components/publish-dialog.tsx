@@ -14,12 +14,12 @@ import { Label } from "@/components/ui/label";
 import { 
   Share2, 
   Globe, 
-  Send,
   BellOff, 
   Link as LinkIcon, 
   Check, 
   Copy, 
   ExternalLink,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -106,7 +106,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
           <div className="p-8 space-y-8">
             <DialogHeader className="space-y-3">
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                {isPublished ? <Share2 className="h-6 w-6 text-primary" /> : <Send className="h-6 w-6 text-primary" />}
+                <Settings2 className="h-6 w-6 text-primary" />
               </div>
               <DialogTitle className="text-2xl font-black tracking-tight">
                 {isPublished ? "Quest is Live" : "Publish Quest"}
@@ -184,7 +184,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
                       className="w-full h-10 rounded-none border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all gap-2"
                       asChild
                     >
-                      <a href={`/share/${quest.id}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`/preview/${quest.id}`} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5" />
                         <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5">Live Preview</span>
                       </a>

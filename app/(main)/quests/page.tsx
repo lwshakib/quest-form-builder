@@ -37,45 +37,67 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createQuest, getQuests, updateQuest, deleteQuest } from '@/lib/actions';
+import { TEMPLATES } from '@/lib/templates';
+import { createQuest, getQuests, updateQuest, deleteQuest, createQuestFromTemplate, getRecentTemplates } from '@/lib/actions';
 import { toast } from 'sonner';
 
 export default function QuestsPage() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [quests, setQuests] = useState<any[]>([]);
+  const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState<string | null>(null);
   
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
   const [newTitle, setNewTitle] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const loadQuests = async () => {
+  const loadData = async () => {
     try {
-      const data = await getQuests();
-      setQuests(data);
+      const [questsData, recentData] = await Promise.all([
+        getQuests(),
+        getRecentTemplates()
+      ]);
+      setQuests(questsData);
+      setRecentTemplateIds(recentData);
     } catch (error) {
-      toast.error("Failed to load quests");
+      toast.error("Failed to load dashboard data");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadQuests();
+    loadData();
   }, []);
 
+  const recentTemplates = recentTemplateIds.length > 0 
+    ? recentTemplateIds.map(id => TEMPLATES.find(t => t.id === id)).filter(Boolean)
+    : TEMPLATES.slice(0, 3);
+
   const handleCreateBlankQuest = async () => {
-    setIsCreating(true);
+    setIsCreating('blank');
     try {
       const quest = await createQuest("Untitled Quest");
       router.push(`/quests/${quest.id}`);
     } catch (error) {
       toast.error("Failed to create quest");
     } finally {
-      setIsCreating(false);
+      setIsCreating(null);
+    }
+  };
+
+  const handleCreateFromTemplate = async (templateId: string) => {
+    setIsCreating(templateId);
+    try {
+      const quest = await createQuestFromTemplate(templateId);
+      router.push(`/quests/${quest.id}`);
+    } catch (error) {
+      toast.error("Failed to create quest from template");
+    } finally {
+      setIsCreating(null);
     }
   };
 
@@ -116,44 +138,68 @@ export default function QuestsPage() {
     <div className="container mx-auto py-10 space-y-12 animate-in fade-in duration-1000 px-4 lg:px-8">
       {/* Hero Section / Create Section */}
       <section className="space-y-10">
-        <div className="flex flex-col items-center sm:items-start space-y-2">
-          <Badge variant="outline" className="rounded-full px-4 py-1 border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest mb-2 shadow-sm">
-            Workspace
-          </Badge>
-          <h1 className="text-4xl font-black tracking-tighter lg:text-6xl bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/40 text-center sm:text-left drop-shadow-sm">
-            Start a new Quest
-          </h1>
-          <p className="text-xl text-muted-foreground/80 max-w-lg text-center sm:text-left font-medium">
-            Launch your next project with a blank canvas or professional template.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div className="flex flex-col items-center sm:items-start space-y-2">
+            <Badge variant="outline" className="rounded-full px-4 py-1 border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest mb-2 shadow-sm">
+              Workspace
+            </Badge>
+            <h1 className="text-4xl font-black tracking-tighter lg:text-5xl bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/40 text-center sm:text-left drop-shadow-sm">
+              Start a new Quest
+            </h1>
+            <p className="text-lg text-muted-foreground/80 max-w-lg text-center sm:text-left font-medium">
+              Launch your next project with a blank canvas or professional template.
+            </p>
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            className="text-primary font-black uppercase tracking-widest text-[10px] gap-2 hover:bg-primary/5 rounded-full px-6"
+            onClick={() => router.push('/templates')}
+          >
+            Template Gallery <Layout className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <button 
-            disabled={isCreating}
+            disabled={!!isCreating}
             onClick={handleCreateBlankQuest}
-            className="group relative flex flex-col items-center justify-center h-56 bg-card/40 border-2 border-dashed border-border rounded-3xl transition-all duration-500 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] shadow-sm hover:shadow-xl overflow-hidden disabled:opacity-50"
+            className="group relative flex flex-col items-center justify-center h-52 bg-card/40 border-2 border-dashed border-border rounded-3xl transition-all duration-500 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] shadow-sm hover:shadow-xl overflow-hidden disabled:opacity-50"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="bg-primary/5 p-4 rounded-full mb-4 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500 border border-primary/10">
-              {isCreating ? <Loader2 className="h-8 w-8 text-primary animate-spin" /> : <Plus className="h-8 w-8 text-primary" />}
+            <div className="bg-primary/5 p-4 rounded-full mb-3 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500 border border-primary/10">
+              {isCreating === 'blank' ? <Loader2 className="h-6 w-6 text-primary animate-spin" /> : <Plus className="h-6 w-6 text-primary" />}
             </div>
-            <span className="font-bold text-xl tracking-tight">Blank Quest</span>
-            <span className="text-xs text-muted-foreground mt-1 font-medium opacity-60">Start from scratch</span>
+            <span className="font-bold text-lg tracking-tight">Blank Quest</span>
+            <span className="text-[10px] text-muted-foreground mt-1 font-black uppercase tracking-widest opacity-60">New Canvas</span>
           </button>
 
-          {[
-            { title: 'Feedback', desc: 'Customer insights', icon: MessageSquare },
-            { title: 'Survey', desc: 'Market research', icon: FileText },
-            { title: 'Quiz', desc: 'Knowledge test', icon: Sparkles }
-          ].map((temp) => (
-            <div key={temp.title} className="group relative flex flex-col items-center justify-center h-56 bg-card/20 border border-border/40 rounded-3xl transition-all duration-500 opacity-40 grayscale">
-               <div className="bg-muted p-4 rounded-full mb-4 border border-border">
-                <temp.icon className="h-8 w-8 text-muted-foreground/50" />
+          {recentTemplates.map((template: any) => (
+            <button 
+              key={template.id}
+              disabled={!!isCreating}
+              onClick={() => handleCreateFromTemplate(template.id)}
+              className="group relative flex flex-col items-start h-52 bg-card border border-border/40 rounded-3xl transition-all duration-500 hover:border-primary/30 hover:shadow-xl overflow-hidden disabled:opacity-50"
+            >
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src={template.backgroundImage || "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"} 
+                  alt={template.title}
+                  className="w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent" />
               </div>
-              <span className="font-bold text-lg tracking-tight">{temp.title}</span>
-              <span className="text-xs text-muted-foreground/60 mt-1 px-4 text-center font-medium">{temp.desc}</span>
-            </div>
+              
+              <div className="relative z-10 p-6 flex flex-col h-full w-full">
+                <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20 w-fit mb-auto">
+                   {isCreating === template.id ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Layout className="h-4 w-4 text-primary" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{template.title}</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium line-clamp-2 opacity-80">{template.description}</p>
+                </div>
+              </div>
+            </button>
           ))}
         </div>
       </section>
