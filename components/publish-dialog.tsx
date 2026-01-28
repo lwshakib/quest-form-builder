@@ -158,10 +158,10 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
                 <div className="space-y-4">
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Share & Preview</Label>
                   <div className="p-3 bg-accent/5 border border-border/50 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <LinkIcon className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-sm font-bold truncate">{getShareUrl()}</span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <LinkIcon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        <span className="text-sm font-bold break-all">{getShareUrl()}</span>
                       </div>
                       <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleCopy}>
                         {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
