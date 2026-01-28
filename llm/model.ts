@@ -8,7 +8,7 @@ export const getSingleApiKey = () => {
 };
 
 export const getModelName = () => {
-  const allowedModels = ["gemini-2.5-flash-lite"];
+  const allowedModels = ["gemini-2.5-flash-lite", 'gemini-2.5-flash'];
   return allowedModels[Math.floor(Math.random() * allowedModels.length)];
 };
 
