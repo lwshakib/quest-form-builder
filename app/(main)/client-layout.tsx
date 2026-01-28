@@ -12,6 +12,7 @@ import {
   ArrowLeft, 
   Play, 
   Share2, 
+  Send,
   Copy, 
   Check, 
   FileText, 
@@ -297,7 +298,7 @@ export default function ClientLayout({
                           </>
                         ) : (
                           <>
-                            <Share2 className="h-4 w-4" />
+                            <Send className="h-4 w-4" />
                             <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">Publish</span>
                           </>
                         )}
