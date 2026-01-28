@@ -162,7 +162,7 @@ export default function QuestDetailPage() {
       await loadQuestData();
     },
     onError: (error) => {
-      toast.error("Failed to generate quest");
+      toast.error("Failed to generate quest. Try later.");
     }
   });
 
