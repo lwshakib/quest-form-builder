@@ -49,23 +49,13 @@ export default function AccountPage() {
         <p className="text-muted-foreground">Manage your account settings and preferences.</p>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" /> Profile
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" /> Security
-          </TabsTrigger>
-          <TabsTrigger value="sessions" className="flex items-center gap-2">
-            <Smartphone className="h-4 w-4" /> Sessions
-          </TabsTrigger>
-          <TabsTrigger value="danger" className="flex items-center gap-2 text-destructive">
-            <Shield className="h-4 w-4" /> Danger Zone
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile" className="pt-6">
+      <div className="space-y-12">
+        {/* Profile Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <User className="h-3.5 w-3.5 text-primary/70" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Profile Settings</h2>
+          </div>
           <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
@@ -113,9 +103,14 @@ export default function AccountPage() {
               </Button>
             </CardFooter>
           </Card>
-        </TabsContent>
+        </section>
 
-        <TabsContent value="security" className="pt-6">
+        {/* Security Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <Lock className="h-3.5 w-3.5 text-primary/70" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Security & Privacy</h2>
+          </div>
           <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
@@ -166,9 +161,14 @@ export default function AccountPage() {
               </Button>
             </CardFooter>
           </Card>
-        </TabsContent>
+        </section>
 
-        <TabsContent value="sessions" className="pt-6">
+        {/* Sessions Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <Smartphone className="h-3.5 w-3.5 text-primary/70" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Active Sessions</h2>
+          </div>
           <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Active Sessions</CardTitle>
@@ -201,9 +201,14 @@ export default function AccountPage() {
               ))}
             </CardContent>
           </Card>
-        </TabsContent>
+        </section>
 
-        <TabsContent value="danger" className="pt-6">
+        {/* Danger Zone Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <Shield className="h-3.5 w-3.5 text-destructive/70" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-destructive/60">Danger Zone</h2>
+          </div>
           <Card className="border border-destructive/20 shadow-xl bg-destructive/5 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-destructive">Delete Account</CardTitle>
@@ -222,8 +227,8 @@ export default function AccountPage() {
               </Button>
             </CardFooter>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </section>
+      </div>
     </div>
   );
 }
