@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useChat } from '@ai-sdk/react';
 import { 
   FileText, 
   MessageSquare, 
@@ -23,8 +24,30 @@ import {
   ChevronsLeft,
   ChevronsRight,
   PieChart as PieChartIcon,
-  BarChart3
+  BarChart3,
+  X,
+  Send,
+  Wand2,
+  Check,
+  Settings2,
+  Sparkles
 } from 'lucide-react';
+import { Shimmer as TextShimmer } from "@/components/ai-elements/shimmer";
+import { Loader } from "@/components/ai-elements/loader";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+  MessageActions,
+  MessageAction,
+} from "@/components/ai-elements/message";
+import { Copy, CheckCircle2 } from 'lucide-react';
 import { Pie, PieChart, Cell, LabelList } from "recharts";
 import {
   ChartContainer,
@@ -130,6 +153,34 @@ export default function QuestDetailPage() {
   const [responseSubTab, setResponseSubTab] = useState<'summary' | 'question' | 'individual'>('summary');
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('all');
   const [individualIndex, setIndividualIndex] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const [input, setInput] = useState('');
+  const { messages, sendMessage, status, setMessages } = useChat({
+    onFinish: async () => {
+      await loadQuestData();
+    }
+  });
+
+  const isChatLoading = status === 'streaming' || status === 'submitted';
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!input.trim()) return;
+    
+    // We need to pass the questId in the body for the request
+    // According to docs, sendMessage accepts ChatRequestOptions as second arg
+    await sendMessage(
+      { text: input },
+      { body: { questId: id } }
+    );
+    setInput('');
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -210,6 +261,8 @@ export default function QuestDetailPage() {
     if (data) {
       setQuest(data);
       setQuestions(data.questions || []);
+      // Dispatch event to sync with header
+      window.dispatchEvent(new CustomEvent('quest-updated', { detail: data }));
     }
   };
 
@@ -302,35 +355,74 @@ export default function QuestDetailPage() {
         >
           {activeTab === 'questions' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-4 pb-40">
+              {quest.backgroundImageUrl && (
+                  <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden shadow-sm border border-border/50 mb-6 group/banner">
+                    <img 
+                      src={quest.backgroundImageUrl} 
+                      alt="Quest Banner" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                  </div>
+              )}
+
               {/* Welcome Card */}
               <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm group/welcome">
                 {/* Subtle top highlight */}
                 <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
                 
                 <div className="pt-6 px-8 relative z-10">
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-black tracking-tight">{quest.title || "Welcome Screen"}</h2>
+                  <div className="space-y-3">
                     <p className="text-sm text-muted-foreground/60 font-medium">
                       The first thing your respondents will see.
                     </p>
+                      <div className="group">
+                        <Input 
+                          placeholder="Enter a catchy title for your quest..." 
+                          value={quest.title} 
+                          onChange={(e) => setQuest({ ...quest, title: e.target.value })}
+                          onBlur={async (e) => {
+                            const newTitle = e.target.value;
+                            // Update DB
+                            try {
+                              const updated = await updateQuest(id as string, { title: newTitle });
+                              setQuest(updated);
+                              // Dispatch event to sync with the header
+                              window.dispatchEvent(new CustomEvent('quest-updated', { detail: updated }));
+                              toast.success("Title updated");
+                            } catch (error) {
+                              toast.error("Failed to update title");
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              (e.target as HTMLInputElement).blur();
+                            }
+                          }}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="text-3xl font-black h-auto bg-transparent border-none focus-visible:border-none focus-visible:ring-0 px-0 rounded-none transition-all placeholder:text-muted-foreground/20 leading-tight shadow-none p-0" 
+                        />
+                      </div>
                   </div>
                 </div>
-                <div className="space-y-2 px-6 pb-6 mt-2 relative z-10">
-                  <div className="group">
-                    <Input 
-                      placeholder="Enter a catchy title..." 
-                      defaultValue={quest.title} 
-                      onBlur={(e) => updateQuest(id as string, { title: e.target.value })}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className="text-xl font-black h-10 bg-transparent border-none focus-visible:border-none focus-visible:ring-0 px-2 rounded-none transition-all placeholder:text-muted-foreground/20 leading-none shadow-none" 
-                    />
-                  </div>
+                <div className="space-y-2 px-8 pb-6 mt-4 relative z-10">
                   <div className="group">
                     <textarea 
-                      placeholder="Add a friendly description..." 
-                      className="w-full min-h-[80px] rounded-none bg-transparent border-none p-2 text-base font-medium resize-none focus:ring-0 focus:outline-none focus:border-none focus-visible:ring-0 focus-visible:border-none transition-all placeholder:text-muted-foreground/15 leading-relaxed text-muted-foreground/70"
-                      defaultValue={quest.description || ''}
-                      onBlur={(e) => updateQuest(id as string, { description: e.target.value })}
+                      placeholder="Add a friendly description for your welcome screen..." 
+                      className="w-full min-h-[80px] rounded-none bg-transparent border-none p-0 text-lg font-medium resize-none focus:ring-0 focus:outline-none focus:border-none focus-visible:ring-0 focus-visible:border-none transition-all placeholder:text-muted-foreground/15 leading-relaxed text-muted-foreground/70"
+                      value={quest.description || ''}
+                      onChange={(e) => setQuest({ ...quest, description: e.target.value })}
+                      onBlur={async (e) => {
+                        const newDesc = e.target.value;
+                        try {
+                          const updated = await updateQuest(id as string, { description: newDesc });
+                          setQuest(updated);
+                          // Sync with any listener that needs description
+                          window.dispatchEvent(new CustomEvent('quest-updated', { detail: updated }));
+                        } catch (error) {
+                          toast.error("Failed to update description");
+                        }
+                      }}
                       onPointerDown={(e) => e.stopPropagation()}
                     />
                   </div>
@@ -930,6 +1022,28 @@ export default function QuestDetailPage() {
                           </div>
                         )}
                       </div>
+
+                      <Separator className="opacity-30" />
+
+                      <div className="space-y-4">
+                        <Label className="text-base font-bold">Background & Theme</Label>
+                        <div className="space-y-2">
+                           <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Background Image URL</Label>
+                           <Input 
+                             placeholder="https://images.unsplash.com/..."
+                             value={quest.backgroundImageUrl || ''}
+                             onChange={(e) => setQuest({ ...quest, backgroundImageUrl: e.target.value })}
+                             onBlur={() => updateQuest(id as string, { backgroundImageUrl: quest.backgroundImageUrl })}
+                             className="h-12 bg-muted/30 border-none rounded-none font-medium focus-visible:ring-1 focus-visible:ring-primary/20"
+                           />
+                           <p className="text-[10px] text-muted-foreground/40 italic">Provide a direct link to an image to use as the background.</p>
+                           {quest.backgroundImageUrl && (
+                             <div className="mt-2 relative w-full h-32 rounded-xl overflow-hidden border border-border/50">
+                               <img src={quest.backgroundImageUrl} alt="Background Preview" className="w-full h-full object-cover" />
+                             </div>
+                           )}
+                        </div>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -1003,6 +1117,204 @@ export default function QuestDetailPage() {
                   </AlertDialog>
                </CardContent>
             </Card>
+          </div>
+        )}
+      </div>
+      <div className="fixed bottom-8 right-8 z-50">
+        {!isChatOpen && (
+          <Button 
+            onClick={() => setIsChatOpen(true)}
+            size="lg"
+            className="h-16 w-16 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 hover:scale-105"
+          >
+            <MessageSquare className="h-8 w-8" />
+          </Button>
+        )}
+
+        {isChatOpen && (
+          <div className="w-[440px] h-[660px] bg-background/95 backdrop-blur-xl border border-border shadow-2xl rounded-3xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10 duration-300">
+            {/* Custom Header */}
+            <div className="p-5 border-b bg-muted/20 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold tracking-tight">Quest Assistant</h3>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">AI Integration Hub</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-muted/30 hover:bg-muted/50 transition-colors" onClick={() => setIsChatOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="flex-1 min-h-0 flex flex-col relative">
+              <Conversation className="h-full px-4">
+                <ConversationContent className="pt-4 pb-20">
+                  {messages.length === 0 ? (
+                    <ConversationEmptyState
+                      icon={<MessageSquare className="size-10 text-muted-foreground/40" />}
+                      title="Ready to help"
+                      description="Ask me to create questions, update titles, or generate images for your quest."
+                    />
+                  ) : (
+                    <>
+                      {messages.map((message) => {
+                         const parts = message.parts || [];
+                         const toolInvocations = (message as any).toolInvocations || [];
+
+                         return (
+                           <Message from={message.role} key={message.id}>
+                             <MessageContent>
+                               {/* Standard Text Content */}
+                               {parts.map((part, i) => {
+                                 if (part.type === 'text') {
+                                   return (
+                                     <MessageResponse key={i}>
+                                       {part.text}
+                                     </MessageResponse>
+                                   );
+                                 }
+                                 return null;
+                               })}
+
+                               {/* Tool Execution Markers */}
+                               {[...toolInvocations].map((ti: any) => {
+                                 const toolName = ti.toolName;
+                                 let statusText = "";
+                                 switch (toolName) {
+                                   case 'createQuestions': 
+                                     const qCount = (ti as any).args?.questions?.length || 0;
+                                     statusText = qCount === 1 ? "Creating question" : `Creating ${qCount} questions`; 
+                                     break;
+                                   case 'updateQuestion': statusText = "Updating question"; break;
+                                   case 'deleteQuestion': statusText = "Deleting question"; break;
+                                   case 'updateQuest': statusText = "Updating quest details"; break;
+                                   case 'generateImage': statusText = "Generating custom image"; break;
+                                   default: statusText = `Running ${toolName}`;
+                                 }
+
+                                 return (
+                                   <div key={ti.toolCallId} className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-70">
+                                     {ti.state === 'call' ? (
+                                       <>
+                                         <Loader className="h-3 w-3" />
+                                         <span className="text-primary animate-pulse">{statusText}...</span>
+                                       </>
+                                     ) : (
+                                       <>
+                                         <CheckCircle2 className="h-3 w-3 text-green-500" />
+                                         <span className="text-muted-foreground">{statusText} Done</span>
+                                       </>
+                                     )}
+                                   </div>
+                                 );
+                               })}
+                             </MessageContent>
+                             
+                             {message.role === 'assistant' && status !== 'streaming' && (
+                               <MessageActions className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <MessageAction 
+                                   tooltip="Copy response" 
+                                   onClick={() => {
+                                     const text = message.parts
+                                       .filter(p => p.type === 'text')
+                                       .map(p => (p as any).text)
+                                       .join('\n');
+                                     handleCopy(text);
+                                   }}
+                                 >
+                                   <Copy className="h-3.5 w-3.5" />
+                                 </MessageAction>
+                               </MessageActions>
+                             )}
+                           </Message>
+                         );
+                      })}
+                    </>
+                  )}
+
+                  {/* Typing Indicator / Tool Status */}
+                  {isChatLoading && (
+                    <div className="mt-4 flex gap-2 items-center text-muted-foreground text-xs px-2">
+                       <Loader className="h-3.5 w-3.5" />
+                       <TextShimmer className="text-muted-foreground font-semibold">
+                         {(() => {
+                           const activeTool = messages
+                             .slice(-3)
+                             .reverse()
+                             .flatMap(m => {
+                               const toolInvocations = (m as any).toolInvocations || [];
+                               const toolParts = (m as any).parts
+                                 ?.filter((p: any) => typeof p.type === 'string' && p.type.startsWith('tool-'))
+                                 .map((p: any) => ({
+                                   toolName: p.type.replace('tool-', ''),
+                                   state: (p.state === 'input-available' || p.state === 'input-streaming') ? 'call' : 'result',
+                                   args: p.input
+                                 })) || [];
+                               return [...toolInvocations, ...toolParts];
+                             })
+                             .find(ti => ti.state === 'call');
+
+                           if (activeTool) {
+                             const toolName = activeTool.toolName;
+                             switch (toolName) {
+                               case 'createQuestions': 
+                                 const count = (activeTool as any).args?.questions?.length || 0;
+                                 return count === 1 ? "Creating question..." : `Creating ${count} questions...`;
+                               case 'updateQuestion': return "Updating question...";
+                               case 'deleteQuestion': return "Deleting question...";
+                               case 'updateQuest': return "Updating quest details...";
+                               case 'generateImage': return "Generating custom image...";
+                               default: return `Running ${toolName}...`;
+                             }
+                           }
+                           return "Generating Answer...";
+                         })()}
+                       </TextShimmer>
+                    </div>
+                  )}
+                </ConversationContent>
+                <ConversationScrollButton />
+              </Conversation>
+            </div>
+
+            {/* Input Footer */}
+            <div className="p-5 border-t bg-muted/10 backdrop-blur-md">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!input.trim() || isChatLoading) return;
+                  handleSubmit(e);
+                }} 
+                className="relative"
+              >
+                <input 
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask the assistant..."
+                  disabled={isChatLoading}
+                  className="w-full bg-muted/40 border border-border/50 rounded-2xl py-3.5 pl-5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50 disabled:opacity-50"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      (e.currentTarget.form as HTMLFormElement).requestSubmit();
+                    }
+                  }}
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={!input.trim() || isChatLoading}
+                  className="absolute right-1.5 top-1.5 h-10 w-10 rounded-xl"
+                >
+                  {isChatLoading ? <Loader className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </form>
+              <p className="mt-3 text-[10px] text-center text-muted-foreground/50 font-medium">Quest AI Assistant • Powered by Google Gemini</p>
+            </div>
           </div>
         )}
       </div>
