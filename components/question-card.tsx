@@ -352,13 +352,14 @@ export function QuestionCard({
 
                   {/* Render Option Image Preview */}
                   {optionImage && (
-                      <div className="ml-8 relative group/img w-fit">
-                          <img src={optionImage} alt="Option" className="h-20 w-auto rounded-md border border-border" />
+                      <div className="ml-8 relative group/img w-full max-w-sm">
+                          <img src={optionImage} alt="Option" className="max-h-72 w-full object-contain rounded-md border border-border" />
                           <button 
                              onClick={() => removeOptionImage(index)}
-                             className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover/img:opacity-100 transition-opacity"
+                             className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg"
+                             type="button"
                           >
-                             <Trash2 className="h-3 w-3" />
+                             <Trash2 className="h-4 w-4" />
                           </button>
                       </div>
                   )}

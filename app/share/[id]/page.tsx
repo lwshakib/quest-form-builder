@@ -413,8 +413,8 @@ export default function ShareQuestPage() {
                             )}
                           >
                              {image && (
-                               <div className="w-full h-32 bg-accent/5 border-b border-border/40 relative">
-                                  <img src={image} alt={label} className="w-full h-full object-cover" />
+                               <div className="w-full bg-accent/5 border-b border-border/40 relative flex justify-center overflow-hidden">
+                                  <img src={image} alt={label} className="w-full max-h-[400px] object-contain transition-transform duration-500 hover:scale-105" />
                                </div>
                              )}
                              <div className="flex items-center gap-4 p-4">
@@ -454,7 +454,7 @@ export default function ShareQuestPage() {
                             )}
                           >
                             {image && (
-                               <div className="w-full h-32 bg-accent/5 border-b border-border/40 relative">
+                               <div className="w-full h-48 bg-accent/5 border-b border-border/40 relative">
                                   <img src={image} alt={label} className="w-full h-full object-cover" />
                                </div>
                              )}
