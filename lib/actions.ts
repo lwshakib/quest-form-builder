@@ -5,7 +5,9 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-export async function createQuest(title: string = "Untitled Quest") {
+import { TEMPLATES } from "./templates";
+
+export async function createQuest(title: string = "Untitled Quest", backgroundImageUrl?: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -19,11 +21,131 @@ export async function createQuest(title: string = "Untitled Quest") {
       title,
       userId: session.user.id,
       status: "Draft",
+      backgroundImageUrl,
     },
   });
 
   revalidatePath("/quests");
   return quest;
+}
+
+export async function createQuestFromTemplate(templateId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  const template = TEMPLATES.find(t => t.id === templateId);
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  const quest = await prisma.quest.create({
+    data: {
+      title: template.title,
+      userId: session.user.id,
+      status: "Draft",
+      backgroundImageUrl: template.backgroundImage,
+      templateId: template.id,
+    },
+  });
+
+  // Create questions
+  if (template.questions.length > 0) {
+    const questionsData = template.questions.map((q, index) => ({
+      questId: quest.id,
+      type: q.type,
+      title: q.title,
+      description: q.description || "",
+      order: index,
+      required: q.required || false,
+      options: q.options || (q.type === 'MULTIPLE_CHOICE' || q.type === 'CHECKBOXES' || q.type === 'DROPDOWN' ? ["Option 1"] : undefined),
+    }));
+
+    await prisma.question.createMany({
+      data: questionsData,
+    });
+  }
+
+  revalidatePath("/quests");
+  return quest;
+}
+
+export async function getRecentTemplates() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return [];
+  }
+
+  const recentQuests = await prisma.quest.findMany({
+    where: {
+      userId: session.user.id,
+      templateId: { not: null },
+    },
+    select: {
+      templateId: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+  });
+
+  const uniqueTemplateIds = Array.from(new Set(recentQuests.map(q => q.templateId as string)));
+  return uniqueTemplateIds.slice(0, 3);
+}
+
+export async function globalSearch(query: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || !query.trim()) {
+    return { quests: [], templates: [] };
+  }
+
+  const q = query.toLowerCase();
+
+  // Search local quests and their questions
+  const userQuests = await prisma.quest.findMany({
+    where: {
+      userId: session.user.id,
+      OR: [
+        { title: { contains: query, mode: 'insensitive' } },
+        { questions: { some: { title: { contains: query, mode: 'insensitive' } } } },
+        { questions: { some: { description: { contains: query, mode: 'insensitive' } } } },
+      ]
+    },
+    include: {
+      questions: {
+        where: {
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+          ]
+        }
+      }
+    },
+    take: 5,
+  });
+
+  // Search templates
+  const matchedTemplates = TEMPLATES.filter(t => 
+    t.title.toLowerCase().includes(q) || 
+    t.description.toLowerCase().includes(q) ||
+    t.questions.some(qn => qn.title.toLowerCase().includes(q) || qn.description?.toLowerCase().includes(q))
+  ).slice(0, 5);
+
+  return {
+    quests: userQuests,
+    templates: matchedTemplates,
+  };
 }
 
 export async function getQuests() {
@@ -347,11 +469,8 @@ export async function getPublicQuest(id: string) {
     return null;
   }
 
-  // If not published, only the owner can see it (e.g. for preview)
-  if (!quest.published) {
-    if (!session || quest.userId !== session.user.id) {
-      return null;
-    }
+  if (!quest || !quest.published) {
+    return null;
   }
 
   return quest;
