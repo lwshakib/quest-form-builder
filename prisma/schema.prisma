@@ -43,6 +43,7 @@ model Quest {
   responses   Response[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  backgroundImageUrl String?
 
   // Settings
   isQuiz                    Boolean @default(false)
