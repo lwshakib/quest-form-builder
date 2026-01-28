@@ -212,7 +212,7 @@ export async function updateQuest(id: string, data: {
   questionsRequiredByDefault?: boolean;
   webhookEnabled?: boolean;
   webhookUrl?: string;
-  backgroundImageUrl?: string;
+  backgroundImageUrl?: string | null;
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),

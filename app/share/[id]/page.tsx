@@ -398,58 +398,83 @@ export default function ShareQuestPage() {
                         onValueChange={(val) => handleInputChange(q.id, val)}
                         value={answers[q.id] || ''}
                       >
-                        {(q.options as string[] || []).map((option) => (
+                        {(q.options as any[] || []).map((option: any) => {
+                          const isComplex = typeof option === 'object' && option !== null;
+                          const label = isComplex ? option.value : option;
+                          const image = isComplex ? option.image : null;
+                          
+                          return (
                           <Label 
-                            key={option} 
-                            htmlFor={`${q.id}-${option}`}
+                            key={label} 
+                            htmlFor={`${q.id}-${label}`}
                             className={cn(
-                              "flex items-center gap-4 p-4 border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt",
-                              answers[q.id] === option && "border-primary/40 bg-primary/5"
+                              "flex flex-col border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden",
+                              answers[q.id] === label && "border-primary/40 bg-primary/5"
                             )}
                           >
-                            <RadioGroupItem 
-                              value={option} 
-                              id={`${q.id}-${option}`} 
-                              className="opacity-0 absolute w-0 h-0" 
-                            />
-                            <div className={cn(
-                              "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all",
-                              answers[q.id] === option && "border-primary"
-                            )}>
-                              {answers[q.id] === option && <div className="h-2.5 w-2.5 bg-primary rounded-full animate-in zoom-in duration-200" />}
-                            </div>
-                            <span className="text-sm font-medium text-foreground/80">{option}</span>
+                             {image && (
+                               <div className="w-full h-32 bg-accent/5 border-b border-border/40 relative">
+                                  <img src={image} alt={label} className="w-full h-full object-cover" />
+                               </div>
+                             )}
+                             <div className="flex items-center gap-4 p-4">
+                                <RadioGroupItem 
+                                  value={label} 
+                                  id={`${q.id}-${label}`} 
+                                  className="opacity-0 absolute w-0 h-0" 
+                                />
+                                <div className={cn(
+                                  "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all shrink-0",
+                                  answers[q.id] === label && "border-primary"
+                                )}>
+                                  {answers[q.id] === label && <div className="h-2.5 w-2.5 bg-primary rounded-full animate-in zoom-in duration-200" />}
+                                </div>
+                                <span className="text-sm font-medium text-foreground/80">{label}</span>
+                             </div>
                           </Label>
-                        ))}
+                        )})}
                       </RadioGroup>
                     )}
 
                     {q.type === 'CHECKBOXES' && (
                       <div className="grid grid-cols-1 gap-3">
-                        {(q.options as string[] || []).map((option) => (
+                        {(q.options as any[] || []).map((option: any) => {
+                          const isComplex = typeof option === 'object' && option !== null;
+                          const label = isComplex ? option.value : option;
+                          const image = isComplex ? option.image : null;
+                          const isChecked = (answers[q.id] || []).includes(label);
+
+                          return (
                           <Label 
-                            key={option} 
-                            htmlFor={`${q.id}-${option}`}
+                            key={label} 
+                            htmlFor={`${q.id}-${label}`}
                             className={cn(
-                              "flex items-center gap-4 p-4 border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt",
-                              (answers[q.id] || []).includes(option) && "border-primary/40 bg-primary/5"
+                              "flex flex-col border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden",
+                              isChecked && "border-primary/40 bg-primary/5"
                             )}
                           >
-                            <Checkbox 
-                              id={`${q.id}-${option}`} 
-                              className="opacity-0 absolute w-0 h-0"
-                              checked={(answers[q.id] || []).includes(option)}
-                              onCheckedChange={(checked) => handleCheckboxChange(q.id, option, checked as boolean)}
-                            />
-                             <div className={cn(
-                              "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all",
-                              (answers[q.id] || []).includes(option) && "bg-primary border-primary"
-                            )}>
-                              {(answers[q.id] || []).includes(option) && <Check className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-200" />}
+                            {image && (
+                               <div className="w-full h-32 bg-accent/5 border-b border-border/40 relative">
+                                  <img src={image} alt={label} className="w-full h-full object-cover" />
+                               </div>
+                             )}
+                            <div className="flex items-center gap-4 p-4">
+                                <Checkbox 
+                                  id={`${q.id}-${label}`} 
+                                  className="opacity-0 absolute w-0 h-0"
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => handleCheckboxChange(q.id, label, checked as boolean)}
+                                />
+                                 <div className={cn(
+                                  "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all shrink-0",
+                                  isChecked && "bg-primary border-primary"
+                                )}>
+                                  {isChecked && <Check className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-200" />}
+                                </div>
+                                <span className="text-sm font-medium text-foreground/80">{label}</span>
                             </div>
-                            <span className="text-sm font-medium text-foreground/80">{option}</span>
                           </Label>
-                        ))}
+                        )})}
                       </div>
                     )}
 
@@ -463,11 +488,13 @@ export default function ShareQuestPage() {
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border border-border/60 bg-background shadow-xl">
-                          {(q.options as string[] || []).map((option) => (
-                            <SelectItem key={option} value={option} className="py-3 text-base font-medium transition-all cursor-pointer">
-                              {option}
+                          {(q.options as any[] || []).map((option: any) => {
+                             const label = typeof option === 'object' && option !== null ? option.value : option;
+                             return (
+                            <SelectItem key={label} value={label} className="py-3 text-base font-medium transition-all cursor-pointer">
+                              {label}
                             </SelectItem>
-                          ))}
+                          )})}
                         </SelectContent>
                       </Select>
                     )}

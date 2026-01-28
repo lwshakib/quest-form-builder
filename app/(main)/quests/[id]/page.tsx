@@ -12,6 +12,9 @@ import {
   Trash2,
   Calendar,
   Clock,
+  Upload,
+  Image as ImageIcon,
+  Link as LinkIcon,
   List,
   CheckSquare,
   ChevronDown,
@@ -30,8 +33,9 @@ import {
   Wand2,
   Check,
   Settings2,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
+import { uploadFileToCloudinary } from '@/lib/cloudinary-client';
 import { Shimmer as TextShimmer } from "@/components/ai-elements/shimmer";
 import { Loader } from "@/components/ai-elements/loader";
 import {
@@ -155,6 +159,10 @@ export default function QuestDetailPage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('all');
   const [individualIndex, setIndividualIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [showBannerUrlInput, setShowBannerUrlInput] = useState(false);
+  const [bannerUrlInput, setBannerUrlInput] = useState('');
 
   const [input, setInput] = useState('');
   const { messages, sendMessage, status, setMessages } = useChat({
@@ -339,6 +347,43 @@ export default function QuestDetailPage() {
 
   const [newQuestionType, setNewQuestionType] = useState('SHORT_TEXT');
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size too large. Max 2MB allowed.");
+      return;
+    }
+
+    setIsUploadingBanner(true);
+    try {
+      const { secureUrl } = await uploadFileToCloudinary(file);
+      const updated = await updateQuest(id as string, { backgroundImageUrl: secureUrl });
+      setQuest(updated);
+      window.dispatchEvent(new CustomEvent('quest-updated', { detail: updated }));
+      toast.success("Cover image updated");
+    } catch (error) {
+      toast.error("Failed to upload cover image");
+      console.error(error);
+    } finally {
+      setIsUploadingBanner(false);
+    }
+  };
+
+  const handleBannerUrlSubmit = async () => {
+    if (!bannerUrlInput.trim()) return;
+    try {
+      const updated = await updateQuest(id as string, { backgroundImageUrl: bannerUrlInput });
+      setQuest(updated);
+      window.dispatchEvent(new CustomEvent('quest-updated', { detail: updated }));
+      toast.success("Cover image updated");
+      setShowBannerUrlInput(false);
+    } catch (error) {
+      toast.error("Failed to update cover image");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
@@ -361,16 +406,99 @@ export default function QuestDetailPage() {
         >
           {activeTab === 'questions' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-4 pb-40">
-              {quest.backgroundImageUrl && (
-                  <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden shadow-sm border border-border/50 mb-6 group/banner">
-                    <img 
-                      src={quest.backgroundImageUrl} 
-                      alt="Quest Banner" 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-                  </div>
-              )}
+              {/* Banner / Cover Image Section */}
+              <div className="mb-6 group/banner-control relative">
+                 {quest.backgroundImageUrl ? (
+                    <div className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden shadow-sm border border-border/50 group/banner">
+                      <img 
+                        src={quest.backgroundImageUrl} 
+                        alt="Quest Banner" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                      
+                      {/* Controls overlay */}
+                      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover/banner:opacity-100 transition-opacity">
+                         <Button
+                           variant="secondary"
+                           size="sm"
+                           className="h-8 gap-2 bg-background/80 backdrop-blur text-xs font-bold"
+                           onClick={async () => {
+                             const updated = await updateQuest(id as string, { backgroundImageUrl: null });
+                             setQuest(updated);
+                             toast.success("Cover image removed");
+                           }}
+                         >
+                           <Trash2 className="h-3.5 w-3.5" /> Remove
+                         </Button>
+                         <label htmlFor="banner-upload-edit">
+                           <Button
+                             variant="secondary"
+                             size="sm"
+                             className="h-8 gap-2 bg-background/80 backdrop-blur text-xs font-bold cursor-pointer pointer-events-none"
+                             asChild
+                           >
+                             <span>
+                               {isUploadingBanner ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Change
+                             </span>
+                           </Button>
+                         </label>
+                         <input 
+                           type="file" 
+                           id="banner-upload-edit" 
+                           className="hidden" 
+                           accept="image/*"
+                           onChange={handleBannerUpload}
+                           disabled={isUploadingBanner}
+                         />
+                      </div>
+                    </div>
+                 ) : (
+                    <div className="w-full border border-dashed border-border/60 hover:border-primary/40 rounded-xl p-8 transition-all bg-accent/5 hover:bg-accent/10 flex flex-col items-center justify-center gap-4 group/add-banner">
+                       {showBannerUrlInput ? (
+                         <div className="flex items-center gap-2 w-full max-w-md animate-in fade-in zoom-in-95">
+                           <Input 
+                             placeholder="Paste image URL..." 
+                             value={bannerUrlInput} 
+                             onChange={(e) => setBannerUrlInput(e.target.value)}
+                             className="h-9"
+                             autoFocus
+                           />
+                           <Button size="sm" onClick={handleBannerUrlSubmit}>Save</Button>
+                           <Button size="sm" variant="ghost" onClick={() => setShowBannerUrlInput(false)}>Cancel</Button>
+                         </div>
+                       ) : (
+                         <div className="flex items-center gap-4">
+                            <label htmlFor="banner-upload-new">
+                              <Button variant="outline" className="gap-2 cursor-pointer pointer-events-none" asChild>
+                                <span>
+                                  {isUploadingBanner ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                  Upload Cover Image
+                                </span>
+                              </Button>
+                            </label>
+                            <input 
+                               type="file" 
+                               id="banner-upload-new" 
+                               className="hidden" 
+                               accept="image/*"
+                               onChange={handleBannerUpload}
+                               disabled={isUploadingBanner}
+                             />
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-widest">or</span>
+                            <Button variant="ghost" className="gap-2" onClick={() => setShowBannerUrlInput(true)}>
+                              <LinkIcon className="h-4 w-4" /> Add via URL
+                            </Button>
+                         </div>
+                       )}
+                       {!showBannerUrlInput && (
+                         <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-widest">
+                           Recommended size: 1200x400px • Max 2MB
+                         </p>
+                       )}
+                    </div>
+                 )}
+              </div>
 
               {/* Welcome Card */}
               <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm group/welcome">

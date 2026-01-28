@@ -11,7 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Image as ImageIcon,
   Video as VideoIcon,
+  Upload,
+  Loader2,
 } from "lucide-react";
+import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -59,7 +63,34 @@ export function QuestionCard({
   isQuiz?: boolean 
 }) {
   const [isFocused, setIsFocused] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const Icon = TYPE_ICONS[question.type] || Type;
+  
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'IMAGE' | 'VIDEO') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'IMAGE' && file.size > 2 * 1024 * 1024) {
+        toast.error("Image size too large. Max 2MB allowed.");
+        return;
+    }
+    if (type === 'VIDEO' && file.size > 10 * 1024 * 1024) {
+        toast.error("Video size too large. Max 10MB allowed.");
+        return;
+    }
+
+    setIsUploading(true);
+    try {
+        const { secureUrl } = await uploadFileToCloudinary(file);
+        onUpdate({ options: [secureUrl] });
+        toast.success(`${type === 'IMAGE' ? 'Image' : 'Video'} uploaded successfully`);
+    } catch (error) {
+        toast.error("Upload failed");
+        console.error(error);
+    } finally {
+        setIsUploading(false);
+    }
+  };
 
   const {
     attributes,
@@ -82,6 +113,42 @@ export function QuestionCard({
       data.options = ["Option 1"];
     }
     onUpdate(data);
+  };
+
+  const getOptionValue = (opt: any) => typeof opt === 'object' && opt !== null ? (opt.value || "") : opt;
+  const getOptionImage = (opt: any) => typeof opt === 'object' && opt !== null ? opt.image : null;
+
+  const handleOptionUpload = async (file: File, index: number) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+       toast.error("Image too large (max 2MB)");
+       return;
+    }
+
+    setIsUploading(true);
+    try {
+        const { secureUrl } = await uploadFileToCloudinary(file);
+        const newOptions = [...(question.options || [])];
+        const current = newOptions[index];
+        const currentValue = getOptionValue(current);
+        newOptions[index] = { value: currentValue, image: secureUrl };
+        onUpdate({ options: newOptions });
+        toast.success("Image added to option");
+    } catch (e) {
+        toast.error("Failed to upload option image");
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
+  const removeOptionImage = (index: number) => {
+      const newOptions = [...(question.options || [])];
+      const current = newOptions[index];
+      const currentValue = getOptionValue(current);
+      // We can revert to string if we want, or keep object with null image
+      // Reverting to string is cleaner for data if no image
+      newOptions[index] = currentValue; 
+      onUpdate({ options: newOptions });
   };
 
   return (
@@ -186,66 +253,117 @@ export function QuestionCard({
           {/* Type Specific Fields */}
           {(question.type === 'MULTIPLE_CHOICE' || question.type === 'CHECKBOXES' || question.type === 'DROPDOWN') && (
             <div className="pt-4 space-y-3">
-              {question.options?.map((option: string, index: number) => (
-                <div key={index} className="flex items-center gap-4 animate-in fade-in slide-in-from-left-2 duration-300 group/option">
-                  <div className={cn(
-                    "h-4 w-4 border-2 border-muted-foreground/20 rounded-full shrink-0 group-hover/option:border-primary/40 transition-colors shadow-sm",
-                    question.type === 'CHECKBOXES' && "rounded-md"
-                  )} />
-                  <Input
-                    value={option}
-                    onChange={(e) => {
-                      const newOptions = [...question.options];
-                      newOptions[index] = e.target.value;
-                      onUpdate({ options: newOptions });
-                    }}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="h-8 bg-transparent border-none focus-visible:border-none focus-visible:ring-0 rounded-none text-sm font-bold transition-all shadow-none px-2 placeholder:text-muted-foreground/20"
-                  />
-                  
-                  {isQuiz && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={cn(
-                        "h-9 w-9 rounded-full transition-all",
-                        (Array.isArray(question.correctAnswer) ? question.correctAnswer.includes(option) : question.correctAnswer === option)
-                          ? "text-green-500 bg-green-500/10 hover:bg-green-500/20"
-                          : "text-muted-foreground/20 hover:text-green-500/50 hover:bg-green-500/5"
-                      )}
-                      onClick={() => {
-                        if (question.type === 'CHECKBOXES') {
-                          const current = Array.isArray(question.correctAnswer) ? question.correctAnswer : [];
-                          const newCorrect = current.includes(option) 
-                            ? current.filter((c: string) => c !== option)
-                            : [...current, option];
-                          onUpdate({ correctAnswer: newCorrect });
+              {question.options?.map((option: any, index: number) => {
+                const optionText = getOptionValue(option);
+                const optionImage = getOptionImage(option);
+                
+                return (
+                <div key={index} className="flex flex-col gap-2 animate-in fade-in slide-in-from-left-2 duration-300 group/option">
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "h-4 w-4 border-2 border-muted-foreground/20 rounded-full shrink-0 group-hover/option:border-primary/40 transition-colors shadow-sm",
+                      question.type === 'CHECKBOXES' && "rounded-md"
+                    )} />
+                    <Input
+                      value={optionText}
+                      onChange={(e) => {
+                        const newOptions = [...question.options];
+                        const current = newOptions[index];
+                        if (typeof current === 'object' && current !== null) {
+                            newOptions[index] = { ...current, value: e.target.value };
                         } else {
-                          onUpdate({ correctAnswer: option });
+                            newOptions[index] = e.target.value;
                         }
+                        onUpdate({ options: newOptions });
+                      }}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="h-8 bg-transparent border-none focus-visible:border-none focus-visible:ring-0 rounded-none text-sm font-bold transition-all shadow-none px-2 placeholder:text-muted-foreground/20 flex-1"
+                    />
+                    
+                    {/* Option Image Controls */}
+                    {(question.type === 'MULTIPLE_CHOICE' || question.type === 'CHECKBOXES') && (
+                       <div className="flex items-center gap-1">
+                          <input
+                            type="file"
+                            id={`opt-img-${question.id}-${index}`}
+                            className="hidden"
+                            accept="image/*"
+                            disabled={isUploading}
+                            onChange={(e) => e.target.files?.[0] && handleOptionUpload(e.target.files[0], index)}
+                          />
+                          <label htmlFor={`opt-img-${question.id}-${index}`}>
+                             <Button
+                               variant="ghost" 
+                               size="icon"
+                               asChild
+                               disabled={isUploading}
+                               className={cn("h-8 w-8 text-muted-foreground/20 hover:text-primary transition-all rounded-full cursor-pointer", optionImage && "text-primary")}
+                             >
+                                <span>
+                                  <ImageIcon className="h-4 w-4" />
+                                </span>
+                             </Button>
+                          </label>
+                       </div>
+                    )}
+
+                    {isQuiz && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className={cn(
+                          "h-9 w-9 rounded-full transition-all",
+                          (Array.isArray(question.correctAnswer) ? question.correctAnswer.includes(optionText) : question.correctAnswer === optionText)
+                            ? "text-green-500 bg-green-500/10 hover:bg-green-500/20"
+                            : "text-muted-foreground/20 hover:text-green-500/50 hover:bg-green-500/5"
+                        )}
+                        onClick={() => {
+                          if (question.type === 'CHECKBOXES') {
+                            const current = Array.isArray(question.correctAnswer) ? question.correctAnswer : [];
+                            const newCorrect = current.includes(optionText) 
+                              ? current.filter((c: string) => c !== optionText)
+                              : [...current, optionText];
+                            onUpdate({ correctAnswer: newCorrect });
+                          } else {
+                            onUpdate({ correctAnswer: optionText });
+                          }
+                        }}
+                      >
+                        <CheckCircle2 className="h-4.5 w-4.5" />
+                      </Button>
+                    )}
+
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="h-9 w-9 rounded-full opacity-0 group-hover/option:opacity-100 hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 transition-all"
+                      onClick={() => {
+                        const newOptions = question.options.filter((_: any, i: number) => i !== index);
+                        onUpdate({ options: newOptions });
                       }}
                     >
-                      <CheckCircle2 className="h-4.5 w-4.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  )}
+                  </div>
 
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="h-9 w-9 rounded-full opacity-0 group-hover/option:opacity-100 hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 transition-all"
-                    onClick={() => {
-                      const newOptions = question.options.filter((_: any, i: number) => i !== index);
-                      onUpdate({ options: newOptions });
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {/* Render Option Image Preview */}
+                  {optionImage && (
+                      <div className="ml-8 relative group/img w-fit">
+                          <img src={optionImage} alt="Option" className="h-20 w-auto rounded-md border border-border" />
+                          <button 
+                             onClick={() => removeOptionImage(index)}
+                             className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover/img:opacity-100 transition-opacity"
+                          >
+                             <Trash2 className="h-3 w-3" />
+                          </button>
+                      </div>
+                  )}
                 </div>
-              ))}
+              )})}
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -268,8 +386,31 @@ export function QuestionCard({
                   onBlur={() => setIsFocused(false)}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="Paste Video URL (YouTube or direct link)..."
-                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30"
+                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30 flex-1"
                 />
+                <div className="relative">
+                    <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        id={`video-upload-${question.id}`}
+                        onChange={(e) => handleFileUpload(e, 'VIDEO')}
+                        disabled={isUploading}
+                    />
+                    <label htmlFor={`video-upload-${question.id}`}>
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-10 w-10 shrink-0"
+                            disabled={isUploading}
+                            asChild
+                        >
+                            <span className="cursor-pointer">
+                                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            </span>
+                        </Button>
+                    </label>
+                </div>
               </div>
               
               {/* Draft Preview of the video in the editor */}
@@ -325,8 +466,31 @@ export function QuestionCard({
                   onBlur={() => setIsFocused(false)}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="Paste Image URL..."
-                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30"
+                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30 flex-1"
                 />
+                <div className="relative">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id={`image-upload-${question.id}`}
+                        onChange={(e) => handleFileUpload(e, 'IMAGE')}
+                        disabled={isUploading}
+                    />
+                    <label htmlFor={`image-upload-${question.id}`}>
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-10 w-10 shrink-0"
+                            disabled={isUploading}
+                            asChild
+                        >
+                            <span className="cursor-pointer">
+                                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            </span>
+                        </Button>
+                    </label>
+                </div>
               </div>
               
               {/* Image Preview */}
