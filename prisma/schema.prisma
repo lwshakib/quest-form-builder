@@ -41,6 +41,7 @@ model Quest {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions   Question[]
   responses   Response[]
+  templateId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   backgroundImageUrl String?
