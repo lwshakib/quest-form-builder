@@ -47,8 +47,13 @@ export default function ClientLayout({
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+  const [origin, setOrigin] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
   const isEditor = pathname.startsWith('/quests/') && params.id && !pathname.endsWith('/responses') && !pathname.endsWith('/settings');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     if (quest?.title) {
@@ -102,6 +107,17 @@ export default function ClientLayout({
         }
       };
       loadQuest();
+
+      // Listen for updates from the page content (e.g. title changes)
+      const handleUpdate = (e: any) => {
+        if (e.detail) {
+          setQuest(e.detail);
+          setEditedTitle(e.detail.title || "");
+        }
+      };
+
+      window.addEventListener('quest-updated', handleUpdate);
+      return () => window.removeEventListener('quest-updated', handleUpdate);
     }
   }, [isEditor, params.id]);
 
@@ -147,10 +163,12 @@ export default function ClientLayout({
                     />
                   ) : (
                     <span 
-                      className="font-bold text-sm line-clamp-1 max-w-[120px] md:max-w-[200px] cursor-text transition-opacity hover:opacity-70"
-                      onDoubleClick={() => setIsEditingTitle(true)}
+                      className="font-bold text-sm line-clamp-1 max-w-[120px] md:max-w-[200px] cursor-pointer transition-all hover:text-primary flex items-center gap-2 group"
+                      onClick={() => setIsEditingTitle(true)}
+                      title="Click to edit quest title"
                     >
                       {quest?.title || "Loading..."}
+                      <Settings2 className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
                     </span>
                   )}
                 </div>
@@ -236,7 +254,7 @@ export default function ClientLayout({
                           <div className="flex gap-2">
                             <Input 
                               readOnly 
-                              value={`${window.location.origin}/share/${params.id}`} 
+                              value={`${origin}/share/${params.id}`} 
                               className="h-10 rounded-none bg-muted/30 border-none font-medium text-xs focus-visible:ring-0" 
                             />
                             <Button size="icon" className="h-10 w-10 shrink-0 rounded-none shadow-md" onClick={handleCopyLink}>
