@@ -71,7 +71,7 @@ export function GlobalSearch() {
       />
 
       {isOpen && (query.trim() || isLoading) && (
-        <div className="absolute top-12 left-0 right-0 bg-popover border border-border/50 shadow-2xl rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-12 left-0 right-0 bg-popover border border-border/50 shadow-2xl rounded-2xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="max-h-[400px] overflow-y-auto p-2">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">

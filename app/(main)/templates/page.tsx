@@ -82,8 +82,8 @@ export default function TemplatesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
+      {/* Sticky Header - Offset by main header height (h-16) */}
+      <div className="sticky top-16 z-40 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
