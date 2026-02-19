@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
 
 export function LoginForm({
   className,
@@ -66,95 +66,120 @@ export function LoginForm({
   };
 
   return (
-    <form
-      className={cn("flex flex-col gap-6", className)}
-      onSubmit={handleSubmit}
-      {...props}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
     >
-      <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Login to your account</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            Enter your email below to login to your account
-          </p>
-        </div>
-
-        {error && (
-          <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md text-center">
-            {error}
+      <form
+        className={cn("flex flex-col gap-6", className)}
+        onSubmit={handleSubmit}
+        {...props}
+      >
+        <FieldGroup>
+          <div className="flex flex-col items-center gap-2 text-center mb-2">
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <p className="text-muted-foreground text-sm text-balance">
+              Enter your credentials to access your Quest dashboard
+            </p>
           </div>
-        )}
 
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+          {error && (
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg text-center border border-destructive/20 animate-in fade-in zoom-in duration-300">
+              {error}
+            </div>
+          )}
+
+          <Field>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <div className="relative group">
+              <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="pl-10 h-12 bg-muted/50 border-muted-foreground/20 focus:border-primary/50"
+              />
+            </div>
+          </Field>
+          
+          <Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <div className="relative group">
+              <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                className="pl-10 h-12 bg-muted/50 border-muted-foreground/20 focus:border-primary/50"
+              />
+            </div>
+          </Field>
+
+          <Button 
+            type="submit" 
             disabled={isLoading}
-          />
-        </Field>
-        <Field>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Link
-              href="/forgot-password"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-          />
-        </Field>
-        <Field>
-          <Button type="submit" disabled={isLoading}>
+            className="w-full h-12 shadow-lg transition-all active:scale-[0.98]"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="size-4 animate-spin mr-2" />
                 Signing in...
               </>
             ) : (
-              "Sign In"
+              <>
+                Sign In
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
             )}
           </Button>
-        </Field>
-        <FieldSeparator>Or continue with</FieldSeparator>
-        <Field className="gap-2">
-          <Button
-            variant="outline"
-            type="button"
-            disabled={socialLoading !== null}
-            onClick={() => handleSocialLogin("google")}
-          >
-            {socialLoading === "google" ? (
-              <Loader2 className="size-4 animate-spin mr-2" />
-            ) : (
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                className="size-4"
-              />
-            )}
-            Sign in with Google
-          </Button>
-          <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="underline underline-offset-4">
-              Sign up
-            </Link>
-          </FieldDescription>
-        </Field>
-      </FieldGroup>
-    </form>
+
+          <FieldSeparator className="text-muted-foreground/50">Or continue with</FieldSeparator>
+          
+          <div className="flex flex-col gap-4">
+            <Button
+              variant="outline"
+              type="button"
+              className="h-11 border-muted-foreground/20 hover:bg-muted font-medium transition-colors"
+              disabled={socialLoading !== null}
+              onClick={() => handleSocialLogin("google")}
+            >
+              {socialLoading === "google" ? (
+                <Loader2 className="size-4 animate-spin mr-2" />
+              ) : (
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  className="size-4 mr-2"
+                />
+              )}
+              Sign in with Google
+            </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link href="/sign-up" className="font-semibold text-primary hover:text-primary/80 underline underline-offset-4">
+                Sign up
+              </Link>
+            </p>
+          </div>
+        </FieldGroup>
+      </form>
+    </motion.div>
   );
 }
