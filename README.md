@@ -37,22 +37,26 @@ graph TD
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 15+](https://nextjs.org/)
+- **Framework**: [Next.js 16+](https://nextjs.org/)
 - **AI Engine**: [Google Gemini (AI SDK)](https://sdk.vercel.ai/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL
 - **Auth**: [Better-Auth](https://better-auth.com/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Framer Motion](https://www.framer.com/motion/), & [Lucide Icons](https://lucide.dev/)
+- **Media**: [Cloudinary](https://cloudinary.com/) (Image hosting)
+- **Emails**: [Resend](https://resend.com/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Motion](https://www.motion.dev/) (formerly Framer Motion), & [Lucide Icons](https://lucide.dev/)
 - **Runtime**: [Bun](https://bun.sh/)
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js / Bun installed
-- PostgreSQL database
-- Google OAuth credentials
-- Google Gemini API Key
+- [Bun](https://bun.sh/) installed (primary runtime)
+- PostgreSQL database (Local or [Neon](https://neon.tech/))
+- Google OAuth Credentials (for Authentication)
+- Google Gemini API Key (for AI features)
+- Cloudinary Account (for image uploads)
+- Resend API Key (for transactional emails)
 
 ### Installation
 

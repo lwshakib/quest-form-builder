@@ -18,7 +18,7 @@ All types of contributions are welcome, from bug reports to new features.
    ```
 
 3. **Environment**:
-   - Copy `.env.example` to `.env` and fill in the required keys (Google OAuth, Gemini API, Cloudinary).
+   - Copy `.env.example` to `.env` and fill in the required keys (Google OAuth, Gemini API, Cloudinary, Resend).
 
 4. **Database**:
    ```bash
