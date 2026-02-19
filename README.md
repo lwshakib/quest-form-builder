@@ -1,4 +1,4 @@
-# 🌌 Quest - The Intelligent Form Builder
+# <img src="public/logo.svg" width="32" height="32" /> Quest - The Intelligent Form Builder
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics and seamless user experience.
 
