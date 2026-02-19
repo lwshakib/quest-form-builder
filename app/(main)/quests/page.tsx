@@ -73,9 +73,9 @@ export default function QuestsPage() {
     loadData();
   }, []);
 
-  const recentTemplates = recentTemplateIds.length > 0 
-    ? recentTemplateIds.map(id => TEMPLATES.find(t => t.id === id)).filter(Boolean)
-    : TEMPLATES.slice(0, 3);
+  const recentTemplates = recentTemplateIds
+    .map(id => TEMPLATES.find(t => t.id === id))
+    .filter(Boolean);
 
   const handleCreateBlankQuest = async () => {
     setIsCreating('blank');
@@ -135,72 +135,109 @@ export default function QuestsPage() {
   };
 
   return (
-    <div className="container mx-auto py-10 space-y-12 animate-in fade-in duration-1000 px-4 lg:px-8">
+    <div className="container mx-auto py-10 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000 px-4 lg:px-8">
       {/* Hero Section / Create Section */}
-      <section className="space-y-10">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="flex flex-col items-center sm:items-start space-y-2">
-            <Badge variant="outline" className="rounded-full px-4 py-1 border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest mb-2 shadow-sm">
-              Workspace
-            </Badge>
-            <h1 className="text-4xl font-black tracking-tighter lg:text-5xl bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/40 text-center sm:text-left drop-shadow-sm">
-              Start a new Quest
+      <section className="space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="space-y-4 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 shadow-sm animate-pulse">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">New Creation</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground drop-shadow-sm">
+              Launch a Quest
             </h1>
-            <p className="text-lg text-muted-foreground/80 max-w-lg text-center sm:text-left font-medium">
-              Launch your next project with a blank canvas or professional template.
+            <p className="text-xl text-muted-foreground/70 max-w-xl font-medium leading-relaxed">
+              Design beautiful forms, surveys, and quizzes with our intuitive builder.
             </p>
           </div>
           
           <Button 
             variant="ghost" 
-            className="text-primary font-black uppercase tracking-widest text-[10px] gap-2 hover:bg-primary/5 rounded-full px-6"
+            className="group h-14 rounded-2xl px-8 bg-card border border-border/40 hover:bg-primary/5 hover:border-primary/20 transition-all duration-300 font-bold tracking-tight gap-3"
             onClick={() => router.push('/templates')}
           >
-            Template Gallery <Layout className="h-4 w-4" />
+            <span>Explore Templates</span>
+            <Layout className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Main Blank Canvas Card */}
           <button 
             disabled={!!isCreating}
             onClick={handleCreateBlankQuest}
-            className="group relative flex flex-col items-center justify-center h-52 bg-card/40 border-2 border-dashed border-border rounded-3xl transition-all duration-500 hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] shadow-sm hover:shadow-xl overflow-hidden disabled:opacity-50"
+            className="group relative flex flex-col items-start justify-between p-8 h-64 bg-card hover:bg-accent/50 border border-border/50 rounded-[2.5rem] transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 active:scale-[0.98] overflow-hidden disabled:opacity-50"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="bg-primary/5 p-4 rounded-full mb-3 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500 border border-primary/10">
-              {isCreating === 'blank' ? <Loader2 className="h-6 w-6 text-primary animate-spin" /> : <Plus className="h-6 w-6 text-primary" />}
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700 -rotate-12 translate-x-4 -translate-y-4">
+              <Plus className="h-32 w-32" />
             </div>
-            <span className="font-bold text-lg tracking-tight">Blank Quest</span>
-            <span className="text-[10px] text-muted-foreground mt-1 font-black uppercase tracking-widest opacity-60">New Canvas</span>
+            
+            <div className="h-14 w-14 rounded-2xl bg-primary shadow-lg shadow-primary/30 flex items-center justify-center group-hover:scale-110 transition-all duration-500">
+              {isCreating === 'blank' ? <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" /> : <Plus className="h-7 w-7 text-primary-foreground stroke-[3px]" />}
+            </div>
+            
+            <div className="text-left">
+              <h3 className="text-2xl font-black tracking-tight mb-1">Blank Quest</h3>
+              <p className="text-sm font-medium text-muted-foreground/80">Start from scratch</p>
+            </div>
           </button>
 
-          {recentTemplates.map((template: any) => (
+          {/* Recent Templates or Placeholder */}
+          {recentTemplates.length > 0 ? (
+            recentTemplates.map((template: any) => (
+              <button 
+                key={template.id}
+                disabled={!!isCreating}
+                onClick={() => handleCreateFromTemplate(template.id)}
+                className="group relative flex flex-col items-start justify-end h-64 bg-card border border-border/40 rounded-[2.5rem] transition-all duration-500 hover:border-primary/40 hover:shadow-2xl overflow-hidden disabled:opacity-50"
+              >
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src={template.backgroundImage || "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"} 
+                    alt={template.title}
+                    className="w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+                </div>
+                
+                <div className="relative z-10 p-8 w-full text-left">
+                  <div className="mb-4 h-10 w-10 rounded-xl bg-background/80 backdrop-blur-md border border-border/50 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                    {isCreating === template.id ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Layout className="h-5 w-5 text-muted-foreground group-hover:text-primary-foreground transition-all duration-300" />}
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight mb-1">{template.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/80">Recent</span>
+                    <div className="h-1 w-1 rounded-full bg-primary/30" />
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{template.category}</span>
+                  </div>
+                </div>
+              </button>
+            ))
+          ) : (
             <button 
-              key={template.id}
-              disabled={!!isCreating}
-              onClick={() => handleCreateFromTemplate(template.id)}
-              className="group relative flex flex-col items-start h-52 bg-card border border-border/40 rounded-3xl transition-all duration-500 hover:border-primary/30 hover:shadow-xl overflow-hidden disabled:opacity-50"
+              onClick={() => router.push('/templates')}
+              className="group relative flex flex-col items-center justify-center h-64 bg-accent/5 border-2 border-dashed border-border/50 rounded-[2.5rem] transition-all duration-500 hover:border-primary/30 hover:bg-primary/[0.02] overflow-hidden"
             >
-              <div className="absolute inset-0 z-0">
-                <img 
-                  src={template.backgroundImage || "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"} 
-                  alt={template.title}
-                  className="w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="bg-muted/50 p-6 rounded-3xl mb-4 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500 border border-border/50">
+                <Layout className="h-8 w-8 text-muted-foreground/40 group-hover:text-primary transition-colors" />
               </div>
-              
-              <div className="relative z-10 p-6 flex flex-col h-full w-full">
-                <div className="bg-primary/10 p-2.5 rounded-xl border border-primary/20 w-fit mb-auto">
-                   {isCreating === template.id ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Layout className="h-4 w-4 text-primary" />}
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{template.title}</h3>
-                  <p className="text-[10px] text-muted-foreground font-medium line-clamp-2 opacity-80">{template.description}</p>
-                </div>
-              </div>
+              <span className="font-bold text-lg tracking-tight text-muted-foreground/80 group-hover:text-foreground transition-colors">Start from Template</span>
+              <p className="text-xs text-muted-foreground/40 mt-1 font-bold uppercase tracking-widest">Browse 20+ designs</p>
             </button>
-          ))}
+          )}
+
+          {/* Add more placeholders if fewer than 3 recent templates */}
+          {recentTemplates.length > 0 && recentTemplates.length < 3 && (
+            <button 
+              onClick={() => router.push('/templates')}
+              className="group relative flex flex-col items-center justify-center h-64 border-2 border-dashed border-border/30 rounded-[2.5rem] transition-all duration-500 hover:border-primary/20 hover:bg-accent/5 overflow-hidden"
+            >
+              <ArrowRight className="h-8 w-8 text-muted-foreground/20 group-hover:text-primary/40 group-hover:translate-x-2 transition-all" />
+              <span className="text-sm font-bold text-muted-foreground/30 mt-4">View Gallery</span>
+            </button>
+          )}
         </div>
       </section>
 
