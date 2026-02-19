@@ -57,9 +57,6 @@ export default function HowItWorksSection() {
         </div>
 
         <div className="relative">
-          {/* Connector Line (Desktop) */}
-          <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 z-0" />
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
             {steps.map((step, index) => (
               <motion.div
@@ -71,6 +68,7 @@ export default function HowItWorksSection() {
                 className="flex flex-col items-center text-center group"
               >
                 <div className="w-16 h-16 rounded-full bg-background border-4 border-primary/20 flex items-center justify-center mb-6 group-hover:border-primary transition-colors duration-500 shadow-xl">
+
                   <step.icon className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">{step.title}</h3>
