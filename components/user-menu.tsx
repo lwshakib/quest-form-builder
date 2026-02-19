@@ -52,23 +52,23 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          className="flex items-center gap-3 py-2 cursor-pointer group"
+          className="flex items-center gap-3 py-2 cursor-pointer group rounded-lg transition-colors"
           onClick={() => router.push('/account')}
         >
-          <div className="p-1.5 rounded-full bg-muted group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-200">
             <User className="h-4 w-4" />
           </div>
-          <span className="text-sm font-medium">Account</span>
+          <span className="text-sm font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Account</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          className="flex items-center gap-3 py-2 cursor-pointer group text-destructive focus:text-destructive focus:bg-destructive/5"
+          className="flex items-center gap-3 py-2 cursor-pointer group rounded-lg focus:bg-destructive/5 transition-colors"
           onClick={handleLogout}
         >
-          <div className="p-1.5 rounded-full bg-destructive/10 group-hover:bg-destructive group-hover:text-white transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50 group-hover:bg-destructive/10 group-hover:text-destructive transition-all duration-200">
             <LogOut className="h-4 w-4" />
           </div>
-          <span className="text-sm font-medium">Log out</span>
+          <span className="text-sm font-semibold text-muted-foreground group-hover:text-destructive transition-colors">Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
