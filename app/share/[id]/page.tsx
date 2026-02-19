@@ -43,6 +43,7 @@ export default function ShareQuestPage() {
   const [isNotFound, setIsNotFound] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [progress, setProgress] = useState(0);
+  const [isFormValid, setIsFormValid] = useState(false);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   
   const { data: session, isPending: isSessionLoading } = authClient.useSession();
@@ -52,20 +53,21 @@ export default function ShareQuestPage() {
     const relevantQuestions = quest.questions.filter((q: any) => q.type !== 'VIDEO' && q.type !== 'IMAGE');
     const requiredQuestions = relevantQuestions.filter((q: any) => q.required);
     
+    const isQuestionFilled = (qId: string) => {
+      const val = answers[qId];
+      return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
+    };
+
     if (requiredQuestions.length === 0) {
-      const filledCount = relevantQuestions.filter((q: any) => {
-        const val = answers[q.id];
-        return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
-      }).length;
+      const filledCount = relevantQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
       setProgress(relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0);
+      setIsFormValid(true); // Always valid if nothing is required
       return;
     }
     
-    const filledRequiredCount = requiredQuestions.filter((q: any) => {
-      const val = answers[q.id];
-      return val !== undefined && val !== '' && (Array.isArray(val) ? val.length > 0 : true);
-    }).length;
+    const filledRequiredCount = requiredQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
+    setIsFormValid(filledRequiredCount === requiredQuestions.length);
   }, [answers, quest]);
 
   const startTime = useRef<number>(Date.now());
@@ -408,7 +410,7 @@ export default function ShareQuestPage() {
                             key={label} 
                             htmlFor={`${q.id}-${label}`}
                             className={cn(
-                              "flex flex-col border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden",
+                              "flex flex-col items-start border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden w-full",
                               answers[q.id] === label && "border-primary/40 bg-primary/5"
                             )}
                           >
@@ -417,21 +419,21 @@ export default function ShareQuestPage() {
                                   <img src={image} alt={label} className="w-full max-h-[400px] object-contain transition-transform duration-500 hover:scale-105" />
                                </div>
                              )}
-                             <div className="flex items-center gap-4 p-4">
+                             <div className="flex items-start gap-4 p-4 w-full">
                                 <RadioGroupItem 
                                   value={label} 
                                   id={`${q.id}-${label}`} 
                                   className="opacity-0 absolute w-0 h-0" 
                                 />
                                 <div className={cn(
-                                  "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all shrink-0",
+                                  "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all shrink-0 mt-0.5",
                                   answers[q.id] === label && "border-primary"
                                 )}>
                                   {answers[q.id] === label && <div className="h-2.5 w-2.5 bg-primary rounded-full animate-in zoom-in duration-200" />}
                                 </div>
-                                <span className="text-sm font-medium text-foreground/80">{label}</span>
+                                <span className="text-sm font-medium text-foreground/80 leading-relaxed text-left">{label}</span>
                              </div>
-                          </Label>
+                           </Label>
                         )})}
                       </RadioGroup>
                     )}
@@ -449,7 +451,7 @@ export default function ShareQuestPage() {
                             key={label} 
                             htmlFor={`${q.id}-${label}`}
                             className={cn(
-                              "flex flex-col border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden",
+                              "flex flex-col items-start border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden w-full",
                               isChecked && "border-primary/40 bg-primary/5"
                             )}
                           >
@@ -458,7 +460,7 @@ export default function ShareQuestPage() {
                                   <img src={image} alt={label} className="w-full h-full object-cover" />
                                </div>
                              )}
-                            <div className="flex items-center gap-4 p-4">
+                            <div className="flex items-start gap-4 p-4 w-full">
                                 <Checkbox 
                                   id={`${q.id}-${label}`} 
                                   className="opacity-0 absolute w-0 h-0"
@@ -466,12 +468,12 @@ export default function ShareQuestPage() {
                                   onCheckedChange={(checked) => handleCheckboxChange(q.id, label, checked as boolean)}
                                 />
                                  <div className={cn(
-                                  "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all shrink-0",
+                                  "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all shrink-0 mt-0.5",
                                   isChecked && "bg-primary border-primary"
                                 )}>
                                   {isChecked && <Check className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-200" />}
                                 </div>
-                                <span className="text-sm font-medium text-foreground/80">{label}</span>
+                                <span className="text-sm font-medium text-foreground/80 leading-relaxed text-left">{label}</span>
                             </div>
                           </Label>
                         )})}
@@ -595,8 +597,8 @@ export default function ShareQuestPage() {
               <Button 
                 type="submit" 
                 size="lg" 
-                disabled={isSubmitting}
-                className="h-12 px-10 rounded-full font-black uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all order-2 sm:order-1 w-full sm:w-auto"
+                disabled={isSubmitting || !isFormValid}
+                className="h-12 px-10 rounded-full font-black uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all order-2 sm:order-1 w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

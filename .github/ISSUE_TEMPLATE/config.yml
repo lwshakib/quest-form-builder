@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General Questions
+    url: https://github.com/lwshakib/quest-form-builder/discussions
+    about: Please use GitHub Discussions for general questions or help requests.
+  - name: Security Issues
+    url: https://github.com/lwshakib/quest-form-builder/security/advisories
+    about: Please report security vulnerabilities here instead of opening a public issue.
+
