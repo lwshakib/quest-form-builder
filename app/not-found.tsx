@@ -1,3 +1,9 @@
+/**
+ * Custom 404 Error Page.
+ * This page is automatically displayed by Next.js when a user navigates 
+ * to a route that does not exist within the application.
+ */
+
 "use client";
 
 import Link from "next/link";
@@ -7,17 +13,19 @@ import { Home, MoveLeft, FileQuestion } from "lucide-react";
 export default function NotFound() {
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
-      {/* Background Decor */}
+      {/* Visual background decoration using CSS gradients and masks */}
       <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:40px_40px]" />
 
       <div className="animate-in fade-in slide-in-from-bottom-10 relative max-w-md space-y-8 duration-1000">
         <div className="relative">
+          {/* Subtle glow effect behind the main icon */}
           <div className="bg-primary/20 absolute inset-0 rounded-full blur-3xl" />
           <div className="bg-background border-border/50 relative mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border shadow-2xl">
             <FileQuestion className="text-primary h-12 w-12" />
           </div>
         </div>
 
+        {/* Error messaging */}
         <div className="space-y-4">
           <h1 className="text-6xl font-black tracking-tighter">404</h1>
           <h2 className="text-2xl font-black tracking-tight">Something is missing</h2>
@@ -27,6 +35,7 @@ export default function NotFound() {
           </p>
         </div>
 
+        {/* Navigation buttons to help users get back on track */}
         <div className="flex flex-col gap-4 pt-4 sm:flex-row">
           <Button
             variant="outline"
@@ -34,6 +43,7 @@ export default function NotFound() {
             className="hover:bg-accent/5 group h-12 gap-2 rounded-none px-8 font-bold transition-all"
             asChild
           >
+            {/* Simple JS-based back navigation */}
             <Link href="javascript:history.back()">
               <MoveLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               Go Back
@@ -44,6 +54,7 @@ export default function NotFound() {
             className="shadow-primary/20 h-12 gap-2 rounded-none px-8 font-black shadow-xl transition-all hover:scale-[1.02] active:scale-98"
             asChild
           >
+            {/* Direct link back to the marketing home page */}
             <Link href="/">
               <Home className="h-4 w-4" />
               Back to Home
@@ -51,6 +62,7 @@ export default function NotFound() {
           </Button>
         </div>
 
+        {/* Branding footer at the very bottom of the 404 view */}
         <div className="pt-8 opacity-20">
           <p className="text-[10px] font-black tracking-[0.5em] uppercase">Quest Form Builder</p>
         </div>

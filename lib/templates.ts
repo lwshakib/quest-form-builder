@@ -1,3 +1,12 @@
+/**
+ * This module defines the structure and initial data for Quest templates.
+ * Templates provide users with a starting point for creating new forms
+ * with predefined questions and backgrounds.
+ */
+
+/**
+ * Represents a single question within a template.
+ */
 export interface TemplateQuestion {
   title: string;
   type:
@@ -12,19 +21,26 @@ export interface TemplateQuestion {
     | "IMAGE";
   description?: string;
   required?: boolean;
-  options?: string[];
+  options?: string[]; // Used for types like MULTIPLE_CHOICE or DROPDOWN
 }
 
+/**
+ * Represents a full form template.
+ */
 export interface Template {
-  id: string;
-  title: string;
-  description: string;
-  category: "Personal" | "Work" | "Education" | "Recent";
-  icon: string;
-  backgroundImage?: string;
-  questions: TemplateQuestion[];
+  id: string; // Unique identifier for the template
+  title: string; // User-facing name of the template
+  description: string; // Brief explanation of the template's purpose
+  category: "Personal" | "Work" | "Education" | "Recent"; // Organizational category
+  icon: string; // Icon identifier (usually from Lucide)
+  backgroundImage?: string; // Optional path to a background image
+  questions: TemplateQuestion[]; // The set of questions included in the template
 }
 
+/**
+ * Predefined list of templates available to users.
+ * These are categorized to help users find what they need quickly.
+ */
 export const TEMPLATES: Template[] = [
   // Personal
   {

@@ -1,3 +1,9 @@
+/**
+ * GlobalSearch component provides a centralized search bar for the application.
+ * It performs cross-entity searching across the user's Quests and public Templates.
+ * Features debounced input to minimize API calls and a floating results panel.
+ */
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -8,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { Template } from "@/lib/templates";
 
 export function GlobalSearch() {
+  // Local state for the search query and fetched results
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<{
     quests: { id: string; title: string; questions: { id: string; title: string }[] }[];
@@ -21,10 +28,16 @@ export function GlobalSearch() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Effect: Debounced Search
+   * We wait for 300ms of inactivity before triggering the server action. 
+   * This prevents excessive database load while the user is typing.
+   */
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (query.trim()) {
         setIsLoading(true);
+        // Call the server action to search quests and templates
         const res = await globalSearch(query);
         setResults(res);
         setIsLoading(false);
@@ -36,6 +49,10 @@ export function GlobalSearch() {
     return () => clearTimeout(timer);
   }, [query]);
 
+  /**
+   * Effect: Click Outside
+   * Closes the results dropdown if the user clicks anywhere else on the page.
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -47,16 +64,18 @@ export function GlobalSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  /**
+   * Handles user selection from the results list.
+   * Redirects to the appropriate view based on the result type.
+   */
   const handleSelect = (type: "quest" | "template", id: string) => {
     setIsOpen(false);
     setQuery("");
     if (type === "quest") {
+      // Direct navigation to the quest builder/editor
       router.push(`/quests/${id}`);
     } else {
-      // For templates, we might want to stay on gallery or create immediately
-      // For now, let's go to gallery and maybe highlight?
-      // Or just create it immediately like the other buttons?
-      // Let's go to templates page with a search param
+      // For templates, we navigate to the gallery and filter by the specific ID
       router.push(`/templates?search=${id}`);
     }
   };
@@ -75,6 +94,7 @@ export function GlobalSearch() {
         onFocus={() => setIsOpen(true)}
       />
 
+      {/* Floating Results Panel */}
       {isOpen && (query.trim() || isLoading) && (
         <div className="bg-popover border-border/50 animate-in fade-in slide-in-from-top-2 absolute top-12 right-0 left-0 z-[60] overflow-hidden rounded-2xl border shadow-2xl duration-200">
           <div className="max-h-[400px] overflow-y-auto p-2">
@@ -90,6 +110,7 @@ export function GlobalSearch() {
               </div>
             ) : (
               <div className="space-y-4 p-2">
+                {/* Section: Your Quests */}
                 {results.quests.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="text-muted-foreground px-2 text-[10px] font-black tracking-widest uppercase">
@@ -123,6 +144,7 @@ export function GlobalSearch() {
                   </div>
                 )}
 
+                {/* Section: Templates */}
                 {results.templates.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="text-muted-foreground px-2 text-[10px] font-black tracking-widest uppercase">

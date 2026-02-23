@@ -109,50 +109,62 @@ import {
 } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
+/**
+ * Interfaces for the Quest Builder data model.
+ */
+
+// Represents an individual question within a quest.
 type Question = {
-  id: string;
-  type: string;
-  title: string;
+  id: string; // Database ID or optimistic temporary ID
+  type: string; // The UI type (e.g., MULTIPLE_CHOICE, SHORT_TEXT)
+  title: string; 
   description: string | null;
-  order: number;
+  order: number; // For manual sorting with dnd-kit
   required: boolean;
-  options?: string[];
-  correctAnswer?: string | string[];
-  points?: number;
-  feedback?: string;
+  options?: string[]; // Array of choice values (for choice types) or image/video URLs
+  correctAnswer?: string | string[]; // Single string or array of strings for quiz validation
+  points?: number; // Score value for this question (if quest is a quiz)
+  feedback?: string; // Information shown to the user after answering
 };
 
+// Represents the top-level Quest metadata and configuration.
 interface Quest {
   id: string;
   title: string;
   description: string | null;
-  status: string;
-  isQuiz: boolean;
+  status: string; // e.g., 'Draft', 'Published'
+  isQuiz: boolean; // Enforced logic and UI for scores
   showProgressBar: boolean;
   shuffleQuestionOrder: boolean;
-  confirmationMessage: string | null;
+  confirmationMessage: string | null; // Shown after submission
   showLinkToSubmitAnother: boolean;
-  limitToOneResponse: boolean;
-  viewResultsSummary: boolean;
+  limitToOneResponse: boolean; // Based on cookie or user ID
+  viewResultsSummary: boolean; // Allow respondents to see aggregate data
   questionsRequiredByDefault: boolean;
   webhookEnabled: boolean;
   webhookUrl: string | null;
-  backgroundImageUrl: string | null;
+  backgroundImageUrl: string | null; // The theme banner
   questions?: Question[];
 }
 
+// Represents a summary of a single submission (response) to the quest.
 interface Response {
   id: string;
   questId: string;
-  duration: number | null;
+  duration: number | null; // Time taken to complete in seconds
   createdAt: string | Date;
   answers: {
     questionId: string;
-    value: unknown;
-    question: Question;
+    value: unknown; // The user-provided answer value
+    question: Question; // Snapshot of the question as it was when answered
   }[];
 }
 
+/**
+ * Constants and Configuration
+ */
+
+// Supported question types with human-readable labels for the UI.
 export const TYPE_OPTIONS = [
   { id: "SHORT_TEXT", label: "Short Text" },
   { id: "PARAGRAPH", label: "Paragraph" },
@@ -165,17 +177,34 @@ export const TYPE_OPTIONS = [
   { id: "IMAGE", label: "Image" },
 ];
 
+/**
+ * QuestDetailPage Component
+ * 
+ * This is the nerve center of the quest creation experience.
+ * It provides a multi-tabbed interface for:
+ * 1. Build (Questions): A drag-and-drop editor for designing the quest structure.
+ * 2. Settings: Global configuration for the quest (logic, appearance, integrations).
+ * 3. Share: Public URLs and QR code generation.
+ * 4. Results: Real-time analytics and individual response viewing.
+ * 
+ * It integrates with the AI Chat SDK to allow LLM-powered quest modifications.
+ */
+
 export default function QuestDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  // The activeTab determines which view to show (Build, Results, etc.)
   const activeTab = searchParams.get("tab") || "questions";
 
+  // --- CORE DATA STATE ---
   const [quest, setQuest] = useState<Quest | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [responses, setResponses] = useState<Response[]>([]);
+  
+  // --- UI & INTERACTION STATE ---
+  const [activeId, setActiveId] = useState<string | null>(null); // Track the question being dragged
+  const [responses, setResponses] = useState<Response[]>([]); // Submission data for the Results tab
   const [isLoadingResponses, setIsLoadingResponses] = useState(false);
   const [responseSubTab, setResponseSubTab] = useState<"summary" | "question" | "individual">(
     "summary",
@@ -183,14 +212,18 @@ export default function QuestDetailPage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>("all");
   const [individualIndex, setIndividualIndex] = useState(0);
 
+  // --- MEDIA & BANNER STATE ---
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [showBannerUrlInput, setShowBannerUrlInput] = useState(false);
   const [bannerUrlInput, setBannerUrlInput] = useState("");
 
+  // --- AI CHAT STATE/LOGIC ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
+  // useChat links this page to the backend /api/chat route for conversational building.
   const { messages, sendMessage, status } = useChat({
     onFinish: async () => {
+      // Refresh the editor view once the AI finishes its tool calls (e.g. added questions)
       await loadQuestData();
     },
     onError: () => {
@@ -200,21 +233,32 @@ export default function QuestDetailPage() {
 
   const isChatLoading = status === "streaming" || status === "submitted";
 
+  /**
+   * Utility to copy text to the user's clipboard.
+   */
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard");
   };
 
+  /**
+   * Primary submission handler for the AI Chat Assistant.
+   * Sends the user's prompt to the backend along with the current quest ID context.
+   */
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim()) return;
 
-    // We need to pass the questId in the body for the request
-    // According to docs, sendMessage accepts ChatRequestOptions as second arg
+    // Pass the questId in the body so the backend can fetch the current state.
     await sendMessage({ text: input }, { body: { questId: id } });
     setInput("");
   };
 
+  /**
+   * Dnd-kit sensor configuration.
+   * Defines how drag-and-drop behaves (e.g. 8px distance before drag starts 
+   * to avoid accidental clicks on inputs).
+   */
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -226,6 +270,11 @@ export default function QuestDetailPage() {
     }),
   );
 
+  /**
+   * Effect: Primary Data Initialization
+   * Loads the quest metadata and its associated questions from the database.
+   * If the quest doesn't exist, we redirect the user back to the dashboard.
+   */
   useEffect(() => {
     async function loadQuest() {
       try {
@@ -243,7 +292,7 @@ export default function QuestDetailPage() {
         toast.error("Failed to load quest");
         router.push("/quests");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Stop the global loading spinner
       }
     }
     loadQuest();
@@ -268,8 +317,16 @@ export default function QuestDetailPage() {
     loadResponses();
   }, [id, activeTab]);
 
+  /**
+   * Adds a new question to the quest with optimistic UI updates.
+   * 
+   * @param {string} type - The question type to add.
+   * @param {number} [atIndex] - Optional index for insertion (defaults to end).
+   */
   const handleAddQuestion = async (type: string, atIndex?: number) => {
     const insertIndex = atIndex !== undefined ? atIndex : questions.length;
+    
+    // Create a temporary local object with a 'temp' ID to show the card immediately.
     const optimisticId = `temp-${Date.now()}`;
     const newQuestion = {
       id: optimisticId,
@@ -286,38 +343,54 @@ export default function QuestDetailPage() {
 
     const newQuestions = [...questions];
     newQuestions.splice(insertIndex, 0, newQuestion);
+    // Update local state and recalibrate orders
     setQuestions(newQuestions.map((q, i) => ({ ...q, order: i })));
 
     try {
+      // Step 2: Persist in database
       const created = await createQuestion(id as string, type, insertIndex);
+      // Replace the temp item with the real persistent item from the server
       setQuestions((prev) =>
         prev.map((q) => (q.id === optimisticId ? (created as unknown as Question) : q)),
       );
     } catch {
       toast.error("Failed to add question");
-      await loadQuestData(); // Rollback
+      await loadQuestData(); // Revert to server state on failure
     }
   };
 
+  /**
+   * Refreshes the entire quest dataset from the server.
+   * Used as a fallback after errors or after external tools (like AI) modify the quest.
+   */
   const loadQuestData = async () => {
     const data = await getQuestById(id as string);
     if (data) {
       setQuest(data as unknown as Quest);
       setQuestions((data.questions as unknown as Question[]) || []);
-      // Dispatch event to sync with header
+      // Sync other UI parts that depend on this quest (e.g., Header)
       window.dispatchEvent(new CustomEvent("quest-updated", { detail: data }));
     }
   };
 
+  /**
+   * Updates a single question's properties.
+   * Performs an immediate local state update for responsiveness.
+   */
   const handleUpdateQuestion = async (questionId: string, data: Partial<Question>) => {
     setQuestions((prev) => prev.map((q) => (q.id === questionId ? { ...q, ...data } : q)));
     try {
       await updateQuestion(questionId, id as string, data);
     } catch {
       toast.error("Failed to update question");
+      // Note: We don't rollback every keystroke to avoid jitter, 
+      // but substantial failures will show a toast.
     }
   };
 
+  /**
+   * Deletes a question and reflects it immediately in the UI.
+   */
   const handleDeleteQuestion = async (questionId: string) => {
     const original = [...questions];
     setQuestions((prev) => prev.filter((q) => q.id !== questionId));
@@ -325,15 +398,20 @@ export default function QuestDetailPage() {
       await deleteQuestion(questionId, id as string);
       toast.success("Question deleted");
     } catch {
+      // Rollback to original state if server-side deletion fails
       setQuestions(original);
       toast.error("Failed to delete question");
     }
   };
 
+  /**
+   * Creates an exact copy of a question.
+   */
   const handleDuplicateQuestion = async (questionId: string) => {
     try {
       await duplicateQuestion(questionId, id as string);
       toast.success("Question duplicated");
+      // Full reload to ensure all IDs and ordering are correctly synced
       await loadQuestData();
     } catch {
       toast.error("Failed to duplicate question");
@@ -344,11 +422,18 @@ export default function QuestDetailPage() {
     setActiveId(event.active.id as string);
   };
 
+  /**
+   * Called when a drag operation finishes.
+   * Handles two scenarios:
+   * 1. Sorting: Moving an existing question to a new position.
+   * 2. Insertion: Dragging a new question type from the toolbar into the quest flow.
+   */
   const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveId(null);
+    setActiveId(null); // Clear the active drag state
 
-    // Toolbar drop logic
+    // --- CASE 1: Toolbar Drop ---
+    // User dragged a 'skeleton' card from the side toolbar onto the builder canvas.
     if (active.data.current?.isToolbarItem) {
       if (over) {
         const overIndex = questions.findIndex((q) => q.id === over.id);
@@ -360,28 +445,35 @@ export default function QuestDetailPage() {
       return;
     }
 
-    // Sorting logic
+    // --- CASE 2: Rearranging ---
+    // User moved one existing question card above or below another.
     if (over && active.id !== over.id) {
       const oldIndex = questions.findIndex((q) => q.id === active.id);
       const newIndex = questions.findIndex((q) => q.id === over.id);
 
+      // Reorder locally using dnd-kit utility
       const newQuestions = arrayMove(questions, oldIndex, newIndex);
       setQuestions(newQuestions);
 
       try {
+        // Step 2: Push the new flat list of IDs to the database to persist order
         await updateQuestionsOrder(
           id as string,
           newQuestions.map((q) => q.id),
         );
       } catch {
         toast.error("Failed to update order");
-        await loadQuestData();
+        await loadQuestData(); // Rollback if server fails
       }
     }
   };
 
   const [newQuestionType, setNewQuestionType] = useState("SHORT_TEXT");
 
+  /**
+   * Handles individual banner image uploads for the quest theme.
+   * Uploads to Cloudinary and persists the URL in the Quest record.
+   */
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -398,6 +490,7 @@ export default function QuestDetailPage() {
         backgroundImageUrl: secureUrl,
       });
       setQuest(updated);
+      // Notify the layout/header that the quest metadata has changed (for logo/title sync)
       window.dispatchEvent(new CustomEvent("quest-updated", { detail: updated }));
       toast.success("Cover image updated");
     } catch (error) {
@@ -408,6 +501,9 @@ export default function QuestDetailPage() {
     }
   };
 
+  /**
+   * Updates the banner URL via a direct string input (e.g. Unsplash link).
+   */
   const handleBannerUrlSubmit = async () => {
     if (!bannerUrlInput.trim()) return;
     try {
@@ -423,6 +519,8 @@ export default function QuestDetailPage() {
     }
   };
 
+  // --- RENDERING LOGIC ---
+
   if (isLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
@@ -436,6 +534,7 @@ export default function QuestDetailPage() {
   return (
     <div className="bg-background relative flex min-h-screen flex-col">
       <div className="container mx-auto max-w-4xl px-6 py-4 lg:px-8">
+        {/* dnd-kit context wrap for the entire builder canvas */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -444,7 +543,7 @@ export default function QuestDetailPage() {
         >
           {activeTab === "questions" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 pb-40 duration-700">
-              {/* Banner / Cover Image Section */}
+              {/* SECTION: Banner / Cover Image */}
               <div className="group/banner-control relative mb-6">
                 {quest.backgroundImageUrl ? (
                   <div className="border-border/50 group/banner relative h-48 w-full overflow-hidden rounded-xl border shadow-sm sm:h-64">
@@ -456,7 +555,7 @@ export default function QuestDetailPage() {
                     />
                     <div className="from-background/80 absolute inset-0 bg-gradient-to-t to-transparent" />
 
-                    {/* Controls overlay */}
+                    {/* Controls: Visible only on hover */}
                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 transition-opacity group-hover/banner:opacity-100">
                       <Button
                         variant="secondary"
@@ -500,6 +599,7 @@ export default function QuestDetailPage() {
                     </div>
                   </div>
                 ) : (
+                  /* Empty State for Banner */
                   <div className="border-border/60 hover:border-primary/40 bg-accent/5 hover:bg-accent/10 group/add-banner flex w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed p-8 transition-all">
                     {showBannerUrlInput ? (
                       <div className="animate-in fade-in zoom-in-95 flex w-full max-w-md items-center gap-2">
@@ -568,9 +668,9 @@ export default function QuestDetailPage() {
                 )}
               </div>
 
-              {/* Welcome Card */}
+              {/* SECTION: Welcome Card (Quest Title and Description) */}
               <div className="border-border/50 bg-background group/welcome relative overflow-hidden rounded-lg border shadow-sm transition-all duration-300">
-                {/* Subtle top highlight */}
+                {/* Visual Flair: Animated gradient line */}
                 <div className="via-primary/10 absolute top-0 right-6 left-6 h-px bg-gradient-to-r from-transparent to-transparent" />
 
                 <div className="relative z-10 px-8 pt-6">
@@ -591,7 +691,7 @@ export default function QuestDetailPage() {
                               title: newTitle,
                             });
                             setQuest(updated);
-                            // Dispatch event to sync with the header
+                            // Sync global UI elements
                             window.dispatchEvent(
                               new CustomEvent("quest-updated", {
                                 detail: updated,
@@ -706,6 +806,8 @@ export default function QuestDetailPage() {
             </div>
           )}
 
+          {/* DRAG OVERLAY: Provides a visual ghost of the item being moved.
+              Prevents the UI from 'jumping' by rendering a proxy element at the cursor position. */}
           <DragOverlay
             dropAnimation={{
               sideEffects: defaultDropAnimationSideEffects({
@@ -719,8 +821,9 @@ export default function QuestDetailPage() {
           >
             {activeId ? (
               <div className="pointer-events-none scale-[1.02] overflow-hidden rounded-xl opacity-90 shadow-2xl">
-                {/* Toolbar preview also needs to match the rounded style ideally, but keeping it simple for now or matching if logic permits */}
+                {/* Branching logic for the overlay appearance */}
                 {activeId.startsWith("toolbar-") ? (
+                  /* If dragging from the toolbar: Show a 'New Question' placeholder */
                   <div className="bg-primary/5 border-primary/20 flex h-48 w-[600px] flex-col items-center justify-center rounded-xl border-2 border-dashed backdrop-blur-2xl">
                     <div className="bg-primary/10 mb-3 rounded-full p-4">
                       <Plus className="text-primary h-6 w-6" />
@@ -730,6 +833,7 @@ export default function QuestDetailPage() {
                     </p>
                   </div>
                 ) : (
+                  /* If dragging an existing question: Render the full QuestionCard */
                   <div className="bg-card border-primary/20 w-full max-w-4xl overflow-hidden rounded-xl border">
                     <QuestionCard
                       question={questions.find((q) => q.id === activeId)!}
@@ -744,6 +848,9 @@ export default function QuestDetailPage() {
           </DragOverlay>
         </DndContext>
 
+        {/* SECTION: RESULTS TAB
+            Visible only when the user switches to the 'Responses' view.
+            Provides analytics (summary) and individual submission audit. */}
         {activeTab === "responses" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-6xl space-y-8 pb-40 duration-700">
             {/* Stats Overview */}
@@ -1563,8 +1670,14 @@ export default function QuestDetailPage() {
           </div>
         )}
       </div>
+      {/* 
+        AI CHAT ASSISTANT (FLOATING PANEL) 
+        Provides a conversational interface for building and editing quests.
+        Integrates with the /api/chat endpoint which has access to quest-specific tools.
+      */}
       <div className="fixed right-8 bottom-8 z-50">
         {!isChatOpen && (
+          /* Floating Trigger Button */
           <Button
             onClick={() => setIsChatOpen(true)}
             size="lg"
@@ -1575,8 +1688,9 @@ export default function QuestDetailPage() {
         )}
 
         {isChatOpen && (
+          /* Expanded Chat Panel */
           <div className="bg-background/95 border-border animate-in fade-in slide-in-from-bottom-10 flex h-[660px] w-[440px] flex-col overflow-hidden rounded-3xl border shadow-2xl backdrop-blur-xl duration-300">
-            {/* Custom Header */}
+            {/* Panel Header */}
             <div className="bg-muted/20 flex flex-row items-center justify-between border-b p-5">
               <div className="flex items-center gap-3">
                 <div className="bg-primary/10 rounded-xl p-2.5">
@@ -1599,11 +1713,12 @@ export default function QuestDetailPage() {
               </Button>
             </div>
 
-            {/* Main Chat Area */}
+            {/* Main Chat Feed Area */}
             <div className="relative flex min-h-0 flex-1 flex-col">
               <Conversation className="h-full px-4">
                 <ConversationContent className="pt-4 pb-20">
                   {messages.length === 0 ? (
+                    /* Initial state */
                     <ConversationEmptyState
                       icon={<MessageSquare className="text-muted-foreground/40 size-10" />}
                       title="Ready to help"
@@ -1612,6 +1727,7 @@ export default function QuestDetailPage() {
                   ) : (
                     <>
                       {messages.map((message) => {
+                        // Extracting standard text and tool calls from the message parts array.
                         const parts = message.parts || [];
                         const toolParts = parts.filter(
                           (p): p is Extract<typeof p, { type: `tool-${string}` }> =>
@@ -1621,7 +1737,7 @@ export default function QuestDetailPage() {
                         return (
                           <Message from={message.role} key={message.id}>
                             <MessageContent>
-                              {/* Standard Text Content */}
+                              {/* RENDER: Standard Text Parts */}
                               {parts.map((part, i) => {
                                 if (part.type === "text") {
                                   return <MessageResponse key={i}>{part.text}</MessageResponse>;
@@ -1629,13 +1745,17 @@ export default function QuestDetailPage() {
                                 return null;
                               })}
 
-                              {/* Tool Execution Markers */}
+                              {/* RENDER: Tool Execution Indicators 
+                                  Shows the user what the AI is actually doing 'under the hood' 
+                                  (e.g., 'Creating 5 questions...'). */}
                               {toolParts.map((ti) => {
                                 const toolName =
                                   (ti as unknown as { toolName?: string }).toolName ??
                                   ti.type.replace("tool-", "");
                                 const toolCallId = ti.toolCallId;
                                 const toolState = ti.state;
+                                
+                                // Map tool names to human-friendly status messages
                                 let statusText = "";
                                 switch (toolName) {
                                   case "createQuestions": {
@@ -1670,6 +1790,7 @@ export default function QuestDetailPage() {
                                     className="mt-3 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase opacity-70"
                                   >
                                     {!toolState.startsWith("output") ? (
+                                      /* Tool is currently executing */
                                       <>
                                         <Loader className="h-3 w-3" />
                                         <span className="text-primary animate-pulse">
@@ -1677,6 +1798,7 @@ export default function QuestDetailPage() {
                                         </span>
                                       </>
                                     ) : (
+                                      /* Tool execution finished */
                                       <>
                                         <CheckCircle2 className="h-3 w-3 text-green-500" />
                                         <span className="text-muted-foreground">
@@ -1689,6 +1811,7 @@ export default function QuestDetailPage() {
                               })}
                             </MessageContent>
 
+                            {/* Assistant Actions: Copy to clipboard */}
                             {message.role === "assistant" && status !== "streaming" && (
                               <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100">
                                 <MessageAction
@@ -1711,14 +1834,14 @@ export default function QuestDetailPage() {
                     </>
                   )}
 
-                  {/* Typing Indicator / Tool Status */}
+                  {/* LOADING STATE: Mapping the most recent active tool to a status message. */}
                   {isChatLoading && (
                     <div className="text-muted-foreground mt-4 flex items-center gap-2 px-2 text-xs">
                       <Loader className="h-3.5 w-3.5" />
                       <TextShimmer className="text-muted-foreground font-semibold">
                         {(() => {
                           const activeTool = messages
-                            .slice(-3)
+                            .slice(-3) // Check recent messages
                             .reverse()
                             .flatMap((m) => {
                               return (m.parts || [])
@@ -1768,7 +1891,7 @@ export default function QuestDetailPage() {
               </Conversation>
             </div>
 
-            {/* Input Footer */}
+            {/* Chat Input Bar */}
             <div className="bg-muted/10 border-t p-5 backdrop-blur-md">
               <form
                 onSubmit={(e) => {

@@ -1,3 +1,9 @@
+/**
+ * This module provides the visual branding components for the application.
+ * It includes both the raw SVG icon and a combined logo with text for use in 
+ * headers and marketing materials.
+ */
+
 import React, { SVGProps } from "react";
 
 // 1. Define the props interface for type safety.

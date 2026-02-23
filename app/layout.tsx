@@ -1,7 +1,14 @@
+/**
+ * The Root Layout is the top-level wrapper for the entire application.
+ * It configures global concerns such as fonts, metadata, and systemic providers 
+ * (Theme, Toast) that must be present on every page.
+ */
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+// Configure Geist Sans and Mono fonts from Google Fonts for a modern, clean typography.
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -12,6 +19,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/**
+ * Global Metadata for SEO and browser tab configuration.
+ */
 export const metadata: Metadata = {
   title: "Quest - The Intelligent Form Builder",
   description:
@@ -48,6 +58,9 @@ export const metadata: Metadata = {
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
+/**
+ * The RootLayout component wraps all pages in the app.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -56,6 +69,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Enable dark/light mode switching using the ThemeProvider */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -63,6 +77,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          {/* Global toast notification system */}
           <Toaster />
         </ThemeProvider>
       </body>

@@ -1,3 +1,10 @@
+/**
+ * The QuestionCard component is the primary unit of the Quest Builder.
+ * It allows users to define the title, type, and specific settings for each question.
+ * It handles its own internal state for UX (focus, uploading) and communicates 
+ * changes back to the parent quest via the 'onUpdate' callback.
+ */
+
 "use client";
 
 import { useSortable } from "@dnd-kit/sortable";
@@ -20,7 +27,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import NextImage from "next/image";
 
+// Predefined set of question types supported by the builder.
 const TYPE_OPTIONS = [
   { id: "SHORT_TEXT", label: "Short Text" },
   { id: "PARAGRAPH", label: "Paragraph" },
@@ -33,8 +42,15 @@ const TYPE_OPTIONS = [
   { id: "IMAGE", label: "Image" },
 ];
 
-import NextImage from "next/image";
-
+/**
+ * Interface and Component Definition for QuestionCard.
+ * 
+ * @param {Object} question - The database entity for the question.
+ * @param {Function} onDelete - Triggered when the user deletes the card.
+ * @param {Function} onUpdate - Triggered when any field (title, type, etc.) is changed.
+ * @param {Function} onDuplicate - Triggered when the card is copied.
+ * @param {boolean} [isQuiz] - If true, enables points and correct answer settings.
+ */
 export function QuestionCard({
   question,
   onDelete,
@@ -58,9 +74,14 @@ export function QuestionCard({
   onDuplicate: () => void;
   isQuiz?: boolean;
 }) {
+  // Local state for UI feedback (highlights and loading spinners)
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  /**
+   * Handles media file uploads (Images/Videos) for specific question types.
+   * Uploads to Cloudinary and updates the question's primary content field (the first entry in 'options').
+   */
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "IMAGE" | "VIDEO",
@@ -68,6 +89,7 @@ export function QuestionCard({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Client-side size validation before starting the upload
     if (type === "IMAGE" && file.size > 2 * 1024 * 1024) {
       toast.error("Image size too large. Max 2MB allowed.");
       return;
@@ -79,6 +101,7 @@ export function QuestionCard({
 
     setIsUploading(true);
     try {
+      // Direct client-side upload via our secure helper
       const { secureUrl } = await uploadFileToCloudinary(file);
       onUpdate({ options: [secureUrl] });
       toast.success(`${type === "IMAGE" ? "Image" : "Video"} uploaded successfully`);
@@ -90,6 +113,7 @@ export function QuestionCard({
     }
   };
 
+  // Drag-and-drop integration using @dnd-kit
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: question.id,
   });
@@ -99,20 +123,29 @@ export function QuestionCard({
     transition,
   };
 
+  /**
+   * Updates the question type and initializes defaults if switching to a choice-based type.
+   */
   const handleTypeChange = (newType: string) => {
     const data: Record<string, unknown> = { type: newType };
     const isChoiceType = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(newType);
+    
+    // Automatically add a placeholder option if the new type requires them.
     if (isChoiceType && (!question.options || question.options.length === 0)) {
       data.options = ["Option 1"];
     }
     onUpdate(data);
   };
 
+  // Utility helpers to handle polymorphic 'option' structure (can be string or object with image)
   const getOptionValue = (opt: string | { value: string; image?: string }) =>
     typeof opt === "object" && opt !== null ? opt.value || "" : opt;
   const getOptionImage = (opt: string | { value: string; image?: string }) =>
     typeof opt === "object" && opt !== null ? opt.image : null;
 
+  /**
+   * Handles uploading a smaller image thumbnail for an individual choice option.
+   */
   const handleOptionUpload = async (file: File, index: number) => {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
@@ -126,6 +159,7 @@ export function QuestionCard({
       const newOptions = [...(question.options || [])];
       const current = newOptions[index];
       const currentValue = getOptionValue(current);
+      // Store the option as an object to include the image URL
       newOptions[index] = { value: currentValue, image: secureUrl };
       onUpdate({ options: newOptions });
       toast.success("Image added to option");
@@ -136,12 +170,13 @@ export function QuestionCard({
     }
   };
 
+  /**
+   * Removes an image from a choice option and reverts the field to a simple string.
+   */
   const removeOptionImage = (index: number) => {
     const newOptions = [...(question.options || [])];
     const current = newOptions[index];
     const currentValue = getOptionValue(current);
-    // We can revert to string if we want, or keep object with null image
-    // Reverting to string is cleaner for data if no image
     newOptions[index] = currentValue;
     onUpdate({ options: newOptions });
   };
@@ -165,12 +200,14 @@ export function QuestionCard({
             : "hover:border-border/60 hover:shadow-sm",
         )}
       >
-        {/* Subtle top highlight */}
+        {/* Visual flair: Subtle top highlight line */}
         <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
 
+        {/* Card Header: Question Type Selector and Delete Action */}
         <div className="text-muted-foreground relative z-10 flex flex-row items-center justify-between px-4 pt-3">
           <div className="flex items-center gap-3">
             <Select value={question.type} onValueChange={handleTypeChange}>
+              {/* Note: stopPropagation prevents the drag-and-drop listener from hijacking clicks on the dropdown */}
               <SelectTrigger
                 onPointerDown={(e) => e.stopPropagation()}
                 className="hover:bg-primary/5 group/trigger bg-background h-auto w-fit cursor-pointer gap-3 rounded-none border-none px-4 py-2 shadow-none transition-all outline-none focus:ring-0"
@@ -213,6 +250,7 @@ export function QuestionCard({
           </div>
         </div>
 
+        {/* Main Content: Title and Description Inputs */}
         <div className="relative z-10 mt-1 space-y-2 px-4 pb-4">
           <Input
             value={question.title}
@@ -233,6 +271,7 @@ export function QuestionCard({
             className="text-muted-foreground/70 placeholder:text-muted-foreground/15 min-h-[40px] resize-none rounded-none border-none bg-transparent p-2 text-sm leading-relaxed font-medium shadow-none transition-all focus:border-none focus:ring-0 focus:outline-none focus-visible:border-none focus-visible:ring-0"
           />
 
+          {/* Settings Bar: Required toggle and Duplicate action */}
           <div className="border-border/10 flex items-center justify-end gap-6 border-t pt-2">
             <div className="flex items-center gap-3">
               <Label
@@ -262,7 +301,9 @@ export function QuestionCard({
             </Button>
           </div>
 
-          {/* Type Specific Fields */}
+          {/* TYPE-SPECIFIC FIELDS: Rendered dynamically based on the selected question type */}
+          
+          {/* 1. Choice-based Fields (Multiple Choice, Checkboxes, Dropdown) */}
           {(question.type === "MULTIPLE_CHOICE" ||
             question.type === "CHECKBOXES" ||
             question.type === "DROPDOWN") && (
@@ -278,6 +319,7 @@ export function QuestionCard({
                       className="animate-in fade-in slide-in-from-left-2 group/option flex flex-col gap-2 duration-300"
                     >
                       <div className="flex items-center gap-4">
+                        {/* Visual indicator (Circle for radio, Square for checkbox) */}
                         <div
                           className={cn(
                             "border-muted-foreground/20 group-hover/option:border-primary/40 h-4 w-4 shrink-0 rounded-full border-2 shadow-sm transition-colors",
@@ -305,7 +347,7 @@ export function QuestionCard({
                           className="placeholder:text-muted-foreground/20 h-8 flex-1 rounded-none border-none bg-transparent px-2 text-sm font-bold shadow-none transition-all focus-visible:border-none focus-visible:ring-0"
                         />
 
-                        {/* Option Image Controls */}
+                        {/* Option Image Controls (allows adding images to individual options) */}
                         {(question.type === "MULTIPLE_CHOICE" ||
                           question.type === "CHECKBOXES") && (
                           <div className="flex items-center gap-1">
@@ -338,6 +380,7 @@ export function QuestionCard({
                           </div>
                         )}
 
+                        {/* Quiz Logic: Marking an option as the correct answer */}
                         {isQuiz && (
                           <Button
                             variant="ghost"
@@ -371,6 +414,7 @@ export function QuestionCard({
                           </Button>
                         )}
 
+                        {/* Remove Option Button */}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -388,7 +432,7 @@ export function QuestionCard({
                         </Button>
                       </div>
 
-                      {/* Render Option Image Preview */}
+                      {/* Render Option Image Preview if one exists */}
                       {optionImage && (
                         <div className="group/img relative ml-8 w-full max-w-sm">
                           <NextImage
@@ -412,6 +456,7 @@ export function QuestionCard({
                   );
                 },
               )}
+              {/* Add New Option Button */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -431,6 +476,7 @@ export function QuestionCard({
             </div>
           )}
 
+          {/* 2. Video Field: Supports URLs and direct uploads */}
           {question.type === "VIDEO" && (
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-4 duration-300">
@@ -474,7 +520,7 @@ export function QuestionCard({
                 </div>
               </div>
 
-              {/* Draft Preview of the video in the editor */}
+              {/* Video Preview: Correctly handles YouTube embeds vs direct HTML5 video tags */}
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                   {(() => {
@@ -523,6 +569,7 @@ export function QuestionCard({
             </div>
           )}
 
+          {/* 3. Image Field: Supports URLs and direct uploads */}
           {question.type === "IMAGE" && (
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-3 duration-300">
@@ -566,7 +613,7 @@ export function QuestionCard({
                 </div>
               </div>
 
-              {/* Image Preview */}
+              {/* Main Image Preview */}
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 group/preview relative mt-4 flex max-h-[400px] items-center justify-center overflow-hidden rounded-xl border">
                   <NextImage
