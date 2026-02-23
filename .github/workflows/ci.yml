@@ -52,7 +52,7 @@ jobs:
         run: bun run test
 
       - name: Install Playwright Browsers
-        run: bun x playwright install --with-deps
+        run: npx playwright install --with-deps
 
       - name: Run E2E Tests
         run: bun run test:e2e
