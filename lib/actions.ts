@@ -31,7 +31,7 @@ export async function createQuest(title: string = "Untitled Quest", backgroundIm
     throw new Error("Unauthorized");
   }
 
-  // Database creation
+  // Database creation program
   const quest = await prisma.quest.create({
     data: {
       title,
