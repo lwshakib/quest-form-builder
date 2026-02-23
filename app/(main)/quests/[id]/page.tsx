@@ -109,7 +109,7 @@ import {
 } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
-interface Question {
+type Question = {
   id: string;
   type: string;
   title: string;
@@ -117,10 +117,10 @@ interface Question {
   order: number;
   required: boolean;
   options?: string[];
-  correctAnswer?: string | string[] | null;
+  correctAnswer?: string | string[];
   points?: number;
-  feedback?: string | null;
-}
+  feedback?: string;
+};
 
 interface Quest {
   id: string;
@@ -187,8 +187,9 @@ export default function QuestDetailPage() {
   const [showBannerUrlInput, setShowBannerUrlInput] = useState(false);
   const [bannerUrlInput, setBannerUrlInput] = useState("");
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { sendMessage, status } = useChat({
+  const { messages, sendMessage, status } = useChat({
     onFinish: async () => {
       await loadQuestData();
     },
@@ -197,14 +198,12 @@ export default function QuestDetailPage() {
     },
   });
 
-  // const isChatLoading = status === "streaming" || status === "submitted";
+  const isChatLoading = status === "streaming" || status === "submitted";
 
-  /*
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard");
   };
-  */
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -291,7 +290,7 @@ export default function QuestDetailPage() {
 
     try {
       const created = await createQuestion(id as string, type, insertIndex);
-      setQuestions((prev) => prev.map((q) => (q.id === optimisticId ? created : q)));
+      setQuestions((prev) => prev.map((q) => (q.id === optimisticId ? (created as unknown as Question) : q)));
     } catch {
       toast.error("Failed to add question");
       await loadQuestData(); // Rollback
@@ -731,7 +730,7 @@ export default function QuestDetailPage() {
                 ) : (
                   <div className="bg-card border-primary/20 w-full max-w-4xl overflow-hidden rounded-xl border">
                     <QuestionCard
-                      question={questions.find((q) => q.id === activeId)}
+                      question={questions.find((q) => q.id === activeId)!}
                       onDelete={() => {}}
                       onUpdate={() => {}}
                       onDuplicate={() => {}}
@@ -1168,7 +1167,7 @@ export default function QuestDetailPage() {
                         </CardHeader>
                         <CardContent className="space-y-8 p-8">
                           {responses[individualIndex].answers.map((answer) => (
-                            <div key={answer.id} className="space-y-2">
+                            <div key={answer.questionId} className="space-y-2">
                               <h4 className="text-muted-foreground/70 text-sm font-bold tracking-wider uppercase">
                                 {answer.question.title}
                               </h4>
@@ -1185,7 +1184,7 @@ export default function QuestDetailPage() {
                                     ))}
                                   </div>
                                 ) : (
-                                  answer.value || (
+                                  (answer.value as string) || (
                                     <span className="text-muted-foreground/50 italic">
                                       No answer provided
                                     </span>
@@ -1607,7 +1606,10 @@ export default function QuestDetailPage() {
                     <>
                       {messages.map((message) => {
                         const parts = message.parts || [];
-                        const toolInvocations = message.toolInvocations || [];
+                        const toolParts = parts.filter(
+                          (p): p is Extract<typeof p, { type: `tool-${string}` }> =>
+                            typeof p.type === "string" && p.type.startsWith("tool-"),
+                        );
 
                         return (
                           <Message from={message.role} key={message.id}>
@@ -1621,19 +1623,22 @@ export default function QuestDetailPage() {
                               })}
 
                               {/* Tool Execution Markers */}
-                              {toolInvocations.map((ti) => {
-                                const toolName = ti.toolName;
+                              {toolParts.map((ti) => {
+                                const toolName = (ti as unknown as { toolName?: string }).toolName ?? ti.type.replace("tool-", "");
+                                const toolCallId = ti.toolCallId;
+                                const toolState = ti.state;
                                 let statusText = "";
                                 switch (toolName) {
-                                  case "createQuestions":
+                                  case "createQuestions": {
                                     const qCount =
-                                      (ti.args as { questions?: unknown[] })?.questions?.length ||
-                                      0;
+                                      ((ti as unknown as { args?: { questions?: unknown[] } }).args
+                                        ?.questions?.length) || 0;
                                     statusText =
                                       qCount === 1
                                         ? "Creating question"
                                         : `Creating ${qCount} questions`;
                                     break;
+                                  }
                                   case "updateQuestion":
                                     statusText = "Updating question";
                                     break;
@@ -1652,10 +1657,10 @@ export default function QuestDetailPage() {
 
                                 return (
                                   <div
-                                    key={ti.toolCallId}
+                                    key={toolCallId}
                                     className="mt-3 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase opacity-70"
                                   >
-                                    {ti.state === "call" ? (
+                                    {!toolState.startsWith("output") ? (
                                       <>
                                         <Loader className="h-3 w-3" />
                                         <span className="text-primary animate-pulse">
@@ -1707,26 +1712,18 @@ export default function QuestDetailPage() {
                             .slice(-3)
                             .reverse()
                             .flatMap((m) => {
-                              const toolInvocations = m.toolInvocations || [];
-                              const toolParts =
-                                m.parts
-                                  ?.filter(
-                                    (p) =>
-                                      p.type === "tool-invocation" || p.type.startsWith("tool-"),
-                                  )
-                                  .map((p) => {
-                                    if (p.type === "tool-invocation") {
-                                      return p.toolInvocation;
-                                    }
-                                    return {
-                                      toolName: p.type.replace("tool-", ""),
-                                      state: "call",
-                                      args: (p as { input?: unknown }).input,
-                                    };
-                                  }) || [];
-                              return [...toolInvocations, ...toolParts];
+                              return (m.parts || [])
+                                .filter(
+                                  (p): p is Extract<typeof p, { type: `tool-${string}` }> =>
+                                    typeof p.type === "string" && p.type.startsWith("tool-"),
+                                )
+                                .map((p) => ({
+                                  toolName: (p as unknown as { toolName?: string }).toolName ?? p.type.replace("tool-", ""),
+                                  state: p.state,
+                                  args: (p as unknown as { input?: unknown }).input,
+                                }));
                             })
-                            .find((ti) => ti.state === "call");
+                            .find((ti) => !ti.state.startsWith("output"));
 
                           if (activeTool) {
                             const toolName = activeTool.toolName;
