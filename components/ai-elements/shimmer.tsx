@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import React, { type CSSProperties, type ElementType, type JSX, memo, useMemo } from "react";
+import React, { type CSSProperties, type ElementType, memo, useMemo } from "react";
 
 export type TextShimmerProps = {
   children: string;
@@ -12,11 +12,13 @@ export type TextShimmerProps = {
   spread?: number;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const motionCache = new Map<ElementType, any>();
 
 const getMotionComponent = (Component: ElementType) => {
   if (!motionCache.has(Component)) {
-    motionCache.set(Component, motion.create(Component));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    motionCache.set(Component, motion.create(Component as any));
   }
   return motionCache.get(Component);
 };

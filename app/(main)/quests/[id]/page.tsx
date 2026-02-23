@@ -290,7 +290,9 @@ export default function QuestDetailPage() {
 
     try {
       const created = await createQuestion(id as string, type, insertIndex);
-      setQuestions((prev) => prev.map((q) => (q.id === optimisticId ? (created as unknown as Question) : q)));
+      setQuestions((prev) =>
+        prev.map((q) => (q.id === optimisticId ? (created as unknown as Question) : q)),
+      );
     } catch {
       toast.error("Failed to add question");
       await loadQuestData(); // Rollback
@@ -906,14 +908,16 @@ export default function QuestDetailPage() {
 
                             {["SHORT_TEXT", "PARAGRAPH", "DATE", "TIME"].includes(q.type) ? (
                               <div className="custom-scrollbar max-h-[300px] space-y-4 overflow-y-auto pr-2">
-                                {(answers as string[]).slice(0, 50).map((ans: string, idx: number) => (
-                                  <div
-                                    key={idx}
-                                    className="bg-background border-border/50 text-foreground/80 rounded-lg border p-3 text-sm"
-                                  >
-                                    {ans}
-                                  </div>
-                                ))}
+                                {(answers as string[])
+                                  .slice(0, 50)
+                                  .map((ans: string, idx: number) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-background border-border/50 text-foreground/80 rounded-lg border p-3 text-sm"
+                                    >
+                                      {ans}
+                                    </div>
+                                  ))}
                               </div>
                             ) : (
                               <div className="flex flex-col items-start gap-8 sm:flex-row">
@@ -939,7 +943,9 @@ export default function QuestDetailPage() {
                                           className="fill-foreground font-bold"
                                           stroke="none"
                                           fontSize={12}
-                                          formatter={(value: string | number | boolean | null | undefined) => {
+                                          formatter={(
+                                            value: string | number | boolean | null | undefined,
+                                          ) => {
                                             if (value == null) return "";
                                             if (typeof value !== "string") return value.toString();
                                             const label = chartConfig[value]?.label;
@@ -1531,7 +1537,8 @@ export default function QuestDetailPage() {
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. This will permanently delete the quest
-                        <strong> &quot;{quest.title}&quot;</strong> and all of its associated responses.
+                        <strong> &quot;{quest.title}&quot;</strong> and all of its associated
+                        responses.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -1624,15 +1631,17 @@ export default function QuestDetailPage() {
 
                               {/* Tool Execution Markers */}
                               {toolParts.map((ti) => {
-                                const toolName = (ti as unknown as { toolName?: string }).toolName ?? ti.type.replace("tool-", "");
+                                const toolName =
+                                  (ti as unknown as { toolName?: string }).toolName ??
+                                  ti.type.replace("tool-", "");
                                 const toolCallId = ti.toolCallId;
                                 const toolState = ti.state;
                                 let statusText = "";
                                 switch (toolName) {
                                   case "createQuestions": {
                                     const qCount =
-                                      ((ti as unknown as { args?: { questions?: unknown[] } }).args
-                                        ?.questions?.length) || 0;
+                                      (ti as unknown as { args?: { questions?: unknown[] } }).args
+                                        ?.questions?.length || 0;
                                     statusText =
                                       qCount === 1
                                         ? "Creating question"
@@ -1718,7 +1727,9 @@ export default function QuestDetailPage() {
                                     typeof p.type === "string" && p.type.startsWith("tool-"),
                                 )
                                 .map((p) => ({
-                                  toolName: (p as unknown as { toolName?: string }).toolName ?? p.type.replace("tool-", ""),
+                                  toolName:
+                                    (p as unknown as { toolName?: string }).toolName ??
+                                    p.type.replace("tool-", ""),
                                   state: p.state,
                                   args: (p as unknown as { input?: unknown }).input,
                                 }));

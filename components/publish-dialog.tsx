@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
-  Share2,
   Globe,
   BellOff,
   Link as LinkIcon,

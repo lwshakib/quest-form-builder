@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Zap,
-  Layout,
-  Sparkles,
-  Smartphone,
-  ShieldCheck,
-  BarChart3,
-} from "lucide-react";
+import { Zap, Layout, Sparkles, Smartphone, ShieldCheck, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const features = [

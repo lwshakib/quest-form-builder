@@ -12,7 +12,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-async function generateImage(template: any) {
+async function generateImage(template: (typeof TEMPLATES)[number]) {
   let styleSpecifics = "";
   if (template.id === "t-shirt-signup")
     styleSpecifics =
@@ -65,7 +65,7 @@ async function generateImage(template: any) {
       return;
     }
 
-    const data = (await response.json()) as any;
+    const data = (await response.json()) as { data?: { b64_json?: string }[] };
     const base64Image = data.data?.[0]?.b64_json;
 
     if (!base64Image) {

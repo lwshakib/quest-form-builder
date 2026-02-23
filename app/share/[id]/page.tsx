@@ -17,12 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Loader2,
-  CheckCircle2,
-  Send,
-  Check,
-} from "lucide-react";
+import { Loader2, CheckCircle2, Send, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
@@ -252,8 +247,8 @@ export default function ShareQuestPage() {
           </div>
           <h1 className="text-4xl font-bold tracking-tight">Quest Not Available</h1>
           <p className="text-muted-foreground text-lg leading-relaxed font-medium">
-            This quest doesn&apos;t exist, is no longer accepting responses, or has been unpublished by
-            Creator.
+            This quest doesn&apos;t exist, is no longer accepting responses, or has been unpublished
+            by Creator.
           </p>
           <div className="pt-8">
             <Button
@@ -451,48 +446,49 @@ export default function ShareQuestPage() {
                             const label = isComplex ? option.value : (option as string);
                             const image = isComplex ? option.image : null;
 
-                          return (
-                            <Label
-                              key={label}
-                              htmlFor={`${q.id}-${label}`}
-                              className={cn(
-                                "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
-                                answers[q.id] === label && "border-primary/40 bg-primary/5",
-                              )}
-                            >
-                              {image && (
-                                <div className="bg-accent/5 relative aspect-video w-full overflow-hidden border-b border-border/40">
-                                  <Image
-                                    src={image}
-                                    alt={label}
-                                    fill
-                                    className="object-contain transition-transform duration-500 hover:scale-105"
+                            return (
+                              <Label
+                                key={label}
+                                htmlFor={`${q.id}-${label}`}
+                                className={cn(
+                                  "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
+                                  answers[q.id] === label && "border-primary/40 bg-primary/5",
+                                )}
+                              >
+                                {image && (
+                                  <div className="bg-accent/5 border-border/40 relative aspect-video w-full overflow-hidden border-b">
+                                    <Image
+                                      src={image}
+                                      alt={label}
+                                      fill
+                                      className="object-contain transition-transform duration-500 hover:scale-105"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex w-full items-start gap-4 p-4">
+                                  <RadioGroupItem
+                                    value={label}
+                                    id={`${q.id}-${label}`}
+                                    className="absolute h-0 w-0 opacity-0"
                                   />
+                                  <div
+                                    className={cn(
+                                      "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                                      answers[q.id] === label && "border-primary",
+                                    )}
+                                  >
+                                    {answers[q.id] === label && (
+                                      <div className="bg-primary animate-in zoom-in h-2.5 w-2.5 rounded-full duration-200" />
+                                    )}
+                                  </div>
+                                  <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
+                                    {label}
+                                  </span>
                                 </div>
-                              )}
-                              <div className="flex w-full items-start gap-4 p-4">
-                                <RadioGroupItem
-                                  value={label}
-                                  id={`${q.id}-${label}`}
-                                  className="absolute h-0 w-0 opacity-0"
-                                />
-                                <div
-                                  className={cn(
-                                    "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-                                    answers[q.id] === label && "border-primary",
-                                  )}
-                                >
-                                  {answers[q.id] === label && (
-                                    <div className="bg-primary animate-in zoom-in h-2.5 w-2.5 rounded-full duration-200" />
-                                  )}
-                                </div>
-                                <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
-                                  {label}
-                                </span>
-                              </div>
-                            </Label>
-                          );
-                        })}
+                              </Label>
+                            );
+                          },
+                        )}
                       </RadioGroup>
                     )}
 
@@ -505,46 +501,47 @@ export default function ShareQuestPage() {
                             const image = isComplex ? option.image : null;
                             const isChecked = ((answers[q.id] as string[]) || []).includes(label);
 
-                          return (
-                            <Label
-                              key={label}
-                              htmlFor={`${q.id}-${label}`}
-                              className={cn(
-                                "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
-                                isChecked && "border-primary/40 bg-primary/5",
-                              )}
-                            >
-                              {image && (
-                                <div className="border-border/40 relative aspect-video w-full overflow-hidden border-b bg-accent/5">
-                                  <Image src={image} alt={label} fill className="object-cover" />
+                            return (
+                              <Label
+                                key={label}
+                                htmlFor={`${q.id}-${label}`}
+                                className={cn(
+                                  "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
+                                  isChecked && "border-primary/40 bg-primary/5",
+                                )}
+                              >
+                                {image && (
+                                  <div className="border-border/40 bg-accent/5 relative aspect-video w-full overflow-hidden border-b">
+                                    <Image src={image} alt={label} fill className="object-cover" />
+                                  </div>
+                                )}
+                                <div className="flex w-full items-start gap-4 p-4">
+                                  <Checkbox
+                                    id={`${q.id}-${label}`}
+                                    className="absolute h-0 w-0 opacity-0"
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) =>
+                                      handleCheckboxChange(q.id, label, checked as boolean)
+                                    }
+                                  />
+                                  <div
+                                    className={cn(
+                                      "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
+                                      isChecked && "bg-primary border-primary",
+                                    )}
+                                  >
+                                    {isChecked && (
+                                      <Check className="text-primary-foreground animate-in zoom-in h-3.5 w-3.5 duration-200" />
+                                    )}
+                                  </div>
+                                  <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
+                                    {label}
+                                  </span>
                                 </div>
-                              )}
-                              <div className="flex w-full items-start gap-4 p-4">
-                                <Checkbox
-                                  id={`${q.id}-${label}`}
-                                  className="absolute h-0 w-0 opacity-0"
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) =>
-                                    handleCheckboxChange(q.id, label, checked as boolean)
-                                  }
-                                />
-                                <div
-                                  className={cn(
-                                    "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
-                                    isChecked && "bg-primary border-primary",
-                                  )}
-                                >
-                                  {isChecked && (
-                                    <Check className="text-primary-foreground animate-in zoom-in h-3.5 w-3.5 duration-200" />
-                                  )}
-                                </div>
-                                <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
-                                  {label}
-                                </span>
-                              </div>
-                            </Label>
-                          );
-                        })}
+                              </Label>
+                            );
+                          },
+                        )}
                       </div>
                     )}
 
@@ -558,12 +555,13 @@ export default function ShareQuestPage() {
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
                         <SelectContent className="border-border/60 bg-background rounded-xl border shadow-xl">
-                          {((q.options as (string | { value: string; image?: string })[]) || []).map(
-                            (option) => {
-                              const label =
-                                typeof option === "object" && option !== null
-                                  ? option.value
-                                  : (option as string);
+                          {(
+                            (q.options as (string | { value: string; image?: string })[]) || []
+                          ).map((option) => {
+                            const label =
+                              typeof option === "object" && option !== null
+                                ? option.value
+                                : (option as string);
                             return (
                               <SelectItem
                                 key={label}

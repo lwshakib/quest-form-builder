@@ -100,11 +100,13 @@ const addDefaultVariants = (variants: Variants) => ({
   visible: { ...defaultItemVariants.visible, ...variants.visible },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const motionCache = new Map<React.ElementType, any>();
 
 function getMotionComponent(as: React.ElementType) {
   if (!motionCache.has(as)) {
-    motionCache.set(as, motion.create(as));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    motionCache.set(as, motion.create(as as any));
   }
   return motionCache.get(as);
 }

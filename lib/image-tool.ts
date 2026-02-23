@@ -84,7 +84,7 @@ export const generateImageTool = tool({
               folder: "quest-backgrounds",
               resource_type: "image",
             },
-            (error: any, result: any) => {
+            (error, result) => {
               if (error) {
                 reject(error);
               } else if (result) {

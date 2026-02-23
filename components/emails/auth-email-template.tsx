@@ -46,8 +46,8 @@ export const AuthEmailTemplate = ({ type, url }: AuthEmailTemplateProps) => {
               </Button>
             </Section>
             <Text style={subtext}>
-              If you&apos;re having trouble clicking the button, copy and paste the URL below into your
-              web browser:
+              If you&apos;re having trouble clicking the button, copy and paste the URL below into
+              your web browser:
             </Text>
             <Link href={url} style={link}>
               {url}

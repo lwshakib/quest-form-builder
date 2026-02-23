@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, PaperclipIcon } from "lucide-react";
 import type { ComponentProps } from "react";
+import NextImage from "next/image";
 
 export type QueueMessagePart = {
   type: string;
@@ -125,15 +126,17 @@ export const QueueItemAttachment = ({ className, ...props }: QueueItemAttachment
   <div className={cn("mt-1 flex flex-wrap gap-2", className)} {...props} />
 );
 
-export type QueueItemImageProps = ComponentProps<"img">;
+export type QueueItemImageProps = Omit<ComponentProps<"img">, "width" | "height">;
 
-export const QueueItemImage = ({ className, ...props }: QueueItemImageProps) => (
-  <img
-    alt=""
+export const QueueItemImage = ({ className, src, ...props }: QueueItemImageProps) => (
+  <NextImage
+    alt={props.alt || ""}
     className={cn("h-8 w-8 rounded border object-cover", className)}
     height={32}
     width={32}
+    src={src as string}
     {...props}
+    unoptimized
   />
 );
 

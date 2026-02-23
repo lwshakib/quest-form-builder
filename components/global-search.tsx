@@ -84,7 +84,9 @@ export function GlobalSearch() {
               </div>
             ) : results.quests.length === 0 && results.templates.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-muted-foreground text-sm">No matches found for &quot;{query}&quot;</p>
+                <p className="text-muted-foreground text-sm">
+                  No matches found for &quot;{query}&quot;
+                </p>
               </div>
             ) : (
               <div className="space-y-4 p-2">

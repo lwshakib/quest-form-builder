@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,10 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
-import { Loader2, Mail, CheckCircle2, ArrowLeft, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { Loader2, Mail, ArrowLeft, ExternalLink } from "lucide-react";
+import { motion } from "motion/react";
 
 export function SignUpForm({ className, ...props }: React.ComponentProps<"form">) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

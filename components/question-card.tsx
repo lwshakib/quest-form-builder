@@ -2,29 +2,13 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  GripVertical,
-  Trash2,
-  Type,
-  List,
-  CheckSquare,
-  ChevronDown,
-  Calendar,
-  Clock,
-  AlignLeft,
-  Plus,
-  Video,
-  Award,
-  MessageCircle,
-  CheckCircle2,
-  Copy,
-} from "lucide-react";
+import { Trash2, Plus, Award, MessageCircle, CheckCircle2, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Image as ImageIcon, Video as VideoIcon, Upload, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Upload, Loader2 } from "lucide-react";
 import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
 import { toast } from "sonner";
 import {
@@ -49,17 +33,8 @@ const TYPE_OPTIONS = [
   { id: "IMAGE", label: "Image" },
 ];
 
-const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  SHORT_TEXT: Type,
-  PARAGRAPH: AlignLeft,
-  MULTIPLE_CHOICE: List,
-  CHECKBOXES: CheckSquare,
-  DROPDOWN: ChevronDown,
-  DATE: Calendar,
-  TIME: Clock,
-  VIDEO: Video,
-  IMAGE: ImageIcon,
-};
+import NextImage from "next/image";
+
 export function QuestionCard({
   question,
   onDelete,
@@ -85,7 +60,6 @@ export function QuestionCard({
 }) {
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const Icon = TYPE_ICONS[question.type] || Type;
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -155,7 +129,7 @@ export function QuestionCard({
       newOptions[index] = { value: currentValue, image: secureUrl };
       onUpdate({ options: newOptions });
       toast.success("Image added to option");
-    } catch (e) {
+    } catch {
       toast.error("Failed to upload option image");
     } finally {
       setIsUploading(false);
@@ -293,145 +267,151 @@ export function QuestionCard({
             question.type === "CHECKBOXES" ||
             question.type === "DROPDOWN") && (
             <div className="space-y-3 pt-4">
-              {question.options?.map((option: string | { value: string; image?: string }, index: number) => {
-                const optionText = getOptionValue(option);
-                const optionImage = getOptionImage(option);
+              {question.options?.map(
+                (option: string | { value: string; image?: string }, index: number) => {
+                  const optionText = getOptionValue(option);
+                  const optionImage = getOptionImage(option);
 
-                return (
-                  <div
-                    key={index}
-                    className="animate-in fade-in slide-in-from-left-2 group/option flex flex-col gap-2 duration-300"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          "border-muted-foreground/20 group-hover/option:border-primary/40 h-4 w-4 shrink-0 rounded-full border-2 shadow-sm transition-colors",
-                          question.type === "CHECKBOXES" && "rounded-md",
-                        )}
-                      />
-                      <Input
-                        value={optionText}
-                        onChange={(e) => {
-                          const newOptions = [...(question.options || [])];
-                          const current = newOptions[index];
-                          if (typeof current === "object" && current !== null) {
-                            newOptions[index] = {
-                              ...current,
-                              value: e.target.value,
-                            };
-                          } else {
-                            newOptions[index] = e.target.value;
-                          }
-                          onUpdate({ options: newOptions });
-                        }}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        className="placeholder:text-muted-foreground/20 h-8 flex-1 rounded-none border-none bg-transparent px-2 text-sm font-bold shadow-none transition-all focus-visible:border-none focus-visible:ring-0"
-                      />
-
-                      {/* Option Image Controls */}
-                      {(question.type === "MULTIPLE_CHOICE" || question.type === "CHECKBOXES") && (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="file"
-                            id={`opt-img-${question.id}-${index}`}
-                            className="hidden"
-                            accept="image/*"
-                            disabled={isUploading}
-                            onChange={(e) =>
-                              e.target.files?.[0] && handleOptionUpload(e.target.files[0], index)
+                  return (
+                    <div
+                      key={index}
+                      className="animate-in fade-in slide-in-from-left-2 group/option flex flex-col gap-2 duration-300"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={cn(
+                            "border-muted-foreground/20 group-hover/option:border-primary/40 h-4 w-4 shrink-0 rounded-full border-2 shadow-sm transition-colors",
+                            question.type === "CHECKBOXES" && "rounded-md",
+                          )}
+                        />
+                        <Input
+                          value={optionText}
+                          onChange={(e) => {
+                            const newOptions = [...(question.options || [])];
+                            const current = newOptions[index];
+                            if (typeof current === "object" && current !== null) {
+                              newOptions[index] = {
+                                ...current,
+                                value: e.target.value,
+                              };
+                            } else {
+                              newOptions[index] = e.target.value;
                             }
-                          />
-                          <label htmlFor={`opt-img-${question.id}-${index}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              asChild
-                              disabled={isUploading}
-                              className={cn(
-                                "text-muted-foreground/20 hover:text-primary h-8 w-8 cursor-pointer rounded-full transition-all",
-                                optionImage && "text-primary",
-                              )}
-                            >
-                              <span>
-                                <ImageIcon className="h-4 w-4" />
-                              </span>
-                            </Button>
-                          </label>
-                        </div>
-                      )}
+                            onUpdate({ options: newOptions });
+                          }}
+                          onFocus={() => setIsFocused(true)}
+                          onBlur={() => setIsFocused(false)}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="placeholder:text-muted-foreground/20 h-8 flex-1 rounded-none border-none bg-transparent px-2 text-sm font-bold shadow-none transition-all focus-visible:border-none focus-visible:ring-0"
+                        />
 
-                      {isQuiz && (
+                        {/* Option Image Controls */}
+                        {(question.type === "MULTIPLE_CHOICE" ||
+                          question.type === "CHECKBOXES") && (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="file"
+                              id={`opt-img-${question.id}-${index}`}
+                              className="hidden"
+                              accept="image/*"
+                              disabled={isUploading}
+                              onChange={(e) =>
+                                e.target.files?.[0] && handleOptionUpload(e.target.files[0], index)
+                              }
+                            />
+                            <label htmlFor={`opt-img-${question.id}-${index}`}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                disabled={isUploading}
+                                className={cn(
+                                  "text-muted-foreground/20 hover:text-primary h-8 w-8 cursor-pointer rounded-full transition-all",
+                                  optionImage && "text-primary",
+                                )}
+                              >
+                                <span>
+                                  <ImageIcon className="h-4 w-4" />
+                                </span>
+                              </Button>
+                            </label>
+                          </div>
+                        )}
+
+                        {isQuiz && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            className={cn(
+                              "h-9 w-9 rounded-full transition-all",
+                              (
+                                Array.isArray(question.correctAnswer)
+                                  ? question.correctAnswer.includes(optionText)
+                                  : question.correctAnswer === optionText
+                              )
+                                ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                : "text-muted-foreground/20 hover:bg-green-500/5 hover:text-green-500/50",
+                            )}
+                            onClick={() => {
+                              if (question.type === "CHECKBOXES") {
+                                const current = Array.isArray(question.correctAnswer)
+                                  ? question.correctAnswer
+                                  : [];
+                                const newCorrect = current.includes(optionText)
+                                  ? current.filter((c: string) => c !== optionText)
+                                  : [...current, optionText];
+                                onUpdate({ correctAnswer: newCorrect });
+                              } else {
+                                onUpdate({ correctAnswer: optionText });
+                              }
+                            }}
+                          >
+                            <CheckCircle2 className="h-4.5 w-4.5" />
+                          </Button>
+                        )}
+
                         <Button
                           variant="ghost"
                           size="icon"
                           onPointerDown={(e) => e.stopPropagation()}
-                          className={cn(
-                            "h-9 w-9 rounded-full transition-all",
-                            (
-                              Array.isArray(question.correctAnswer)
-                                ? question.correctAnswer.includes(optionText)
-                                : question.correctAnswer === optionText
-                            )
-                              ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                              : "text-muted-foreground/20 hover:bg-green-500/5 hover:text-green-500/50",
-                          )}
+                          className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 h-9 w-9 rounded-full opacity-0 transition-all group-hover/option:opacity-100"
                           onClick={() => {
-                            if (question.type === "CHECKBOXES") {
-                              const current = Array.isArray(question.correctAnswer)
-                                ? question.correctAnswer
-                                : [];
-                              const newCorrect = current.includes(optionText)
-                                ? current.filter((c: string) => c !== optionText)
-                                : [...current, optionText];
-                              onUpdate({ correctAnswer: newCorrect });
-                            } else {
-                              onUpdate({ correctAnswer: optionText });
-                            }
+                            const newOptions = (question.options || []).filter(
+                              (_: string | { value: string; image?: string }, i: number) =>
+                                i !== index,
+                            );
+                            onUpdate({ options: newOptions });
                           }}
                         >
-                          <CheckCircle2 className="h-4.5 w-4.5" />
-                        </Button>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onPointerDown={(e) => e.stopPropagation()}
-                        className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 h-9 w-9 rounded-full opacity-0 transition-all group-hover/option:opacity-100"
-                        onClick={() => {
-                          const newOptions = (question.options || []).filter(
-                            (_: string | { value: string; image?: string }, i: number) =>
-                              i !== index,
-                          );
-                          onUpdate({ options: newOptions });
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Render Option Image Preview */}
-                    {optionImage && (
-                      <div className="group/img relative ml-8 w-full max-w-sm">
-                        <img
-                          src={optionImage}
-                          alt="Option"
-                          className="border-border max-h-72 w-full rounded-md border object-contain"
-                        />
-                        <button
-                          onClick={() => removeOptionImage(index)}
-                          className="bg-destructive absolute -top-2 -right-2 rounded-full p-1 text-white opacity-0 shadow-lg transition-opacity group-hover/img:opacity-100"
-                          type="button"
-                        >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {/* Render Option Image Preview */}
+                      {optionImage && (
+                        <div className="group/img relative ml-8 w-full max-w-sm">
+                          <NextImage
+                            src={optionImage}
+                            alt="Option"
+                            className="border-border max-h-72 w-full rounded-md border object-contain"
+                            width={400}
+                            height={300}
+                            unoptimized
+                          />
+                          <button
+                            onClick={() => removeOptionImage(index)}
+                            className="bg-destructive absolute -top-2 -right-2 rounded-full p-1 text-white opacity-0 shadow-lg transition-opacity group-hover/img:opacity-100"
+                            type="button"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                },
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -455,7 +435,9 @@ export function QuestionCard({
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-4 duration-300">
                 <Input
-                  value={(typeof question.options?.[0] === 'string' ? question.options[0] : '') || ""}
+                  value={
+                    (typeof question.options?.[0] === "string" ? question.options[0] : "") || ""
+                  }
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
@@ -496,7 +478,8 @@ export function QuestionCard({
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                   {(() => {
-                    const url = typeof question.options![0] === 'string' ? question.options![0] : '';
+                    const url =
+                      typeof question.options![0] === "string" ? question.options![0] : "";
                     if (!url) return null;
                     if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                       let videoId = "";
@@ -544,7 +527,9 @@ export function QuestionCard({
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-3 duration-300">
                 <Input
-                  value={(typeof question.options?.[0] === 'string' ? question.options[0] : '') || ""}
+                  value={
+                    (typeof question.options?.[0] === "string" ? question.options[0] : "") || ""
+                  }
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
@@ -584,14 +569,13 @@ export function QuestionCard({
               {/* Image Preview */}
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 group/preview relative mt-4 flex max-h-[400px] items-center justify-center overflow-hidden rounded-xl border">
-                  <img
-                    src={typeof question.options![0] === 'string' ? question.options![0] : ''}
+                  <NextImage
+                    src={typeof question.options![0] === "string" ? question.options![0] : ""}
                     alt="Preview"
                     className="max-h-[400px] max-w-full object-contain transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://placehold.co/600x400?text=Invalid+Image+URL";
-                    }}
+                    width={800}
+                    height={400}
+                    unoptimized
                   />
                 </div>
               )}

@@ -1,9 +1,10 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 import { TEMPLATES } from "./templates";
 
@@ -480,10 +481,6 @@ export async function updateQuestionsOrder(questId: string, questionIds: string[
 }
 
 export async function getPublicQuest(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
   const quest = await prisma.quest.findUnique({
     where: {
       id,
@@ -532,7 +529,7 @@ export async function submitResponse(
     const answerData = Object.entries(answers).map(([questionId, value]) => ({
       questionId,
       responseId: res.id,
-      value: value as any, // JsonValue
+      value: value as Prisma.InputJsonValue,
     }));
 
     await tx.answer.createMany({

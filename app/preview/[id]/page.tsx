@@ -425,12 +425,7 @@ export default function PreviewQuestPage() {
                               if (!url) return null;
 
                               return (
-                                <Image
-                                  src={url}
-                                  alt={q.title}
-                                  fill
-                                  className="object-contain"
-                                />
+                                <Image src={url} alt={q.title} fill className="object-contain" />
                               );
                             })()}
                           </div>

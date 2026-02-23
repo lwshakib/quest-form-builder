@@ -26,7 +26,7 @@ export default async function ShortRedirectPage({
           <h1 className="text-4xl font-bold tracking-tight">Invalid Link</h1>
           <p className="text-muted-foreground text-lg leading-relaxed font-medium">
             The link you&apos;re trying to access is invalid or has expired. Please check with the
-             quest creator.
+            quest creator.
           </p>
           <div className="pt-8">
             <Link href="/">

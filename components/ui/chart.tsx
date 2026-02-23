@@ -117,10 +117,10 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed";
     nameKey?: string;
     labelKey?: string;
-    payload?: any[];
-    label?: any;
-    labelFormatter?: any;
-    color?: any;
+    payload?: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+    label?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    labelFormatter?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    color?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }) {
   const { config } = useChart();
 
@@ -247,7 +247,7 @@ function ChartLegendContent({
 }: React.ComponentProps<"div"> & {
   hideIcon?: boolean;
   nameKey?: string;
-  payload?: any[];
+  payload?: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   verticalAlign?: "top" | "bottom";
 }) {
   const { config } = useChart();

@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { getUnreadNotifications, markQuestResponsesAsRead } from "@/lib/actions";
 import { useRouter, usePathname } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
+
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
