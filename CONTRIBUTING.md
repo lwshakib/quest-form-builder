@@ -45,7 +45,7 @@ All types of contributions are welcome, from bug reports to new features.
 
 1.  Fork the repo and create your branch from `main`.
 2.  If you've added code that should be tested, add tests.
-3.  Ensure the code lints: `bun lint`.
+3.  Ensure the code lints and is formatted: `bun lint` and `bun run format:check`.
 4.  Make sure your commits follow the style guide below.
 5.  Issue that pull request!
 

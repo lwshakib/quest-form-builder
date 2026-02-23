@@ -433,7 +433,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           isOpen={isPublishOpen}
           onClose={() => setIsPublishOpen(false)}
           quest={quest}
-          onUpdate={(updatedQuest) => setQuest(updatedQuest)}
+          onUpdate={(updatedQuest) => setQuest(updatedQuest as typeof quest)}
         />
       )}
     </div>

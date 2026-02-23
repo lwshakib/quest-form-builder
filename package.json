@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "postinstall": "bun x prisma generate",
     "db:generate": "bun x prisma generate",
     "db:migrate": "bun x prisma generate && bun x prisma migrate dev --name init",
