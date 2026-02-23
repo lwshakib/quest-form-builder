@@ -32,17 +32,10 @@ interface PublishDialogProps {
   onUpdate?: (updatedQuest: any) => void;
 }
 
-export function PublishDialog({
-  quest,
-  isOpen,
-  onClose,
-  onUpdate,
-}: PublishDialogProps) {
+export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialogProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [acceptingResponses, setAcceptingResponses] = useState(
-    quest?.acceptingResponses ?? true,
-  );
+  const [acceptingResponses, setAcceptingResponses] = useState(quest?.acceptingResponses ?? true);
   const [isCopied, setIsCopied] = useState(false);
   const [isShortened, setIsShortened] = useState(false);
 
@@ -105,20 +98,20 @@ export function PublishDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden border-none bg-background shadow-2xl rounded-none">
+      <DialogContent className="bg-background overflow-hidden rounded-none border-none p-0 shadow-2xl sm:max-w-[450px]">
         <div className="relative">
           {/* Header Theme Gradient */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+          <div className="from-primary/40 via-primary to-primary/40 absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r" />
 
-          <div className="p-8 space-y-8">
+          <div className="space-y-8 p-8">
             <DialogHeader className="space-y-3">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Settings2 className="h-6 w-6 text-primary" />
+              <div className="bg-primary/10 mb-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <Settings2 className="text-primary h-6 w-6" />
               </div>
               <DialogTitle className="text-2xl font-black tracking-tight">
                 {isPublished ? "Quest is Live" : "Publish Quest"}
               </DialogTitle>
-              <DialogDescription className="text-base font-medium text-muted-foreground/70 leading-relaxed">
+              <DialogDescription className="text-muted-foreground/70 text-base leading-relaxed font-medium">
                 {isPublished
                   ? "Your quest is currently active and collecting responses. You can manage access and sharing below."
                   : "Ready to share your quest with the world? Once published, anyone with the link can view and respond."}
@@ -128,22 +121,20 @@ export function PublishDialog({
             {!isPublished ? (
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 rounded-none border border-border/50 bg-accent/5 transition-colors hover:bg-accent/10">
-                    <Globe className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="border-border/50 bg-accent/5 hover:bg-accent/10 flex items-start gap-4 rounded-none border p-4 transition-colors">
+                    <Globe className="text-primary mt-0.5 h-5 w-5" />
                     <div className="space-y-1">
-                      <p className="font-bold text-sm">Respondents</p>
-                      <p className="text-xs text-muted-foreground font-medium">
+                      <p className="text-sm font-bold">Respondents</p>
+                      <p className="text-muted-foreground text-xs font-medium">
                         Anyone with the link can view and respond.
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-4 rounded-none border border-border/50 bg-accent/5 transition-colors hover:bg-accent/10">
-                    <BellOff className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="border-border/50 bg-accent/5 hover:bg-accent/10 flex items-start gap-4 rounded-none border p-4 transition-colors">
+                    <BellOff className="text-muted-foreground mt-0.5 h-5 w-5" />
                     <div className="space-y-1">
-                      <p className="font-bold text-sm text-muted-foreground">
-                        Notifications
-                      </p>
-                      <p className="text-xs text-muted-foreground font-medium">
+                      <p className="text-muted-foreground text-sm font-bold">Notifications</p>
+                      <p className="text-muted-foreground text-xs font-medium">
                         Nobody will be notified when you publish this form.
                       </p>
                     </div>
@@ -153,13 +144,13 @@ export function PublishDialog({
                 <div className="flex items-center gap-3 pt-4">
                   <Button
                     variant="ghost"
-                    className="flex-1 h-12 rounded-none font-bold text-muted-foreground hover:bg-accent/10 transition-all uppercase tracking-widest text-[10px]"
+                    className="text-muted-foreground hover:bg-accent/10 h-12 flex-1 rounded-none text-[10px] font-bold tracking-widest uppercase transition-all"
                     onClick={onClose}
                   >
                     Dismiss
                   </Button>
                   <Button
-                    className="flex-1 h-12 rounded-none font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-[0.2em] text-[10px]"
+                    className="shadow-primary/20 h-12 flex-1 rounded-none text-[10px] font-black tracking-[0.2em] uppercase shadow-lg transition-all hover:scale-[1.02] active:scale-95"
                     onClick={handlePublish}
                     disabled={isPublishing}
                   >
@@ -170,16 +161,14 @@ export function PublishDialog({
             ) : (
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                  <Label className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
                     Share & Preview
                   </Label>
-                  <div className="p-3 bg-accent/5 border border-border/50 space-y-4">
+                  <div className="bg-accent/5 border-border/50 space-y-4 border p-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <LinkIcon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm font-bold break-all">
-                          {getShareUrl()}
-                        </span>
+                      <div className="flex min-w-0 items-start gap-3">
+                        <LinkIcon className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                        <span className="text-sm font-bold break-all">{getShareUrl()}</span>
                       </div>
                       <Button
                         size="icon"
@@ -199,14 +188,12 @@ export function PublishDialog({
                       <Checkbox
                         id="shorten"
                         checked={isShortened}
-                        onCheckedChange={(checked) =>
-                          setIsShortened(checked as boolean)
-                        }
-                        className="rounded-none border-primary/40 data-[state=checked]:bg-primary h-4 w-4"
+                        onCheckedChange={(checked) => setIsShortened(checked as boolean)}
+                        className="border-primary/40 data-[state=checked]:bg-primary h-4 w-4 rounded-none"
                       />
                       <Label
                         htmlFor="shorten"
-                        className="text-xs font-bold cursor-pointer select-none"
+                        className="cursor-pointer text-xs font-bold select-none"
                       >
                         Shorten URL
                       </Label>
@@ -214,16 +201,12 @@ export function PublishDialog({
 
                     <Button
                       variant="outline"
-                      className="w-full h-10 rounded-none border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all gap-2"
+                      className="border-border/60 hover:border-primary/40 hover:bg-primary/5 h-10 w-full gap-2 rounded-none transition-all"
                       asChild
                     >
-                      <a
-                        href={`/share/${quest.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                      <a href={`/share/${quest.id}`} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5">
+                        <span className="mt-0.5 text-[10px] leading-none font-black tracking-widest uppercase">
                           Go to the quest
                         </span>
                       </a>
@@ -231,15 +214,15 @@ export function PublishDialog({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between group p-6 rounded-none border border-border/50 bg-accent/5">
+                <div className="group border-border/50 bg-accent/5 flex items-center justify-between rounded-none border p-6">
                   <div className="space-y-1.5 focus-within:ring-0">
                     <Label
                       htmlFor="accept-responses"
-                      className="font-black text-sm tracking-tight cursor-pointer"
+                      className="cursor-pointer text-sm font-black tracking-tight"
                     >
                       Accepting responses
                     </Label>
-                    <p className="text-xs text-muted-foreground font-medium">
+                    <p className="text-muted-foreground text-xs font-medium">
                       Turn off to stop receiving new entries.
                     </p>
                   </div>
@@ -254,13 +237,13 @@ export function PublishDialog({
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <Button
                     variant="ghost"
-                    className="h-12 rounded-none font-bold text-muted-foreground hover:bg-accent/10 transition-all uppercase tracking-widest text-[10px]"
+                    className="text-muted-foreground hover:bg-accent/10 h-12 rounded-none text-[10px] font-bold tracking-widest uppercase transition-all"
                     onClick={onClose}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="h-12 rounded-none font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-[0.2em] text-[10px]"
+                    className="shadow-primary/20 h-12 rounded-none text-[10px] font-black tracking-[0.2em] uppercase shadow-lg transition-all hover:scale-[1.02] active:scale-95"
                     onClick={handleSave}
                     disabled={isSaving}
                   >
@@ -271,7 +254,7 @@ export function PublishDialog({
                     variant="ghost"
                     onClick={handleUnpublish}
                     disabled={isPublishing}
-                    className="col-span-2 h-10 border border-destructive/20 text-destructive/60 hover:text-destructive hover:bg-destructive/5 rounded-none font-black uppercase tracking-[0.2em] text-[9px] transition-all"
+                    className="border-destructive/20 text-destructive/60 hover:text-destructive hover:bg-destructive/5 col-span-2 h-10 rounded-none border text-[9px] font-black tracking-[0.2em] uppercase transition-all"
                   >
                     {isPublishing ? "Processing..." : "Unpublish this Quest"}
                   </Button>

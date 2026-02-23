@@ -58,15 +58,7 @@ export const TEMPLATES: Template[] = [
       {
         title: "Which days are you available?",
         type: "CHECKBOXES",
-        options: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
-        ],
+        options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       },
       { title: "What hours work best for you?", type: "SHORT_TEXT" },
     ],
@@ -197,12 +189,7 @@ export const TEMPLATES: Template[] = [
       {
         title: "Which position are you applying for?",
         type: "DROPDOWN",
-        options: [
-          "Software Engineer",
-          "Product Designer",
-          "Marketing Lead",
-          "Sales Executive",
-        ],
+        options: ["Software Engineer", "Product Designer", "Marketing Lead", "Sales Executive"],
       },
       { title: "Cover Letter", type: "PARAGRAPH" },
       { title: "Portfolio Link", type: "SHORT_TEXT" },

@@ -39,14 +39,14 @@ const faqs = [
 export default function FaqSection() {
   return (
     <section id="faq" className="py-24">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <div className="text-center mb-16">
+      <div className="container mx-auto max-w-4xl px-6">
+        <div className="mb-16 text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-bold mb-6"
+            className="mb-6 text-4xl font-bold md:text-5xl"
           >
             Frequently Asked Questions
           </motion.h2>
@@ -55,7 +55,7 @@ export default function FaqSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg text-muted-foreground"
+            className="text-muted-foreground text-lg"
           >
             Everything you need to know about Quest Form Builder.
           </motion.p>
@@ -69,15 +69,11 @@ export default function FaqSection() {
         >
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="border-b-border/50"
-              >
-                <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline hover:text-primary transition-colors py-6">
+              <AccordionItem key={index} value={`item-${index}`} className="border-b-border/50">
+                <AccordionTrigger className="hover:text-primary py-6 text-left text-lg font-semibold transition-colors hover:no-underline">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
+                <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

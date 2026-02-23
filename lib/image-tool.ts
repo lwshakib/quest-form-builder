@@ -41,33 +41,28 @@ export const generateImageTool = tool({
     }
 
     try {
-      const response = await fetch(
-        "https://api.tokenfactory.nebius.com/v1/images/generations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${NEBIUS_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "black-forest-labs/flux-schnell",
-            response_format: "b64_json",
-            response_extension: "png",
-            width,
-            height,
-            num_inference_steps: 4,
-            seed: -1,
-            loras: null,
-            prompt,
-          }),
+      const response = await fetch("https://api.tokenfactory.nebius.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${NEBIUS_API_KEY}`,
         },
-      );
+        body: JSON.stringify({
+          model: "black-forest-labs/flux-schnell",
+          response_format: "b64_json",
+          response_extension: "png",
+          width,
+          height,
+          num_inference_steps: 4,
+          seed: -1,
+          loras: null,
+          prompt,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error?.message || `API error: ${response.statusText}`,
-        );
+        throw new Error(errorData.error?.message || `API error: ${response.statusText}`);
       }
 
       const data = await response.json();

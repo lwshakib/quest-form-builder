@@ -2,9 +2,7 @@ import { GOOGLE_API_KEY } from "@/lib/env";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 export const getSingleApiKey = () => {
-  return GOOGLE_API_KEY?.split(",")[
-    Math.floor(Math.random() * GOOGLE_API_KEY.split(",").length)
-  ];
+  return GOOGLE_API_KEY?.split(",")[Math.floor(Math.random() * GOOGLE_API_KEY.split(",").length)];
 };
 
 export const getModelName = () => {

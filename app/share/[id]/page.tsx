@@ -39,17 +39,14 @@ export default function ShareQuestPage() {
   const [quest, setQuest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(
-    searchParams.get("submitted") === "true",
-  );
+  const [isSubmitted, setIsSubmitted] = useState(searchParams.get("submitted") === "true");
   const [isNotFound, setIsNotFound] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [progress, setProgress] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
-  const { data: session, isPending: isSessionLoading } =
-    authClient.useSession();
+  const { data: session, isPending: isSessionLoading } = authClient.useSession();
 
   useEffect(() => {
     if (!quest) return;
@@ -60,29 +57,19 @@ export default function ShareQuestPage() {
 
     const isQuestionFilled = (qId: string) => {
       const val = answers[qId];
-      return (
-        val !== undefined &&
-        val !== "" &&
-        (Array.isArray(val) ? val.length > 0 : true)
-      );
+      return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
     };
 
     if (requiredQuestions.length === 0) {
-      const filledCount = relevantQuestions.filter((q: any) =>
-        isQuestionFilled(q.id),
-      ).length;
+      const filledCount = relevantQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
       setProgress(
-        relevantQuestions.length > 0
-          ? (filledCount / relevantQuestions.length) * 100
-          : 0,
+        relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
       );
       setIsFormValid(true); // Always valid if nothing is required
       return;
     }
 
-    const filledRequiredCount = requiredQuestions.filter((q: any) =>
-      isQuestionFilled(q.id),
-    ).length;
+    const filledRequiredCount = requiredQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
     setIsFormValid(filledRequiredCount === requiredQuestions.length);
   }, [answers, quest]);
@@ -132,11 +119,7 @@ export default function ShareQuestPage() {
     }));
   };
 
-  const handleCheckboxChange = (
-    questionId: string,
-    option: string,
-    checked: boolean,
-  ) => {
+  const handleCheckboxChange = (questionId: string, option: string, checked: boolean) => {
     setAnswers((prev) => {
       const currentAnswers = prev[questionId] || [];
       if (checked) {
@@ -187,14 +170,14 @@ export default function ShareQuestPage() {
 
   if (isLoading || (quest?.limitToOneResponse && isSessionLoading)) {
     return (
-      <div className="min-h-screen bg-background py-16 px-6 relative overflow-x-hidden">
-        <div className="max-w-2xl mx-auto space-y-12">
+      <div className="bg-background relative min-h-screen overflow-x-hidden px-6 py-16">
+        <div className="mx-auto max-w-2xl space-y-12">
           <div className="space-y-6">
-            <div className="h-40 bg-accent/30 rounded-lg animate-pulse w-full border border-border/50" />
+            <div className="bg-accent/30 border-border/50 h-40 w-full animate-pulse rounded-lg border" />
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-64 bg-accent/30 rounded-lg animate-pulse w-full border border-border/50"
+                className="bg-accent/30 border-border/50 h-64 w-full animate-pulse rounded-lg border"
               />
             ))}
           </div>
@@ -205,23 +188,21 @@ export default function ShareQuestPage() {
 
   if (quest?.limitToOneResponse && !session) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-        <div className="relative space-y-8 max-w-md animate-in fade-in zoom-in duration-500">
-          <div className="h-20 w-20 mx-auto rounded-3xl bg-primary/10 flex items-center justify-center mb-8">
-            <Send className="h-10 w-10 text-primary" />
+      <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
+        <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="animate-in fade-in zoom-in relative max-w-md space-y-8 duration-500">
+          <div className="bg-primary/10 mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl">
+            <Send className="text-primary h-10 w-10" />
           </div>
-          <h1 className="text-4xl font-black tracking-tight">
-            Sign in to continue
-          </h1>
-          <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-            This quest requires you to be signed in to submit a response. This
-            helps prevent multiple entries from the same person.
+          <h1 className="text-4xl font-black tracking-tight">Sign in to continue</h1>
+          <p className="text-muted-foreground text-lg leading-relaxed font-medium">
+            This quest requires you to be signed in to submit a response. This helps prevent
+            multiple entries from the same person.
           </p>
           <div className="pt-8">
             <Button
               size="lg"
-              className="px-10 h-14 rounded-full font-black shadow-xl shadow-primary/20 transition-all hover:scale-105"
+              className="shadow-primary/20 h-14 rounded-full px-10 font-black shadow-xl transition-all hover:scale-105"
               onClick={() => authClient.signIn.social({ provider: "google" })}
             >
               Sign in to the Quest
@@ -234,23 +215,21 @@ export default function ShareQuestPage() {
 
   if (isNotFound) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-        <div className="relative space-y-6 max-w-md animate-in fade-in zoom-in duration-500">
-          <div className="h-20 w-20 mx-auto rounded-3xl bg-muted/50 flex items-center justify-center mb-8">
-            <div className="h-10 w-10 border-4 border-muted-foreground/20 border-t-muted-foreground/40 rounded-full" />
+      <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
+        <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="animate-in fade-in zoom-in relative max-w-md space-y-6 duration-500">
+          <div className="bg-muted/50 mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-3xl">
+            <div className="border-muted-foreground/20 border-t-muted-foreground/40 h-10 w-10 rounded-full border-4" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">
-            Quest Not Available
-          </h1>
-          <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-            This quest doesn't exist, is no longer accepting responses, or has
-            been unpublished by the creator.
+          <h1 className="text-4xl font-bold tracking-tight">Quest Not Available</h1>
+          <p className="text-muted-foreground text-lg leading-relaxed font-medium">
+            This quest doesn&apos;t exist, is no longer accepting responses, or has been unpublished by
+            the creator.
           </p>
           <div className="pt-8">
             <Button
               variant="outline"
-              className="px-8 h-12 rounded-full font-bold transition-all hover:bg-muted"
+              className="hover:bg-muted h-12 rounded-full px-8 font-bold transition-all"
               onClick={() => router.push("/")}
             >
               Go home
@@ -263,12 +242,12 @@ export default function ShareQuestPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="bg-background flex min-h-screen flex-col items-center justify-center overflow-hidden p-6 text-center select-none">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute h-2 w-2 bg-primary/20 rounded-full animate-pulse"
+              className="bg-primary/20 absolute h-2 w-2 animate-pulse rounded-full"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -279,21 +258,21 @@ export default function ShareQuestPage() {
           ))}
         </div>
 
-        <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+        <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:40px_40px]" />
 
-        <div className="relative space-y-12 max-w-xl animate-in fade-in zoom-in duration-1000">
+        <div className="animate-in fade-in zoom-in relative max-w-xl space-y-12 duration-1000">
           <div className="relative mx-auto">
-            <div className="absolute inset-0 blur-3xl bg-green-500/30 rounded-full animate-pulse" />
-            <div className="relative h-24 w-24 mx-auto rounded-full bg-background border border-green-500/20 flex items-center justify-center shadow-[0_0_40px_-12px_rgba(34,197,94,0.2)]">
-              <CheckCircle2 className="h-12 w-12 text-green-500 animate-in zoom-in spin-in duration-700 delay-300" />
+            <div className="absolute inset-0 animate-pulse rounded-full bg-green-500/30 blur-3xl" />
+            <div className="bg-background relative mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-green-500/20 shadow-[0_0_40px_-12px_rgba(34,197,94,0.2)]">
+              <CheckCircle2 className="animate-in zoom-in spin-in h-12 w-12 text-green-500 delay-300 duration-700" />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-foreground">
+            <h1 className="text-foreground text-5xl font-bold tracking-tight sm:text-6xl">
               Response submitted
             </h1>
-            <p className="text-muted-foreground/80 font-medium text-lg leading-relaxed max-w-sm mx-auto">
+            <p className="text-muted-foreground/80 mx-auto max-w-sm text-lg leading-relaxed font-medium">
               {quest?.confirmationMessage ||
                 "Your transmission was successful. Thank you for your time."}
             </p>
@@ -303,10 +282,8 @@ export default function ShareQuestPage() {
             {quest?.showLinkToSubmitAnother && (
               <Button
                 size="lg"
-                className="h-12 px-8 rounded-full font-bold shadow-lg shadow-primary/10 hover:shadow-xl transition-all"
-                onClick={() =>
-                  (window.location.href = window.location.pathname)
-                }
+                className="shadow-primary/10 h-12 rounded-full px-8 font-bold shadow-lg transition-all hover:shadow-xl"
+                onClick={() => (window.location.href = window.location.pathname)}
               >
                 Submit another response
               </Button>
@@ -316,9 +293,7 @@ export default function ShareQuestPage() {
               <Button
                 variant="link"
                 className="text-primary font-bold"
-                onClick={() =>
-                  toast.info("Results summary feature coming soon!")
-                }
+                onClick={() => toast.info("Results summary feature coming soon!")}
               >
                 View previous responses
               </Button>
@@ -330,7 +305,7 @@ export default function ShareQuestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-16 px-6 relative overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div className="bg-background selection:bg-primary selection:text-primary-foreground relative min-h-screen overflow-x-hidden px-6 py-16">
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-[100]">
         <ModeToggle />
@@ -338,41 +313,41 @@ export default function ShareQuestPage() {
 
       {/* Refined Progress Bar */}
       {quest?.showProgressBar && (
-        <div className="fixed top-0 left-0 right-0 h-1 bg-accent/20 z-[100]">
+        <div className="bg-accent/20 fixed top-0 right-0 left-0 z-[100] h-1">
           <div
-            className="h-full bg-primary transition-all duration-1000 ease-in-out"
+            className="bg-primary h-full transition-all duration-1000 ease-in-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
       {/* Decorative Background */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.02),transparent_50%)] pointer-events-none" />
+      <div className="pointer-events-none fixed top-0 left-1/2 h-full w-full -translate-x-1/2 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.02),transparent_50%)]" />
 
-      <div className="max-w-2xl mx-auto relative space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="animate-in fade-in slide-in-from-bottom-8 relative mx-auto max-w-2xl space-y-8 duration-1000">
         <form onSubmit={handleSubmit} className="space-y-6 pb-20">
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
-              <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden shadow-sm h-40 sm:h-56">
+              <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
                 <img
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
             )}
             {/* Catchy Title & Description Card (Matches Editor's Welcome Card) */}
-            <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm">
-              <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-              <div className="p-8 sm:p-10 space-y-4 relative z-10">
+            <div className="border-border/50 bg-background relative overflow-hidden rounded-lg border shadow-sm transition-all duration-300">
+              <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
+              <div className="relative z-10 space-y-4 p-8 sm:p-10">
                 <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                  <h1 className="text-2xl leading-tight font-black tracking-tight sm:text-3xl">
                     {quest.title}
                   </h1>
                   {quest.description && (
-                    <p className="text-base text-muted-foreground/70 font-medium leading-relaxed max-w-xl">
+                    <p className="text-muted-foreground/70 max-w-xl text-base leading-relaxed font-medium">
                       {quest.description}
                     </p>
                   )}
@@ -384,28 +359,24 @@ export default function ShareQuestPage() {
                 key={q.id}
                 onFocus={() => setActiveQuestionId(q.id)}
                 className={cn(
-                  "relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm group/card",
+                  "border-border/50 bg-background group/card relative overflow-hidden rounded-lg border shadow-sm transition-all duration-300",
                   activeQuestionId === q.id
-                    ? "border-primary/10 ring-2 ring-primary/5 shadow-xs"
+                    ? "border-primary/10 ring-primary/5 shadow-xs ring-2"
                     : "hover:border-border/60 hover:shadow-sm",
                 )}
               >
                 {/* Subtle top highlight */}
-                <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+                <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
 
-                <div className="p-6 sm:p-8 space-y-6 relative z-10">
+                <div className="relative z-10 space-y-6 p-6 sm:p-8">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-lg sm:text-xl font-bold tracking-tight block">
+                      <Label className="block text-lg font-bold tracking-tight sm:text-xl">
                         {q.title}
-                        {q.required && (
-                          <span className="text-primary ml-2 inline-block">
-                            *
-                          </span>
-                        )}
+                        {q.required && <span className="text-primary ml-2 inline-block">*</span>}
                       </Label>
                       {q.description && (
-                        <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed max-w-lg">
+                        <p className="text-muted-foreground/60 max-w-lg text-xs leading-relaxed font-medium">
                           {q.description}
                         </p>
                       )}
@@ -418,11 +389,9 @@ export default function ShareQuestPage() {
                         <Input
                           required={q.required}
                           placeholder="Your answer..."
-                          className="h-12 bg-transparent border-0 border-b border-border/60 rounded-none px-0 text-lg font-medium focus-visible:ring-0 focus-visible:border-primary transition-all placeholder:text-muted-foreground/20"
+                          className="border-border/60 focus-visible:border-primary placeholder:text-muted-foreground/20 h-12 rounded-none border-0 border-b bg-transparent px-0 text-lg font-medium transition-all focus-visible:ring-0"
                           value={answers[q.id] || ""}
-                          onChange={(e) =>
-                            handleInputChange(q.id, e.target.value)
-                          }
+                          onChange={(e) => handleInputChange(q.id, e.target.value)}
                         />
                       </div>
                     )}
@@ -431,11 +400,9 @@ export default function ShareQuestPage() {
                       <Textarea
                         required={q.required}
                         placeholder="Long form response..."
-                        className="min-h-[140px] bg-accent/5 border-2 border-transparent focus:border-primary/20 focus:ring-0 rounded-xl p-4 text-base font-medium transition-all placeholder:text-muted-foreground/20 resize-none leading-relaxed"
+                        className="bg-accent/5 focus:border-primary/20 placeholder:text-muted-foreground/20 min-h-[140px] resize-none rounded-xl border-2 border-transparent p-4 text-base leading-relaxed font-medium transition-all focus:ring-0"
                         value={answers[q.id] || ""}
-                        onChange={(e) =>
-                          handleInputChange(q.id, e.target.value)
-                        }
+                        onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
 
@@ -447,8 +414,7 @@ export default function ShareQuestPage() {
                         value={answers[q.id] || ""}
                       >
                         {((q.options as any[]) || []).map((option: any) => {
-                          const isComplex =
-                            typeof option === "object" && option !== null;
+                          const isComplex = typeof option === "object" && option !== null;
                           const label = isComplex ? option.value : option;
                           const image = isComplex ? option.image : null;
 
@@ -457,37 +423,36 @@ export default function ShareQuestPage() {
                               key={label}
                               htmlFor={`${q.id}-${label}`}
                               className={cn(
-                                "flex flex-col items-start border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden w-full",
-                                answers[q.id] === label &&
-                                  "border-primary/40 bg-primary/5",
+                                "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
+                                answers[q.id] === label && "border-primary/40 bg-primary/5",
                               )}
                             >
                               {image && (
-                                <div className="w-full bg-accent/5 border-b border-border/40 relative flex justify-center overflow-hidden">
+                                <div className="bg-accent/5 border-border/40 relative flex w-full justify-center overflow-hidden border-b">
                                   <img
                                     src={image}
                                     alt={label}
-                                    className="w-full max-h-[400px] object-contain transition-transform duration-500 hover:scale-105"
+                                    className="max-h-[400px] w-full object-contain transition-transform duration-500 hover:scale-105"
                                   />
                                 </div>
                               )}
-                              <div className="flex items-start gap-4 p-4 w-full">
+                              <div className="flex w-full items-start gap-4 p-4">
                                 <RadioGroupItem
                                   value={label}
                                   id={`${q.id}-${label}`}
-                                  className="opacity-0 absolute w-0 h-0"
+                                  className="absolute h-0 w-0 opacity-0"
                                 />
                                 <div
                                   className={cn(
-                                    "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all shrink-0 mt-0.5",
+                                    "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                                     answers[q.id] === label && "border-primary",
                                   )}
                                 >
                                   {answers[q.id] === label && (
-                                    <div className="h-2.5 w-2.5 bg-primary rounded-full animate-in zoom-in duration-200" />
+                                    <div className="bg-primary animate-in zoom-in h-2.5 w-2.5 rounded-full duration-200" />
                                   )}
                                 </div>
-                                <span className="text-sm font-medium text-foreground/80 leading-relaxed text-left">
+                                <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
                                   {label}
                                 </span>
                               </div>
@@ -500,56 +465,49 @@ export default function ShareQuestPage() {
                     {q.type === "CHECKBOXES" && (
                       <div className="grid grid-cols-1 gap-3">
                         {((q.options as any[]) || []).map((option: any) => {
-                          const isComplex =
-                            typeof option === "object" && option !== null;
+                          const isComplex = typeof option === "object" && option !== null;
                           const label = isComplex ? option.value : option;
                           const image = isComplex ? option.image : null;
-                          const isChecked = (answers[q.id] || []).includes(
-                            label,
-                          );
+                          const isChecked = (answers[q.id] || []).includes(label);
 
                           return (
                             <Label
                               key={label}
                               htmlFor={`${q.id}-${label}`}
                               className={cn(
-                                "flex flex-col items-start border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt overflow-hidden w-full",
+                                "border-border/60 hover:bg-accent/5 group/opt flex w-full cursor-pointer flex-col items-start overflow-hidden rounded-xl border transition-all duration-200",
                                 isChecked && "border-primary/40 bg-primary/5",
                               )}
                             >
                               {image && (
-                                <div className="w-full h-48 bg-accent/5 border-b border-border/40 relative">
+                                <div className="bg-accent/5 border-border/40 relative h-48 w-full border-b">
                                   <img
                                     src={image}
                                     alt={label}
-                                    className="w-full h-full object-cover"
+                                    className="h-full w-full object-cover"
                                   />
                                 </div>
                               )}
-                              <div className="flex items-start gap-4 p-4 w-full">
+                              <div className="flex w-full items-start gap-4 p-4">
                                 <Checkbox
                                   id={`${q.id}-${label}`}
-                                  className="opacity-0 absolute w-0 h-0"
+                                  className="absolute h-0 w-0 opacity-0"
                                   checked={isChecked}
                                   onCheckedChange={(checked) =>
-                                    handleCheckboxChange(
-                                      q.id,
-                                      label,
-                                      checked as boolean,
-                                    )
+                                    handleCheckboxChange(q.id, label, checked as boolean)
                                   }
                                 />
                                 <div
                                   className={cn(
-                                    "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all shrink-0 mt-0.5",
+                                    "border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all",
                                     isChecked && "bg-primary border-primary",
                                   )}
                                 >
                                   {isChecked && (
-                                    <Check className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-200" />
+                                    <Check className="text-primary-foreground animate-in zoom-in h-3.5 w-3.5 duration-200" />
                                   )}
                                 </div>
-                                <span className="text-sm font-medium text-foreground/80 leading-relaxed text-left">
+                                <span className="text-foreground/80 text-left text-sm leading-relaxed font-medium">
                                   {label}
                                 </span>
                               </div>
@@ -565,20 +523,18 @@ export default function ShareQuestPage() {
                         required={q.required}
                         value={answers[q.id] || undefined}
                       >
-                        <SelectTrigger className="w-full h-12 bg-background border border-border/60 rounded-xl px-4 text-base font-medium focus:ring-1 focus:ring-primary transition-all">
+                        <SelectTrigger className="bg-background border-border/60 focus:ring-primary h-12 w-full rounded-xl border px-4 text-base font-medium transition-all focus:ring-1">
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border border-border/60 bg-background shadow-xl">
+                        <SelectContent className="border-border/60 bg-background rounded-xl border shadow-xl">
                           {((q.options as any[]) || []).map((option: any) => {
                             const label =
-                              typeof option === "object" && option !== null
-                                ? option.value
-                                : option;
+                              typeof option === "object" && option !== null ? option.value : option;
                             return (
                               <SelectItem
                                 key={label}
                                 value={label}
-                                className="py-3 text-base font-medium transition-all cursor-pointer"
+                                className="cursor-pointer py-3 text-base font-medium transition-all"
                               >
                                 {label}
                               </SelectItem>
@@ -592,10 +548,8 @@ export default function ShareQuestPage() {
                       <Input
                         type="date"
                         required={q.required}
-                        className="h-12 bg-accent/5 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary rounded-xl px-4 text-base font-medium transition-all"
-                        onChange={(e) =>
-                          handleInputChange(q.id, e.target.value)
-                        }
+                        className="bg-accent/5 border-border/60 focus-visible:ring-primary h-12 rounded-xl border px-4 text-base font-medium transition-all focus-visible:ring-1"
+                        onChange={(e) => handleInputChange(q.id, e.target.value)}
                         value={answers[q.id] || ""}
                       />
                     )}
@@ -604,10 +558,8 @@ export default function ShareQuestPage() {
                       <Input
                         type="time"
                         required={q.required}
-                        className="h-12 bg-accent/5 border border-border/60 focus-visible:ring-1 focus-visible:ring-primary rounded-xl px-4 text-base font-medium transition-all"
-                        onChange={(e) =>
-                          handleInputChange(q.id, e.target.value)
-                        }
+                        className="bg-accent/5 border-border/60 focus-visible:ring-primary h-12 rounded-xl border px-4 text-base font-medium transition-all focus-visible:ring-1"
+                        onChange={(e) => handleInputChange(q.id, e.target.value)}
                         value={answers[q.id] || ""}
                       />
                     )}
@@ -615,17 +567,13 @@ export default function ShareQuestPage() {
                     {q.type === "VIDEO" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="rounded-xl overflow-hidden border border-border/50 bg-accent/5 aspect-video flex items-center justify-center">
+                          <div className="border-border/50 bg-accent/5 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                             {(() => {
                               const url = q.options[0];
-                              if (
-                                url.includes("youtube.com/watch") ||
-                                url.includes("youtu.be/")
-                              ) {
+                              if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                                 let videoId = "";
                                 if (url.includes("youtube.com/watch")) {
-                                  videoId =
-                                    new URL(url).searchParams.get("v") || "";
+                                  videoId = new URL(url).searchParams.get("v") || "";
                                 } else {
                                   videoId = url.split("/").pop() || "";
                                 }
@@ -640,12 +588,9 @@ export default function ShareQuestPage() {
                                     allowFullScreen
                                   ></iframe>
                                 );
-                              } else if (
-                                url.match(/\.(mp4|webm|ogg)$/i) ||
-                                url.includes("video")
-                              ) {
+                              } else if (url.match(/\.(mp4|webm|ogg)$/i) || url.includes("video")) {
                                 return (
-                                  <video controls className="w-full h-full">
+                                  <video controls className="h-full w-full">
                                     <source src={url} type="video/mp4" />
                                     Your browser does not support the video tag.
                                   </video>
@@ -655,7 +600,7 @@ export default function ShareQuestPage() {
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    className="gap-2 h-12 rounded-xl"
+                                    className="h-12 gap-2 rounded-xl"
                                     onClick={() => window.open(url, "_blank")}
                                   >
                                     Click here to see the video
@@ -671,11 +616,11 @@ export default function ShareQuestPage() {
                     {q.type === "IMAGE" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="rounded-xl overflow-hidden border border-border/50 bg-accent/5 flex items-center justify-center">
+                          <div className="border-border/50 bg-accent/5 flex items-center justify-center overflow-hidden rounded-xl border">
                             <img
                               src={q.options[0]}
                               alt={q.title}
-                              className="max-w-full h-auto object-contain"
+                              className="h-auto max-w-full object-contain"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src =
                                   "https://placehold.co/600x400?text=Image+Unavailable";
@@ -691,38 +636,34 @@ export default function ShareQuestPage() {
             ))}
           </div>
 
-          <footer className="pt-12 space-y-16">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <footer className="space-y-16 pt-12">
+            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <Button
                 type="submit"
                 size="lg"
                 disabled={isSubmitting || !isFormValid}
-                className="h-12 px-10 rounded-full font-black uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all order-2 sm:order-1 w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="shadow-primary/20 order-2 h-12 w-full rounded-full px-10 text-[11px] font-black tracking-[0.15em] uppercase shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 sm:order-1 sm:w-auto"
               >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Submit response"
-                )}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit response"}
               </Button>
 
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleClear}
-                className="h-12 px-8 rounded-full font-semibold text-muted-foreground hover:bg-destructive/5 hover:text-destructive transition-all order-1 sm:order-2 w-full sm:w-auto"
+                className="text-muted-foreground hover:bg-destructive/5 hover:text-destructive order-1 h-12 w-full rounded-full px-8 font-semibold transition-all sm:order-2 sm:w-auto"
               >
                 Clear form
               </Button>
             </div>
 
-            <div className="space-y-8 pt-8 border-t border-border/40">
+            <div className="border-border/40 space-y-8 border-t pt-8">
               <div className="flex flex-col items-center gap-6 text-center">
-                <p className="text-xs font-medium text-muted-foreground/40">
+                <p className="text-muted-foreground/40 text-xs font-medium">
                   Never submit passwords through Quest
                 </p>
 
-                <div className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2 opacity-30 transition-opacity hover:opacity-100">
                   <Logo />
                 </div>
               </div>

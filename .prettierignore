@@ -1,0 +1,11 @@
+.next
+node_modules
+dist
+build
+public
+generated
+package-lock.json
+bun.lock
+yarn.lock
+pnpm-lock.yaml
+*.json

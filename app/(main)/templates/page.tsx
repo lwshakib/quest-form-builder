@@ -16,11 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TEMPLATES, Template } from "@/lib/templates";
-import {
-  createQuestFromTemplate,
-  createQuest,
-  getRecentTemplates,
-} from "@/lib/actions";
+import { createQuestFromTemplate, createQuest, getRecentTemplates } from "@/lib/actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -86,10 +82,10 @@ export default function TemplatesPage() {
     .filter(Boolean) as Template[];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Sticky Header - Offset by main header height (h-16) */}
-      <div className="sticky top-16 z-40 bg-background/80 backdrop-blur-md border-b">
-        <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between gap-6">
+      <div className="bg-background/80 sticky top-16 z-40 border-b backdrop-blur-md">
+        <div className="container mx-auto flex h-20 items-center justify-between gap-6 px-4 lg:px-8">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -99,16 +95,14 @@ export default function TemplatesPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-black tracking-tight">
-              Template Gallery
-            </h1>
+            <h1 className="text-2xl font-black tracking-tight">Template Gallery</h1>
           </div>
 
-          <div className="flex-1 max-w-xl relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <div className="group relative max-w-xl flex-1">
+            <Search className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
             <Input
               placeholder="Search for templates..."
-              className="pl-12 h-12 bg-muted/50 border-none rounded-2xl focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-medium"
+              className="bg-muted/50 focus-visible:ring-primary/20 h-12 rounded-2xl border-none pl-12 font-medium transition-all focus-visible:ring-2"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -116,7 +110,7 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      <div className="container mx-auto py-12 px-4 lg:px-8 space-y-20">
+      <div className="container mx-auto space-y-20 px-4 py-12 lg:px-8">
         {/* Categories */}
         {categories.map((cat) => {
           const catTemplates =
@@ -128,38 +122,38 @@ export default function TemplatesPage() {
           return (
             <section key={cat.name} className="space-y-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold tracking-tight text-muted-foreground uppercase flex items-center gap-2">
+                <h2 className="text-muted-foreground flex items-center gap-2 text-xl font-bold tracking-tight uppercase">
                   <cat.icon className="h-5 w-5" />{" "}
                   {cat.name === "Recent" ? "Recently used templates" : cat.name}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                 {cat.name === "Recent" && (
                   <button
                     onClick={handleCreateBlank}
                     disabled={!!isCreating}
                     className="group flex flex-col items-start gap-4 text-left transition-all duration-300 disabled:opacity-50"
                   >
-                    <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden border-2 border-dashed border-border bg-card hover:bg-primary/5 transition-all duration-500 hover:border-primary/40 shadow-sm hover:shadow-xl flex items-center justify-center">
-                      <div className="bg-primary/5 p-3 rounded-full group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500 border border-primary/10">
+                    <div className="border-border bg-card hover:bg-primary/5 hover:border-primary/40 relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed shadow-sm transition-all duration-500 hover:shadow-xl">
+                      <div className="bg-primary/5 group-hover:bg-primary/10 border-primary/10 rounded-full border p-3 transition-all duration-500 group-hover:scale-110">
                         {isCreating === "blank" ? (
-                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                          <Loader2 className="text-primary h-5 w-5 animate-spin" />
                         ) : (
-                          <Plus className="h-5 w-5 text-primary" />
+                          <Plus className="text-primary h-5 w-5" />
                         )}
                       </div>
                       {isCreating === "blank" && (
-                        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <div className="bg-background/60 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                          <Loader2 className="text-primary h-8 w-8 animate-spin" />
                         </div>
                       )}
                     </div>
                     <div className="space-y-1 px-1">
-                      <h3 className="font-bold text-base group-hover:text-primary transition-colors">
+                      <h3 className="group-hover:text-primary text-base font-bold transition-colors">
                         Blank Quest
                       </h3>
-                      <p className="text-xs text-muted-foreground font-medium line-clamp-1">
+                      <p className="text-muted-foreground line-clamp-1 text-xs font-medium">
                         Start from scratch
                       </p>
                     </div>
@@ -173,27 +167,27 @@ export default function TemplatesPage() {
                     disabled={!!isCreating}
                     className="group flex flex-col items-start gap-4 text-left transition-all duration-300 disabled:opacity-50"
                   >
-                    <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1">
+                    <div className="border-border relative aspect-[16/9] w-full overflow-hidden rounded-2xl border shadow-sm transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl">
                       <img
                         src={
                           template.backgroundImage ||
                           "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"
                         }
                         alt={template.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                      <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0" />
                       {isCreating === template.id && (
-                        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <div className="bg-background/60 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                          <Loader2 className="text-primary h-8 w-8 animate-spin" />
                         </div>
                       )}
                     </div>
                     <div className="space-y-1 px-1">
-                      <h3 className="font-bold text-base group-hover:text-primary transition-colors">
+                      <h3 className="group-hover:text-primary text-base font-bold transition-colors">
                         {template.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground font-medium line-clamp-1">
+                      <p className="text-muted-foreground line-clamp-1 text-xs font-medium">
                         {template.description}
                       </p>
                     </div>

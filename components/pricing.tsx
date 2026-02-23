@@ -122,8 +122,8 @@ export default function SimplePricing() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-muted-foreground max-w-md pt-2 text-lg"
           >
-            Start free and scale as you grow. All plans include AI-powered quest
-            generation and real-time analytics.
+            Start free and scale as you grow. All plans include AI-powered quest generation and
+            real-time analytics.
           </motion.p>
         </div>
 
@@ -176,8 +176,7 @@ export default function SimplePricing() {
                   plan.popular
                     ? "ring-primary/50 dark:shadow-primary/10 shadow-md ring-2"
                     : "hover:border-primary/30",
-                  plan.popular &&
-                    "from-primary/[0.03] bg-gradient-to-b to-transparent",
+                  plan.popular && "from-primary/[0.03] bg-gradient-to-b to-transparent",
                 )}
               >
                 {plan.popular && (
@@ -200,21 +199,14 @@ export default function SimplePricing() {
                     >
                       <plan.icon className="h-4 w-4" />
                     </div>
-                    <CardTitle
-                      className={cn(
-                        "text-xl font-bold",
-                        plan.popular && "text-primary",
-                      )}
-                    >
+                    <CardTitle className={cn("text-xl font-bold", plan.popular && "text-primary")}>
                       {plan.name}
                     </CardTitle>
                   </div>
                   <CardDescription className="mt-3 space-y-2">
                     <p className="text-sm">{plan.description}</p>
                     <div className="pt-2">
-                      {typeof plan.price[
-                        frequency as keyof typeof plan.price
-                      ] === "number" ? (
+                      {typeof plan.price[frequency as keyof typeof plan.price] === "number" ? (
                         <div className="flex items-baseline">
                           <NumberFlow
                             className={cn(
@@ -226,11 +218,7 @@ export default function SimplePricing() {
                               currency: "USD",
                               maximumFractionDigits: 0,
                             }}
-                            value={
-                              plan.price[
-                                frequency as keyof typeof plan.price
-                              ] as number
-                            }
+                            value={plan.price[frequency as keyof typeof plan.price] as number}
                           />
                           <span className="text-muted-foreground ml-1 text-sm">
                             /month, billed {frequency}
@@ -268,13 +256,7 @@ export default function SimplePricing() {
                       >
                         <Check className="h-3.5 w-3.5" />
                       </div>
-                      <span
-                        className={
-                          plan.popular
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        }
-                      >
+                      <span className={plan.popular ? "text-foreground" : "text-muted-foreground"}>
                         {feature}
                       </span>
                     </motion.div>

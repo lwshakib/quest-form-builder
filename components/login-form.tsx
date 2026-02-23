@@ -3,23 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+export function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,13 +64,9 @@ export function LoginForm({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <form
-        className={cn("flex flex-col gap-6", className)}
-        onSubmit={handleSubmit}
-        {...props}
-      >
+      <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} {...props}>
         <FieldGroup>
-          <div className="flex flex-col items-center gap-2 text-center mb-2">
+          <div className="mb-2 flex flex-col items-center gap-2 text-center">
             <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
             <p className="text-muted-foreground text-sm text-balance">
               Enter your credentials to access your Quest dashboard
@@ -85,15 +74,15 @@ export function LoginForm({
           </div>
 
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg text-center border border-destructive/20 animate-in fade-in zoom-in duration-300">
+            <div className="bg-destructive/10 text-destructive border-destructive/20 animate-in fade-in zoom-in rounded-lg border p-3 text-center text-sm duration-300">
               {error}
             </div>
           )}
 
           <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
-            <div className="relative group">
-              <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <div className="group relative">
+              <Mail className="text-muted-foreground group-focus-within:text-primary absolute top-3.5 left-3 h-4 w-4 transition-colors" />
               <Input
                 id="email"
                 type="email"
@@ -102,7 +91,7 @@ export function LoginForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="pl-10 h-12 bg-muted/50 border-muted-foreground/20 focus:border-primary/50"
+                className="bg-muted/50 border-muted-foreground/20 focus:border-primary/50 h-12 pl-10"
               />
             </div>
           </Field>
@@ -112,13 +101,13 @@ export function LoginForm({
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Link
                 href="/forgot-password"
-                className="text-xs font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
+                className="text-primary hover:text-primary/80 text-xs font-medium underline-offset-4 hover:underline"
               >
                 Forgot password?
               </Link>
             </div>
-            <div className="relative group">
-              <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <div className="group relative">
+              <Lock className="text-muted-foreground group-focus-within:text-primary absolute top-3.5 left-3 h-4 w-4 transition-colors" />
               <Input
                 id="password"
                 type="password"
@@ -126,7 +115,7 @@ export function LoginForm({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="pl-10 h-12 bg-muted/50 border-muted-foreground/20 focus:border-primary/50"
+                className="bg-muted/50 border-muted-foreground/20 focus:border-primary/50 h-12 pl-10"
               />
             </div>
           </Field>
@@ -134,11 +123,11 @@ export function LoginForm({
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 shadow-lg transition-all active:scale-[0.98]"
+            className="h-12 w-full shadow-lg transition-all active:scale-[0.98]"
           >
             {isLoading ? (
               <>
-                <Loader2 className="size-4 animate-spin mr-2" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Signing in...
               </>
             ) : (
@@ -149,35 +138,35 @@ export function LoginForm({
             )}
           </Button>
 
-          <FieldSeparator className="text-muted-foreground/50">
-            Or continue with
-          </FieldSeparator>
+          <FieldSeparator className="text-muted-foreground/50">Or continue with</FieldSeparator>
 
           <div className="flex flex-col gap-4">
             <Button
               variant="outline"
               type="button"
-              className="h-11 border-muted-foreground/20 hover:bg-muted font-medium transition-colors"
+              className="border-muted-foreground/20 hover:bg-muted h-11 font-medium transition-colors"
               disabled={socialLoading !== null}
               onClick={() => handleSocialLogin("google")}
             >
               {socialLoading === "google" ? (
-                <Loader2 className="size-4 animate-spin mr-2" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
-                <img
+                <Image
                   src="https://www.svgrepo.com/show/475656/google-color.svg"
                   alt="Google"
-                  className="size-4 mr-2"
+                  width={16}
+                  height={16}
+                  className="mr-2"
                 />
               )}
               Sign in with Google
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link
                 href="/sign-up"
-                className="font-semibold text-primary hover:text-primary/80 underline underline-offset-4"
+                className="text-primary hover:text-primary/80 font-semibold underline underline-offset-4"
               >
                 Sign up
               </Link>

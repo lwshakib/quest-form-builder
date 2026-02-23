@@ -36,10 +36,7 @@ export function GlobalSearch() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -63,11 +60,11 @@ export function GlobalSearch() {
   };
 
   return (
-    <div className="relative w-full group" ref={containerRef}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+    <div className="group relative w-full" ref={containerRef}>
+      <Search className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transition-colors" />
       <Input
         placeholder="Find anything..."
-        className="pl-10 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/30 transition-all rounded-full h-10"
+        className="bg-muted/50 focus-visible:ring-primary/30 h-10 rounded-full border-none pl-10 transition-all focus-visible:ring-1"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -77,49 +74,46 @@ export function GlobalSearch() {
       />
 
       {isOpen && (query.trim() || isLoading) && (
-        <div className="absolute top-12 left-0 right-0 bg-popover border border-border/50 shadow-2xl rounded-2xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="bg-popover border-border/50 animate-in fade-in slide-in-from-top-2 absolute top-12 right-0 left-0 z-[60] overflow-hidden rounded-2xl border shadow-2xl duration-200">
           <div className="max-h-[400px] overflow-y-auto p-2">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary/50" />
+                <Loader2 className="text-primary/50 h-6 w-6 animate-spin" />
               </div>
-            ) : results.quests.length === 0 &&
-              results.templates.length === 0 ? (
+            ) : results.quests.length === 0 && results.templates.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No matches found for "{query}"
-                </p>
+                <p className="text-muted-foreground text-sm">No matches found for "{query}"</p>
               </div>
             ) : (
               <div className="space-y-4 p-2">
                 {results.quests.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="px-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <h4 className="text-muted-foreground px-2 text-[10px] font-black tracking-widest uppercase">
                       Your Quests
                     </h4>
                     {results.quests.map((quest) => (
                       <button
                         key={quest.id}
                         onClick={() => handleSelect("quest", quest.id)}
-                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors group/item"
+                        className="hover:bg-muted/50 group/item flex w-full items-center justify-between rounded-xl p-3 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="bg-primary/5 p-2 rounded-lg border border-primary/10">
-                            <FileText className="h-4 w-4 text-primary" />
+                          <div className="bg-primary/5 border-primary/10 rounded-lg border p-2">
+                            <FileText className="text-primary h-4 w-4" />
                           </div>
                           <div className="text-left">
-                            <p className="text-sm font-bold truncate max-w-[200px]">
+                            <p className="max-w-[200px] truncate text-sm font-bold">
                               {quest.title}
                             </p>
                             {quest.questions.length > 0 && (
-                              <p className="text-[10px] text-muted-foreground font-medium">
+                              <p className="text-muted-foreground text-[10px] font-medium">
                                 Matched in {quest.questions.length} question
                                 {quest.questions.length > 1 ? "s" : ""}
                               </p>
                             )}
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all text-primary" />
+                        <ArrowRight className="text-primary h-4 w-4 opacity-0 transition-all group-hover/item:translate-x-1 group-hover/item:opacity-100" />
                       </button>
                     ))}
                   </div>
@@ -127,29 +121,27 @@ export function GlobalSearch() {
 
                 {results.templates.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="px-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    <h4 className="text-muted-foreground px-2 text-[10px] font-black tracking-widest uppercase">
                       Templates
                     </h4>
                     {results.templates.map((temp) => (
                       <button
                         key={temp.id}
                         onClick={() => handleSelect("template", temp.id)}
-                        className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors group/item"
+                        className="hover:bg-muted/50 group/item flex w-full items-center justify-between rounded-xl p-3 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="bg-muted p-2 rounded-lg border border-border">
-                            <Layout className="h-4 w-4 text-muted-foreground" />
+                          <div className="bg-muted border-border rounded-lg border p-2">
+                            <Layout className="text-muted-foreground h-4 w-4" />
                           </div>
                           <div className="text-left">
-                            <p className="text-sm font-bold truncate max-w-[200px]">
-                              {temp.title}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground font-medium">
+                            <p className="max-w-[200px] truncate text-sm font-bold">{temp.title}</p>
+                            <p className="text-muted-foreground text-[10px] font-medium">
                               {temp.category}
                             </p>
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all text-primary" />
+                        <ArrowRight className="text-primary h-4 w-4 opacity-0 transition-all group-hover/item:translate-x-1 group-hover/item:opacity-100" />
                       </button>
                     ))}
                   </div>

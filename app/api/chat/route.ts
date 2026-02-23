@@ -47,8 +47,7 @@ export async function POST(req: Request) {
     stopWhen: stepCountIs(10),
     tools: {
       updateQuest: tool({
-        description:
-          "Update quest details like title, description, settings, or background image.",
+        description: "Update quest details like title, description, settings, or background image.",
         inputSchema: z.object({
           title: z.string().optional(),
           description: z.string().optional(),
@@ -64,8 +63,7 @@ export async function POST(req: Request) {
       }),
       generateImage: generateImageTool,
       createQuestions: tool({
-        description:
-          "Add new questions to the quest. Accepts an array of question objects.",
+        description: "Add new questions to the quest. Accepts an array of question objects.",
         inputSchema: z.object({
           questions: z.array(
             z.object({

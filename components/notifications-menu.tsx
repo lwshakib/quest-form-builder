@@ -3,16 +3,9 @@
 import { useState, useEffect } from "react";
 import { Bell, MessageSquare, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import {
-  getUnreadNotifications,
-  markQuestResponsesAsRead,
-} from "@/lib/actions";
+import { getUnreadNotifications, markQuestResponsesAsRead } from "@/lib/actions";
 import { useRouter, usePathname } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { formatDistanceToNow } from "date-fns";
@@ -65,78 +58,75 @@ export function NotificationsMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:text-primary relative rounded-full transition-all h-10 w-10 active:scale-90"
+          className="text-muted-foreground hover:text-primary relative h-10 w-10 rounded-full transition-all active:scale-90"
         >
           <Bell className={cn("h-5 w-5", totalNew > 0 && "animate-pulse")} />
           {totalNew > 0 && (
-            <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-primary rounded-full border-2 border-background" />
+            <span className="bg-primary border-background absolute top-2.5 right-2.5 h-2 w-2 rounded-full border-2" />
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl"
+        className="bg-background/80 border-border/50 w-80 overflow-hidden rounded-2xl p-0 shadow-2xl backdrop-blur-xl"
         align="end"
         sideOffset={12}
       >
-        <div className="p-4 bg-muted/20 border-b border-border/50 flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+        <div className="bg-muted/20 border-border/50 flex items-center justify-between border-b p-4">
+          <h3 className="text-muted-foreground/60 text-xs font-black tracking-[0.2em] uppercase">
             Notifications
           </h3>
           {totalNew > 0 && (
-            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-black uppercase">
+            <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[10px] font-black uppercase">
               {totalNew} New
             </span>
           )}
         </div>
 
-        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+        <div className="custom-scrollbar max-h-[400px] overflow-y-auto">
           {isLoading && notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-3">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/20" />
-              <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30">
+            <div className="flex flex-col items-center justify-center space-y-3 py-12">
+              <Loader2 className="text-muted-foreground/20 h-6 w-6 animate-spin" />
+              <p className="text-muted-foreground/30 text-[10px] font-black tracking-widest uppercase">
                 Syncing...
               </p>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-8 text-center space-y-4">
-              <div className="p-4 bg-muted/30 rounded-full">
-                <Bell className="h-8 w-8 text-muted-foreground/20" />
+            <div className="flex flex-col items-center justify-center space-y-4 px-8 py-16 text-center">
+              <div className="bg-muted/30 rounded-full p-4">
+                <Bell className="text-muted-foreground/20 h-8 w-8" />
               </div>
               <div>
-                <p className="text-sm font-bold text-muted-foreground">
-                  All caught up!
-                </p>
-                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30 mt-1">
+                <p className="text-muted-foreground text-sm font-bold">All caught up!</p>
+                <p className="text-muted-foreground/30 mt-1 text-[10px] font-black tracking-widest uppercase">
                   No new responses
                 </p>
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-border/30">
+            <div className="divide-border/30 divide-y">
               {notifications.map((notification) => (
                 <button
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification.id)}
-                  className="w-full p-4 text-left hover:bg-primary/[0.02] transition-colors group flex items-start gap-4"
+                  className="hover:bg-primary/[0.02] group flex w-full items-start gap-4 p-4 text-left transition-colors"
                 >
-                  <div className="mt-1 bg-primary/5 p-2 rounded-xl group-hover:bg-primary/10 transition-colors border border-primary/5">
-                    <MessageSquare className="h-4 w-4 text-primary" />
+                  <div className="bg-primary/5 group-hover:bg-primary/10 border-primary/5 mt-1 rounded-xl border p-2 transition-colors">
+                    <MessageSquare className="text-primary h-4 w-4" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground group-hover:text-primary line-clamp-1 text-sm font-bold transition-colors">
                       {notification.title}
                     </p>
-                    <p className="text-xs text-muted-foreground/80 font-medium mt-0.5">
-                      {notification.newCount} new{" "}
-                      {notification.newCount === 1 ? "user" : "users"} responded
+                    <p className="text-muted-foreground/80 mt-0.5 text-xs font-medium">
+                      {notification.newCount} new {notification.newCount === 1 ? "user" : "users"}{" "}
+                      responded
                     </p>
-                    <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider mt-2">
-                      {formatDistanceToNow(new Date(notification.updatedAt))}{" "}
-                      ago
+                    <p className="text-muted-foreground/40 mt-2 text-[9px] font-bold tracking-wider uppercase">
+                      {formatDistanceToNow(new Date(notification.updatedAt))} ago
                     </p>
                   </div>
-                  <div className="mt-1 text-muted-foreground/20 group-hover:text-primary transition-colors">
-                    <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                  <div className="text-muted-foreground/20 group-hover:text-primary mt-1 transition-colors">
+                    <ArrowRight className="h-4 w-4 transform transition-transform group-hover:translate-x-1" />
                   </div>
                 </button>
               ))}
@@ -145,10 +135,10 @@ export function NotificationsMenu() {
         </div>
 
         {notifications.length > 0 && (
-          <div className="p-3 bg-muted/10 border-t border-border/50 text-center">
+          <div className="bg-muted/10 border-border/50 border-t p-3 text-center">
             <Button
               variant="ghost"
-              className="w-full h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary"
+              className="text-muted-foreground hover:text-primary h-8 w-full text-[10px] font-black tracking-widest uppercase"
               onClick={() => router.push("/quests")}
             >
               View all quests

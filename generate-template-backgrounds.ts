@@ -38,26 +38,23 @@ async function generateImage(template: any) {
   console.log(`[GENERATOR] Running for: "${template.title}"`);
 
   try {
-    const response = await fetch(
-      "https://api.tokenfactory.nebius.com/v1/images/generations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${NEBIUS_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "black-forest-labs/flux-schnell",
-          response_format: "b64_json",
-          response_extension: "png",
-          width: 1024,
-          height: 576,
-          num_inference_steps: 4,
-          seed: -1,
-          prompt,
-        }),
+    const response = await fetch("https://api.tokenfactory.nebius.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${NEBIUS_API_KEY}`,
       },
-    );
+      body: JSON.stringify({
+        model: "black-forest-labs/flux-schnell",
+        response_format: "b64_json",
+        response_extension: "png",
+        width: 1024,
+        height: 576,
+        num_inference_steps: 4,
+        seed: -1,
+        prompt,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -83,10 +80,7 @@ async function generateImage(template: any) {
     fs.writeFileSync(filePath, buffer);
     console.log(`[SUCCESS] Saved ${fileName}`);
   } catch (error) {
-    console.error(
-      `[ERROR] Failed to generate image for ${template.id}:`,
-      error,
-    );
+    console.error(`[ERROR] Failed to generate image for ${template.id}:`, error);
   }
 }
 
@@ -98,13 +92,9 @@ async function main() {
 
   const targetIds = process.argv.slice(2);
   const templatesToGenerate =
-    targetIds.length > 0
-      ? TEMPLATES.filter((t) => targetIds.includes(t.id))
-      : TEMPLATES;
+    targetIds.length > 0 ? TEMPLATES.filter((t) => targetIds.includes(t.id)) : TEMPLATES;
 
-  console.log(
-    `[START] Generating images for ${templatesToGenerate.length} templates...`,
-  );
+  console.log(`[START] Generating images for ${templatesToGenerate.length} templates...`);
 
   for (const template of templatesToGenerate) {
     await generateImage(template);

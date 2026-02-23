@@ -66,15 +66,15 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="relative py-24 overflow-hidden">
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+    <section id="features" className="relative overflow-hidden py-24">
+      <div className="relative z-10 container mx-auto px-6">
+        <div className="mx-auto mb-16 max-w-3xl text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-bold mb-6"
+            className="mb-6 text-4xl font-bold md:text-5xl"
           >
             Powerful Features for Modern Engagement
           </motion.h2>
@@ -83,14 +83,14 @@ export default function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg text-muted-foreground"
+            className="text-muted-foreground text-lg"
           >
-            Everything you need to create, manage, and analyze high-converting
-            forms and immersive quest experiences.
+            Everything you need to create, manage, and analyze high-converting forms and immersive
+            quest experiences.
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -98,20 +98,18 @@ export default function FeaturesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group p-8 rounded-2xl border bg-card hover:border-primary/50 transition-all duration-300"
+              className="group bg-card hover:border-primary/50 rounded-2xl border p-8 transition-all duration-300"
             >
               <div
                 className={cn(
-                  "w-12 h-12 rounded-lg flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-300",
+                  "mb-6 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110",
                   feature.bg,
                 )}
               >
-                <feature.icon className={cn("w-6 h-6", feature.color)} />
+                <feature.icon className={cn("h-6 w-6", feature.color)} />
               </div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="mb-3 text-xl font-bold">{feature.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </div>

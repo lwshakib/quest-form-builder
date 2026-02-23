@@ -24,12 +24,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Image as ImageIcon,
-  Video as VideoIcon,
-  Upload,
-  Loader2,
-} from "lucide-react";
+import { Image as ImageIcon, Video as VideoIcon, Upload, Loader2 } from "lucide-react";
 import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
 import { toast } from "sonner";
 import {
@@ -102,9 +97,7 @@ export function QuestionCard({
     try {
       const { secureUrl } = await uploadFileToCloudinary(file);
       onUpdate({ options: [secureUrl] });
-      toast.success(
-        `${type === "IMAGE" ? "Image" : "Video"} uploaded successfully`,
-      );
+      toast.success(`${type === "IMAGE" ? "Image" : "Video"} uploaded successfully`);
     } catch (error) {
       toast.error("Upload failed");
       console.error(error);
@@ -113,14 +106,9 @@ export function QuestionCard({
     }
   };
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: question.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: question.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -129,9 +117,7 @@ export function QuestionCard({
 
   const handleTypeChange = (newType: string) => {
     const data: any = { type: newType };
-    const isChoiceType = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(
-      newType,
-    );
+    const isChoiceType = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(newType);
     if (isChoiceType && (!question.options || question.options.length === 0)) {
       data.options = ["Option 1"];
     }
@@ -140,8 +126,7 @@ export function QuestionCard({
 
   const getOptionValue = (opt: any) =>
     typeof opt === "object" && opt !== null ? opt.value || "" : opt;
-  const getOptionImage = (opt: any) =>
-    typeof opt === "object" && opt !== null ? opt.image : null;
+  const getOptionImage = (opt: any) => (typeof opt === "object" && opt !== null ? opt.image : null);
 
   const handleOptionUpload = async (file: File, index: number) => {
     if (!file) return;
@@ -184,35 +169,35 @@ export function QuestionCard({
       {...listeners}
       className={cn(
         "group relative transition-all duration-300 outline-none",
-        isDragging && "z-50 opacity-50 scale-102",
+        isDragging && "z-50 scale-102 opacity-50",
       )}
     >
       <div
         className={cn(
-          "relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm group/card cursor-move",
+          "border-border/50 bg-background group/card relative cursor-move overflow-hidden rounded-lg border shadow-sm transition-all duration-300",
           isFocused
-            ? "border-primary/10 ring-2 ring-primary/5 bg-background shadow-xs"
+            ? "border-primary/10 ring-primary/5 bg-background shadow-xs ring-2"
             : "hover:border-border/60 hover:shadow-sm",
         )}
       >
         {/* Subtle top highlight */}
-        <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
+        <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
 
-        <div className="pt-3 px-4 flex flex-row items-center justify-between text-muted-foreground relative z-10">
+        <div className="text-muted-foreground relative z-10 flex flex-row items-center justify-between px-4 pt-3">
           <div className="flex items-center gap-3">
             <Select value={question.type} onValueChange={handleTypeChange}>
               <SelectTrigger
                 onPointerDown={(e) => e.stopPropagation()}
-                className="w-fit h-auto px-4 py-2 hover:bg-primary/5 border-none shadow-none focus:ring-0 gap-3 group/trigger transition-all rounded-none outline-none cursor-pointer bg-background"
+                className="hover:bg-primary/5 group/trigger bg-background h-auto w-fit cursor-pointer gap-3 rounded-none border-none px-4 py-2 shadow-none transition-all outline-none focus:ring-0"
               >
                 <SelectValue>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover/trigger:text-primary">
+                  <span className="text-muted-foreground/60 group-hover/trigger:text-primary text-[10px] font-black tracking-[0.2em] uppercase transition-colors">
                     {question.type.replace("_", " ")}
                   </span>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent
-                className="rounded-none border-border/50 bg-popover/95 backdrop-blur-2xl shadow-2xl p-2"
+                className="border-border/50 bg-popover/95 rounded-none p-2 shadow-2xl backdrop-blur-2xl"
                 position="popper"
                 sideOffset={12}
               >
@@ -220,9 +205,9 @@ export function QuestionCard({
                   <SelectItem
                     key={opt.id}
                     value={opt.id}
-                    className="rounded-none py-3 transition-colors cursor-pointer focus:bg-primary/10 focus:text-primary px-4"
+                    className="focus:bg-primary/10 focus:text-primary cursor-pointer rounded-none px-4 py-3 transition-colors"
                   >
-                    <span className="font-bold text-[10px] uppercase tracking-widest">
+                    <span className="text-[10px] font-bold tracking-widest uppercase">
                       {opt.label}
                     </span>
                   </SelectItem>
@@ -230,12 +215,12 @@ export function QuestionCard({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+          <div className="flex items-center gap-1 opacity-0 transition-all duration-300 group-hover/card:opacity-100">
             <Button
               onPointerDown={(e) => e.stopPropagation()}
               variant="ghost"
               size="icon"
-              className="rounded-full h-10 w-10 hover:bg-destructive/10 hover:text-destructive text-muted-foreground/30 transition-all"
+              className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground/30 h-10 w-10 rounded-full transition-all"
               onClick={onDelete}
             >
               <Trash2 className="h-4.5 w-4.5" />
@@ -243,7 +228,7 @@ export function QuestionCard({
           </div>
         </div>
 
-        <div className="px-4 pb-4 space-y-2 mt-1 relative z-10">
+        <div className="relative z-10 mt-1 space-y-2 px-4 pb-4">
           <Input
             value={question.title}
             onChange={(e) => onUpdate({ title: e.target.value })}
@@ -251,7 +236,7 @@ export function QuestionCard({
             onBlur={() => setIsFocused(false)}
             onPointerDown={(e) => e.stopPropagation()}
             placeholder="Question title..."
-            className="text-lg font-black tracking-tight bg-transparent border-none focus-visible:border-none focus-visible:ring-0 px-2 h-10 rounded-none placeholder:text-muted-foreground/25 selection:bg-primary/10 transition-all shadow-none"
+            className="placeholder:text-muted-foreground/25 selection:bg-primary/10 h-10 rounded-none border-none bg-transparent px-2 text-lg font-black tracking-tight shadow-none transition-all focus-visible:border-none focus-visible:ring-0"
           />
           <Textarea
             value={question.description || ""}
@@ -260,14 +245,14 @@ export function QuestionCard({
             onBlur={() => setIsFocused(false)}
             onPointerDown={(e) => e.stopPropagation()}
             placeholder="Add a description (optional)..."
-            className="bg-transparent border-none p-2 focus:ring-0 focus:outline-none focus:border-none focus-visible:ring-0 focus-visible:border-none shadow-none resize-none min-h-[40px] text-muted-foreground/70 placeholder:text-muted-foreground/15 leading-relaxed text-sm font-medium rounded-none transition-all"
+            className="text-muted-foreground/70 placeholder:text-muted-foreground/15 min-h-[40px] resize-none rounded-none border-none bg-transparent p-2 text-sm leading-relaxed font-medium shadow-none transition-all focus:border-none focus:ring-0 focus:outline-none focus-visible:border-none focus-visible:ring-0"
           />
 
-          <div className="flex items-center justify-end gap-6 pt-2 border-t border-border/10">
+          <div className="border-border/10 flex items-center justify-end gap-6 border-t pt-2">
             <div className="flex items-center gap-3">
               <Label
                 htmlFor={`required-${question.id}`}
-                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 cursor-pointer"
+                className="text-muted-foreground/60 cursor-pointer text-[10px] font-black tracking-widest uppercase"
               >
                 Required
               </Label>
@@ -276,7 +261,7 @@ export function QuestionCard({
                 checked={question.required}
                 onCheckedChange={(checked) => onUpdate({ required: checked })}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="scale-75 data-[state=checked]:bg-primary"
+                className="data-[state=checked]:bg-primary scale-75"
               />
             </div>
 
@@ -284,13 +269,11 @@ export function QuestionCard({
               variant="ghost"
               size="sm"
               onPointerDown={(e) => e.stopPropagation()}
-              className="h-8 px-3 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/5 transition-all gap-2"
+              className="text-muted-foreground/40 hover:text-primary hover:bg-primary/5 h-8 gap-2 rounded-lg px-3 transition-all"
               onClick={onDuplicate}
             >
               <Copy className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                Duplicate
-              </span>
+              <span className="text-[10px] font-black tracking-widest uppercase">Duplicate</span>
             </Button>
           </div>
 
@@ -298,7 +281,7 @@ export function QuestionCard({
           {(question.type === "MULTIPLE_CHOICE" ||
             question.type === "CHECKBOXES" ||
             question.type === "DROPDOWN") && (
-            <div className="pt-4 space-y-3">
+            <div className="space-y-3 pt-4">
               {question.options?.map((option: any, index: number) => {
                 const optionText = getOptionValue(option);
                 const optionImage = getOptionImage(option);
@@ -306,12 +289,12 @@ export function QuestionCard({
                 return (
                   <div
                     key={index}
-                    className="flex flex-col gap-2 animate-in fade-in slide-in-from-left-2 duration-300 group/option"
+                    className="animate-in fade-in slide-in-from-left-2 group/option flex flex-col gap-2 duration-300"
                   >
                     <div className="flex items-center gap-4">
                       <div
                         className={cn(
-                          "h-4 w-4 border-2 border-muted-foreground/20 rounded-full shrink-0 group-hover/option:border-primary/40 transition-colors shadow-sm",
+                          "border-muted-foreground/20 group-hover/option:border-primary/40 h-4 w-4 shrink-0 rounded-full border-2 shadow-sm transition-colors",
                           question.type === "CHECKBOXES" && "rounded-md",
                         )}
                       />
@@ -333,12 +316,11 @@ export function QuestionCard({
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="h-8 bg-transparent border-none focus-visible:border-none focus-visible:ring-0 rounded-none text-sm font-bold transition-all shadow-none px-2 placeholder:text-muted-foreground/20 flex-1"
+                        className="placeholder:text-muted-foreground/20 h-8 flex-1 rounded-none border-none bg-transparent px-2 text-sm font-bold shadow-none transition-all focus-visible:border-none focus-visible:ring-0"
                       />
 
                       {/* Option Image Controls */}
-                      {(question.type === "MULTIPLE_CHOICE" ||
-                        question.type === "CHECKBOXES") && (
+                      {(question.type === "MULTIPLE_CHOICE" || question.type === "CHECKBOXES") && (
                         <div className="flex items-center gap-1">
                           <input
                             type="file"
@@ -347,8 +329,7 @@ export function QuestionCard({
                             accept="image/*"
                             disabled={isUploading}
                             onChange={(e) =>
-                              e.target.files?.[0] &&
-                              handleOptionUpload(e.target.files[0], index)
+                              e.target.files?.[0] && handleOptionUpload(e.target.files[0], index)
                             }
                           />
                           <label htmlFor={`opt-img-${question.id}-${index}`}>
@@ -358,7 +339,7 @@ export function QuestionCard({
                               asChild
                               disabled={isUploading}
                               className={cn(
-                                "h-8 w-8 text-muted-foreground/20 hover:text-primary transition-all rounded-full cursor-pointer",
+                                "text-muted-foreground/20 hover:text-primary h-8 w-8 cursor-pointer rounded-full transition-all",
                                 optionImage && "text-primary",
                               )}
                             >
@@ -382,20 +363,16 @@ export function QuestionCard({
                                 ? question.correctAnswer.includes(optionText)
                                 : question.correctAnswer === optionText
                             )
-                              ? "text-green-500 bg-green-500/10 hover:bg-green-500/20"
-                              : "text-muted-foreground/20 hover:text-green-500/50 hover:bg-green-500/5",
+                              ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                              : "text-muted-foreground/20 hover:bg-green-500/5 hover:text-green-500/50",
                           )}
                           onClick={() => {
                             if (question.type === "CHECKBOXES") {
-                              const current = Array.isArray(
-                                question.correctAnswer,
-                              )
+                              const current = Array.isArray(question.correctAnswer)
                                 ? question.correctAnswer
                                 : [];
                               const newCorrect = current.includes(optionText)
-                                ? current.filter(
-                                    (c: string) => c !== optionText,
-                                  )
+                                ? current.filter((c: string) => c !== optionText)
                                 : [...current, optionText];
                               onUpdate({ correctAnswer: newCorrect });
                             } else {
@@ -411,7 +388,7 @@ export function QuestionCard({
                         variant="ghost"
                         size="icon"
                         onPointerDown={(e) => e.stopPropagation()}
-                        className="h-9 w-9 rounded-full opacity-0 group-hover/option:opacity-100 hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 transition-all"
+                        className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 h-9 w-9 rounded-full opacity-0 transition-all group-hover/option:opacity-100"
                         onClick={() => {
                           const newOptions = question.options.filter(
                             (_: any, i: number) => i !== index,
@@ -425,15 +402,15 @@ export function QuestionCard({
 
                     {/* Render Option Image Preview */}
                     {optionImage && (
-                      <div className="ml-8 relative group/img w-full max-w-sm">
+                      <div className="group/img relative ml-8 w-full max-w-sm">
                         <img
                           src={optionImage}
                           alt="Option"
-                          className="max-h-72 w-full object-contain rounded-md border border-border"
+                          className="border-border max-h-72 w-full rounded-md border object-contain"
                         />
                         <button
                           onClick={() => removeOptionImage(index)}
-                          className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg"
+                          className="bg-destructive absolute -top-2 -right-2 rounded-full p-1 text-white opacity-0 shadow-lg transition-opacity group-hover/img:opacity-100"
                           type="button"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -447,7 +424,7 @@ export function QuestionCard({
                 variant="ghost"
                 size="sm"
                 onPointerDown={(e) => e.stopPropagation()}
-                className="gap-3 text-primary/60 hover:text-primary hover:bg-primary/5 rounded-lg ml-8 px-5 h-10 font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-sm border border-primary/5"
+                className="text-primary/60 hover:text-primary hover:bg-primary/5 border-primary/5 ml-8 h-10 gap-3 rounded-lg border px-5 text-[10px] font-black tracking-[0.2em] uppercase shadow-sm transition-all"
                 onClick={() =>
                   onUpdate({
                     options: [
@@ -463,8 +440,8 @@ export function QuestionCard({
           )}
 
           {question.type === "VIDEO" && (
-            <div className="pt-4 space-y-4">
-              <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="space-y-4 pt-4">
+              <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-4 duration-300">
                 <Input
                   value={question.options?.[0] || ""}
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
@@ -472,7 +449,7 @@ export function QuestionCard({
                   onBlur={() => setIsFocused(false)}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="Paste Video URL (YouTube or direct link)..."
-                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30 flex-1"
+                  className="bg-accent/5 border-border/50 focus-visible:ring-primary/20 placeholder:text-muted-foreground/30 h-10 flex-1 rounded-xl border px-4 text-sm font-bold shadow-none transition-all focus-visible:ring-1"
                 />
                 <div className="relative">
                   <input
@@ -505,13 +482,10 @@ export function QuestionCard({
 
               {/* Draft Preview of the video in the editor */}
               {question.options?.[0] && (
-                <div className="mt-4 rounded-xl overflow-hidden border border-border/50 bg-accent/5 aspect-video flex items-center justify-center">
+                <div className="border-border/50 bg-accent/5 mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                   {(() => {
                     const url = question.options[0];
-                    if (
-                      url.includes("youtube.com/watch") ||
-                      url.includes("youtu.be/")
-                    ) {
+                    if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                       let videoId = "";
                       if (url.includes("youtube.com/watch")) {
                         videoId = new URL(url).searchParams.get("v") || "";
@@ -529,12 +503,9 @@ export function QuestionCard({
                           allowFullScreen
                         ></iframe>
                       );
-                    } else if (
-                      url.match(/\.(mp4|webm|ogg)$/i) ||
-                      url.includes("video")
-                    ) {
+                    } else if (url.match(/\.(mp4|webm|ogg)$/i) || url.includes("video")) {
                       return (
-                        <video controls className="w-full h-full">
+                        <video controls className="h-full w-full">
                           <source src={url} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
@@ -557,8 +528,8 @@ export function QuestionCard({
           )}
 
           {question.type === "IMAGE" && (
-            <div className="pt-4 space-y-4">
-              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="space-y-4 pt-4">
+              <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-3 duration-300">
                 <Input
                   value={question.options?.[0] || ""}
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
@@ -566,7 +537,7 @@ export function QuestionCard({
                   onBlur={() => setIsFocused(false)}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="Paste Image URL..."
-                  className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4 placeholder:text-muted-foreground/30 flex-1"
+                  className="bg-accent/5 border-border/50 focus-visible:ring-primary/20 placeholder:text-muted-foreground/30 h-10 flex-1 rounded-xl border px-4 text-sm font-bold shadow-none transition-all focus-visible:ring-1"
                 />
                 <div className="relative">
                   <input
@@ -599,11 +570,11 @@ export function QuestionCard({
 
               {/* Image Preview */}
               {question.options?.[0] && (
-                <div className="mt-4 rounded-xl overflow-hidden border border-border/50 bg-accent/5 max-h-[400px] flex items-center justify-center relative group/preview">
+                <div className="border-border/50 bg-accent/5 group/preview relative mt-4 flex max-h-[400px] items-center justify-center overflow-hidden rounded-xl border">
                   <img
                     src={question.options[0]}
                     alt="Preview"
-                    className="max-w-full max-h-[400px] object-contain transition-transform duration-500"
+                    className="max-h-[400px] max-w-full object-contain transition-transform duration-500"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
                         "https://placehold.co/600x400?text=Invalid+Image+URL";
@@ -615,43 +586,39 @@ export function QuestionCard({
           )}
 
           {isQuiz && (
-            <div className="mt-8 pt-6 border-t border-border/30 space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="border-border/30 animate-in fade-in slide-in-from-top-2 mt-8 space-y-4 border-t pt-6 duration-500">
               <div className="flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-xl border border-primary/10 transition-all hover:bg-primary/10">
-                  <Award className="h-4 w-4 text-primary" />
+                <div className="bg-primary/5 border-primary/10 hover:bg-primary/10 flex items-center gap-3 rounded-xl border px-4 py-2 transition-all">
+                  <Award className="text-primary h-4 w-4" />
                   <Input
                     type="number"
                     value={question.points || 0}
-                    onChange={(e) =>
-                      onUpdate({ points: parseInt(e.target.value) || 0 })
-                    }
+                    onChange={(e) => onUpdate({ points: parseInt(e.target.value) || 0 })}
                     onPointerDown={(e) => e.stopPropagation()}
-                    className="w-16 h-8 bg-transparent border-none focus-visible:ring-0 font-black text-primary p-0 shadow-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="text-primary h-8 w-16 [appearance:textfield] border-none bg-transparent p-0 text-center font-black shadow-none focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">
+                  <span className="text-primary/60 text-[10px] font-black tracking-widest uppercase">
                     Points
                   </span>
                 </div>
 
                 {["SHORT_TEXT", "PARAGRAPH"].includes(question.type) && (
-                  <div className="flex-1 min-w-[200px]">
+                  <div className="min-w-[200px] flex-1">
                     <Input
                       value={question.correctAnswer || ""}
-                      onChange={(e) =>
-                        onUpdate({ correctAnswer: e.target.value })
-                      }
+                      onChange={(e) => onUpdate({ correctAnswer: e.target.value })}
                       onPointerDown={(e) => e.stopPropagation()}
                       placeholder="Set correct answer..."
-                      className="h-10 bg-accent/5 border border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20 rounded-xl text-sm font-bold transition-all shadow-none px-4"
+                      className="bg-accent/5 border-border/50 focus-visible:ring-primary/20 h-10 rounded-xl border px-4 text-sm font-bold shadow-none transition-all focus-visible:ring-1"
                     />
                   </div>
                 )}
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-muted-foreground/60 px-2">
+                <div className="text-muted-foreground/60 flex items-center gap-2 px-2">
                   <MessageCircle className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">
+                  <span className="text-[10px] font-black tracking-widest uppercase">
                     Feedback for respondents
                   </span>
                 </div>
@@ -660,7 +627,7 @@ export function QuestionCard({
                   onChange={(e) => onUpdate({ feedback: e.target.value })}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="Add feedback for correct/incorrect answers..."
-                  className="bg-accent/5 border border-border/50 focus:ring-1 focus:ring-primary/20 rounded-xl p-4 text-sm font-medium transition-all resize-none min-h-[80px]"
+                  className="bg-accent/5 border-border/50 focus:ring-primary/20 min-h-[80px] resize-none rounded-xl border p-4 text-sm font-medium transition-all focus:ring-1"
                 />
               </div>
             </div>

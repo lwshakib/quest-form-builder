@@ -7,10 +7,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 import { TEMPLATES } from "./templates";
 
-export async function createQuest(
-  title: string = "Untitled Quest",
-  backgroundImageUrl?: string,
-) {
+export async function createQuest(title: string = "Untitled Quest", backgroundImageUrl?: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -67,9 +64,7 @@ export async function createQuestFromTemplate(templateId: string) {
       required: q.required || false,
       options:
         q.options ||
-        (q.type === "MULTIPLE_CHOICE" ||
-        q.type === "CHECKBOXES" ||
-        q.type === "DROPDOWN"
+        (q.type === "MULTIPLE_CHOICE" || q.type === "CHECKBOXES" || q.type === "DROPDOWN"
           ? ["Option 1"]
           : undefined),
     }));
@@ -106,9 +101,7 @@ export async function getRecentTemplates() {
     take: 10,
   });
 
-  const uniqueTemplateIds = Array.from(
-    new Set(recentQuests.map((q) => q.templateId as string)),
-  );
+  const uniqueTemplateIds = Array.from(new Set(recentQuests.map((q) => q.templateId as string)));
   return uniqueTemplateIds.slice(0, 3);
 }
 
@@ -160,9 +153,7 @@ export async function globalSearch(query: string) {
       t.title.toLowerCase().includes(q) ||
       t.description.toLowerCase().includes(q) ||
       t.questions.some(
-        (qn) =>
-          qn.title.toLowerCase().includes(q) ||
-          qn.description?.toLowerCase().includes(q),
+        (qn) => qn.title.toLowerCase().includes(q) || qn.description?.toLowerCase().includes(q),
       ),
   ).slice(0, 5);
 
@@ -381,9 +372,7 @@ export async function createQuestion(
       required: required ?? quest?.questionsRequiredByDefault ?? false,
       options:
         options ||
-        (type === "MULTIPLE_CHOICE" ||
-        type === "CHECKBOXES" ||
-        type === "DROPDOWN"
+        (type === "MULTIPLE_CHOICE" || type === "CHECKBOXES" || type === "DROPDOWN"
           ? ["Option 1"]
           : type === "VIDEO" || type === "IMAGE"
             ? [""]
@@ -395,7 +384,7 @@ export async function createQuestion(
   return question;
 }
 
-export async function updateQuestion(id: string, questId: string, data: any) {
+export async function updateQuestion(id: string, questId: string, data: Record<string, unknown>) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -472,10 +461,7 @@ export async function duplicateQuestion(id: string, questId: string) {
   return question;
 }
 
-export async function updateQuestionsOrder(
-  questId: string,
-  questionIds: string[],
-) {
+export async function updateQuestionsOrder(questId: string, questionIds: string[]) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -524,7 +510,7 @@ export async function getPublicQuest(id: string) {
 
 export async function submitResponse(
   questId: string,
-  answers: Record<string, any>,
+  answers: Record<string, unknown>,
   duration?: number,
 ) {
   const quest = await prisma.quest.findUnique({
@@ -546,7 +532,7 @@ export async function submitResponse(
     const answerData = Object.entries(answers).map(([questionId, value]) => ({
       questionId,
       responseId: res.id,
-      value: value as any,
+      value: value as any, // JsonValue
     }));
 
     await tx.answer.createMany({

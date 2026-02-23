@@ -100,6 +100,15 @@ const addDefaultVariants = (variants: Variants) => ({
   visible: { ...defaultItemVariants.visible, ...variants.visible },
 });
 
+const motionCache = new Map<any, any>();
+
+function getMotionComponent(as: any) {
+  if (!motionCache.has(as)) {
+    motionCache.set(as, motion.create(as));
+  }
+  return motionCache.get(as);
+}
+
 function AnimatedGroup({
   children,
   className,
@@ -115,11 +124,8 @@ function AnimatedGroup({
   const containerVariants = variants?.container || selectedVariants.container;
   const itemVariants = variants?.item || selectedVariants.item;
 
-  const MotionComponent = React.useMemo(() => motion.create(as as any), [as]);
-  const MotionChild = React.useMemo(
-    () => motion.create(asChild as any),
-    [asChild],
-  );
+  const MotionComponent = getMotionComponent(as);
+  const MotionChild = getMotionComponent(asChild);
 
   return (
     <MotionComponent

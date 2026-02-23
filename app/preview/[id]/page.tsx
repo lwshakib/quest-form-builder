@@ -16,13 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Loader2,
-  Eye,
-  Check,
-  Calendar as CalendarIcon,
-  Clock as ClockIcon,
-} from "lucide-react";
+import { Loader2, Eye, Check, Calendar as CalendarIcon, Clock as ClockIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
@@ -39,8 +33,7 @@ export default function PreviewQuestPage() {
   const [progress, setProgress] = useState(0);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
-  const { data: session, isPending: isSessionLoading } =
-    authClient.useSession();
+  const { data: session, isPending: isSessionLoading } = authClient.useSession();
 
   useEffect(() => {
     if (!quest) return;
@@ -52,27 +45,17 @@ export default function PreviewQuestPage() {
     if (requiredQuestions.length === 0) {
       const filledCount = relevantQuestions.filter((q: any) => {
         const val = answers[q.id];
-        return (
-          val !== undefined &&
-          val !== "" &&
-          (Array.isArray(val) ? val.length > 0 : true)
-        );
+        return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
       }).length;
       setProgress(
-        relevantQuestions.length > 0
-          ? (filledCount / relevantQuestions.length) * 100
-          : 0,
+        relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
       );
       return;
     }
 
     const filledRequiredCount = requiredQuestions.filter((q: any) => {
       const val = answers[q.id];
-      return (
-        val !== undefined &&
-        val !== "" &&
-        (Array.isArray(val) ? val.length > 0 : true)
-      );
+      return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
     }).length;
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
   }, [answers, quest]);
@@ -121,11 +104,7 @@ export default function PreviewQuestPage() {
     }));
   };
 
-  const handleCheckboxChange = (
-    questionId: string,
-    option: string,
-    checked: boolean,
-  ) => {
+  const handleCheckboxChange = (questionId: string, option: string, checked: boolean) => {
     setAnswers((prev) => {
       const currentAnswers = prev[questionId] || [];
       if (checked) {
@@ -146,15 +125,15 @@ export default function PreviewQuestPage() {
 
   if (isLoading || isSessionLoading) {
     return (
-      <div className="min-h-screen bg-background py-16 px-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="bg-background flex min-h-screen items-center justify-center px-6 py-16">
+        <Loader2 className="text-primary h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (isNotFound) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+      <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold">Quest not found or access denied</h1>
         <p className="text-muted-foreground mt-2">
           You must be the owner of this quest to preview it.
@@ -167,10 +146,10 @@ export default function PreviewQuestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-16 px-6 relative overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div className="bg-background selection:bg-primary selection:text-primary-foreground relative min-h-screen overflow-x-hidden px-6 py-16">
       {/* Preview Badge */}
-      <div className="fixed top-0 left-0 right-0 bg-primary/10 border-b border-primary/20 h-10 flex items-center justify-center z-[110] backdrop-blur-sm">
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+      <div className="bg-primary/10 border-primary/20 fixed top-0 right-0 left-0 z-[110] flex h-10 items-center justify-center border-b backdrop-blur-sm">
+        <div className="text-primary flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
           <Eye className="h-3 w-3" />
           Preview Mode
         </div>
@@ -181,40 +160,40 @@ export default function PreviewQuestPage() {
       </div>
 
       {quest?.showProgressBar && (
-        <div className="fixed top-10 left-0 right-0 h-1 bg-accent/20 z-[100]">
+        <div className="bg-accent/20 fixed top-10 right-0 left-0 z-[100] h-1">
           <div
-            className="h-full bg-primary transition-all duration-1000 ease-in-out"
+            className="bg-primary h-full transition-all duration-1000 ease-in-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
       {/* Decorative Background */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.02),transparent_50%)] pointer-events-none" />
+      <div className="pointer-events-none fixed top-0 left-1/2 h-full w-full -translate-x-1/2 bg-[radial-gradient(circle_at_50%_0%,rgba(var(--primary),0.02),transparent_50%)]" />
 
-      <div className="max-w-2xl mx-auto relative space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="animate-in fade-in slide-in-from-bottom-8 relative mx-auto max-w-2xl space-y-8 duration-1000">
         <form onSubmit={handleSubmit} className="space-y-6 pb-20">
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
-              <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden shadow-sm h-40 sm:h-56">
+              <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
                 <img
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
             )}
-            <div className="relative border border-border/50 bg-background rounded-lg overflow-hidden shadow-sm">
-              <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-              <div className="p-8 sm:p-10 space-y-4 relative z-10">
+            <div className="border-border/50 bg-background relative overflow-hidden rounded-lg border shadow-sm">
+              <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
+              <div className="relative z-10 space-y-4 p-8 sm:p-10">
                 <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                  <h1 className="text-2xl leading-tight font-black tracking-tight sm:text-3xl">
                     {quest.title}
                   </h1>
                   {quest.description && (
-                    <p className="text-base text-muted-foreground/70 font-medium leading-relaxed max-w-xl">
+                    <p className="text-muted-foreground/70 max-w-xl text-base leading-relaxed font-medium">
                       {quest.description}
                     </p>
                   )}
@@ -226,27 +205,23 @@ export default function PreviewQuestPage() {
               <div
                 key={q.id}
                 className={cn(
-                  "relative border border-border/50 bg-background rounded-lg overflow-hidden transition-all duration-300 shadow-sm group/card",
+                  "border-border/50 bg-background group/card relative overflow-hidden rounded-lg border shadow-sm transition-all duration-300",
                   activeQuestionId === q.id
-                    ? "border-primary/10 ring-2 ring-primary/5 shadow-xs"
+                    ? "border-primary/10 ring-primary/5 shadow-xs ring-2"
                     : "hover:border-border/60 hover:shadow-sm",
                 )}
                 onFocus={() => setActiveQuestionId(q.id)}
               >
-                <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
-                <div className="p-6 sm:p-8 space-y-6 relative z-10">
+                <div className="via-primary/5 absolute top-0 right-4 left-4 h-px bg-gradient-to-r from-transparent to-transparent" />
+                <div className="relative z-10 space-y-6 p-6 sm:p-8">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-lg sm:text-xl font-bold tracking-tight block">
+                      <Label className="block text-lg font-bold tracking-tight sm:text-xl">
                         {q.title}
-                        {q.required && (
-                          <span className="text-primary ml-2 inline-block">
-                            *
-                          </span>
-                        )}
+                        {q.required && <span className="text-primary ml-2 inline-block">*</span>}
                       </Label>
                       {q.description && (
-                        <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed max-w-lg">
+                        <p className="text-muted-foreground/60 max-w-lg text-xs leading-relaxed font-medium">
                           {q.description}
                         </p>
                       )}
@@ -257,22 +232,18 @@ export default function PreviewQuestPage() {
                     {q.type === "SHORT_TEXT" && (
                       <Input
                         placeholder="Your answer..."
-                        className="h-12 bg-transparent border-0 border-b border-border/60 rounded-none px-0 text-lg font-medium focus-visible:ring-0 focus-visible:border-primary transition-all placeholder:text-muted-foreground/20"
+                        className="border-border/60 focus-visible:border-primary placeholder:text-muted-foreground/20 h-12 rounded-none border-0 border-b bg-transparent px-0 text-lg font-medium transition-all focus-visible:ring-0"
                         value={answers[q.id] || ""}
-                        onChange={(e) =>
-                          handleInputChange(q.id, e.target.value)
-                        }
+                        onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
 
                     {q.type === "PARAGRAPH" && (
                       <Textarea
                         placeholder="Long form response..."
-                        className="min-h-[140px] bg-accent/5 border-2 border-transparent focus:border-primary/20 focus:ring-0 rounded-xl p-4 text-base font-medium transition-all placeholder:text-muted-foreground/20 resize-none leading-relaxed"
+                        className="bg-accent/5 focus:border-primary/20 placeholder:text-muted-foreground/20 min-h-[140px] resize-none rounded-xl border-2 border-transparent p-4 text-base leading-relaxed font-medium transition-all focus:ring-0"
                         value={answers[q.id] || ""}
-                        onChange={(e) =>
-                          handleInputChange(q.id, e.target.value)
-                        }
+                        onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
 
@@ -286,28 +257,22 @@ export default function PreviewQuestPage() {
                           <Label
                             key={option}
                             className={cn(
-                              "flex items-center gap-4 p-4 border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt",
-                              answers[q.id] === option &&
-                                "border-primary/40 bg-primary/5",
+                              "border-border/60 hover:bg-accent/5 group/opt flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition-all duration-200",
+                              answers[q.id] === option && "border-primary/40 bg-primary/5",
                             )}
                           >
-                            <RadioGroupItem
-                              value={option}
-                              className="opacity-0 absolute w-0 h-0"
-                            />
+                            <RadioGroupItem value={option} className="absolute h-0 w-0 opacity-0" />
                             <div
                               className={cn(
-                                "h-5 w-5 rounded-full border-2 border-primary/20 flex items-center justify-center transition-all",
+                                "border-primary/20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all",
                                 answers[q.id] === option && "border-primary",
                               )}
                             >
                               {answers[q.id] === option && (
-                                <div className="h-2.5 w-2.5 bg-primary rounded-full animate-in zoom-in duration-200" />
+                                <div className="bg-primary animate-in zoom-in h-2.5 w-2.5 rounded-full duration-200" />
                               )}
                             </div>
-                            <span className="text-sm font-medium text-foreground/80">
-                              {option}
-                            </span>
+                            <span className="text-foreground/80 text-sm font-medium">{option}</span>
                           </Label>
                         ))}
                       </RadioGroup>
@@ -319,36 +284,30 @@ export default function PreviewQuestPage() {
                           <Label
                             key={option}
                             className={cn(
-                              "flex items-center gap-4 p-4 border border-border/60 rounded-xl transition-all duration-200 cursor-pointer hover:bg-accent/5 group/opt",
+                              "border-border/60 hover:bg-accent/5 group/opt flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition-all duration-200",
                               (answers[q.id] || []).includes(option) &&
                                 "border-primary/40 bg-primary/5",
                             )}
                           >
                             <Checkbox
-                              className="opacity-0 absolute w-0 h-0"
+                              className="absolute h-0 w-0 opacity-0"
                               checked={(answers[q.id] || []).includes(option)}
                               onCheckedChange={(checked) =>
-                                handleCheckboxChange(
-                                  q.id,
-                                  option,
-                                  checked as boolean,
-                                )
+                                handleCheckboxChange(q.id, option, checked as boolean)
                               }
                             />
                             <div
                               className={cn(
-                                "h-5 w-5 rounded-md border-2 border-primary/20 flex items-center justify-center transition-all",
+                                "border-primary/20 flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all",
                                 (answers[q.id] || []).includes(option) &&
                                   "bg-primary border-primary",
                               )}
                             >
                               {(answers[q.id] || []).includes(option) && (
-                                <Check className="h-3.5 w-3.5 text-primary-foreground animate-in zoom-in duration-200" />
+                                <Check className="text-primary-foreground animate-in zoom-in h-3.5 w-3.5 duration-200" />
                               )}
                             </div>
-                            <span className="text-sm font-medium text-foreground/80">
-                              {option}
-                            </span>
+                            <span className="text-foreground/80 text-sm font-medium">{option}</span>
                           </Label>
                         ))}
                       </div>
@@ -359,15 +318,15 @@ export default function PreviewQuestPage() {
                         onValueChange={(val) => handleInputChange(q.id, val)}
                         value={answers[q.id] || undefined}
                       >
-                        <SelectTrigger className="w-full h-12 bg-background border border-border/60 rounded-xl px-4 text-sm font-medium focus:ring-1 focus:ring-primary transition-all">
+                        <SelectTrigger className="bg-background border-border/60 focus:ring-primary h-12 w-full rounded-xl border px-4 text-sm font-medium transition-all focus:ring-1">
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border border-border/60 bg-background shadow-xl">
+                        <SelectContent className="border-border/60 bg-background rounded-xl border shadow-xl">
                           {((q.options as string[]) || []).map((option) => (
                             <SelectItem
                               key={option}
                               value={option}
-                              className="py-3 text-sm font-medium transition-all cursor-pointer"
+                              className="cursor-pointer py-3 text-sm font-medium transition-all"
                             >
                               {option}
                             </SelectItem>
@@ -379,17 +338,13 @@ export default function PreviewQuestPage() {
                     {q.type === "VIDEO" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="rounded-xl overflow-hidden border border-border/50 bg-accent/5 aspect-video flex items-center justify-center">
+                          <div className="border-border/50 bg-accent/5 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                             {(() => {
                               const url = q.options[0];
-                              if (
-                                url.includes("youtube.com/watch") ||
-                                url.includes("youtu.be/")
-                              ) {
+                              if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                                 let videoId = "";
                                 if (url.includes("youtube.com/watch")) {
-                                  videoId =
-                                    new URL(url).searchParams.get("v") || "";
+                                  videoId = new URL(url).searchParams.get("v") || "";
                                 } else {
                                   videoId = url.split("/").pop() || "";
                                 }
@@ -404,12 +359,9 @@ export default function PreviewQuestPage() {
                                     allowFullScreen
                                   ></iframe>
                                 );
-                              } else if (
-                                url.match(/\.(mp4|webm|ogg)$/i) ||
-                                url.includes("video")
-                              ) {
+                              } else if (url.match(/\.(mp4|webm|ogg)$/i) || url.includes("video")) {
                                 return (
-                                  <video controls className="w-full h-full">
+                                  <video controls className="h-full w-full">
                                     <source src={url} type="video/mp4" />
                                     Your browser does not support the video tag.
                                   </video>
@@ -419,7 +371,7 @@ export default function PreviewQuestPage() {
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    className="gap-2 h-12 rounded-xl"
+                                    className="h-12 gap-2 rounded-xl"
                                     onClick={() => window.open(url, "_blank")}
                                   >
                                     Click here to see the video
@@ -435,11 +387,11 @@ export default function PreviewQuestPage() {
                     {q.type === "IMAGE" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="rounded-xl overflow-hidden border border-border/50 bg-accent/5 flex items-center justify-center">
+                          <div className="border-border/50 bg-accent/5 flex items-center justify-center overflow-hidden rounded-xl border">
                             <img
                               src={q.options[0]}
                               alt={q.title}
-                              className="max-w-full h-auto object-contain"
+                              className="h-auto max-w-full object-contain"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src =
                                   "https://placehold.co/600x400?text=Image+Unavailable";
@@ -459,11 +411,11 @@ export default function PreviewQuestPage() {
             <Button
               type="submit"
               size="lg"
-              className="h-12 px-10 rounded-full font-black uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+              className="shadow-primary/20 h-12 rounded-full px-10 text-[11px] font-black tracking-[0.15em] uppercase shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95"
             >
               Test Submission
             </Button>
-            <p className="mt-4 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-4 text-xs">
               Responses entered in preview mode are not recorded.
             </p>
           </footer>

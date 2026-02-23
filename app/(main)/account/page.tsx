@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { User, Lock, Shield, Trash2, Smartphone, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -29,12 +28,12 @@ export default function AccountPage() {
 
   // Update name when session loads
   useEffect(() => {
-    if (session?.user?.name) {
+    if (session?.user?.name && !name) {
       setName(session.user.name);
     }
-  }, [session]);
+  }, [session?.user?.name, name]); // eslint-disable-line react-hooks/set-state-in-effect
 
-  const [sessions, setSessions] = useState([
+  const [sessions] = useState([
     {
       id: "1",
       device: "Chrome on Windows",
@@ -54,7 +53,7 @@ export default function AccountPage() {
   if (isPending) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="text-primary h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -62,24 +61,22 @@ export default function AccountPage() {
   if (!session) return null;
 
   return (
-    <div className="container mx-auto max-w-4xl py-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="animate-in fade-in slide-in-from-bottom-4 container mx-auto max-w-4xl space-y-8 py-10 duration-700">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences.
-        </p>
+        <p className="text-muted-foreground">Manage your account settings and preferences.</p>
       </div>
 
       <div className="space-y-12">
         {/* Profile Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <User className="h-3.5 w-3.5 text-primary/70" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            <User className="text-primary/70 h-3.5 w-3.5" />
+            <h2 className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
               Profile Settings
             </h2>
           </div>
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
@@ -93,7 +90,7 @@ export default function AccountPage() {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="max-w-md bg-background/50"
+                  className="bg-background/50 max-w-md"
                 />
               </div>
               <div className="space-y-2">
@@ -102,7 +99,7 @@ export default function AccountPage() {
                   id="email"
                   value={session.user.email}
                   readOnly
-                  className="max-w-md bg-muted/50 cursor-not-allowed"
+                  className="bg-muted/50 max-w-md cursor-not-allowed"
                 />
               </div>
             </CardContent>
@@ -123,9 +120,7 @@ export default function AccountPage() {
                 disabled={isUpdating}
                 className="bg-primary/90 hover:bg-primary transition-all duration-300"
               >
-                {isUpdating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
             </CardFooter>
@@ -135,17 +130,16 @@ export default function AccountPage() {
         {/* Security Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <Lock className="h-3.5 w-3.5 text-primary/70" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            <Lock className="text-primary/70 h-3.5 w-3.5" />
+            <h2 className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
               Security & Privacy
             </h2>
           </div>
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
               <CardDescription>
-                Ensure your account is using a long, random password to stay
-                secure.
+                Ensure your account is using a long, random password to stay secure.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -156,7 +150,7 @@ export default function AccountPage() {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="max-w-md bg-background/50"
+                  className="bg-background/50 max-w-md"
                 />
               </div>
               <div className="space-y-2">
@@ -166,7 +160,7 @@ export default function AccountPage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="max-w-md bg-background/50"
+                  className="bg-background/50 max-w-md"
                 />
               </div>
               <div className="space-y-2">
@@ -176,7 +170,7 @@ export default function AccountPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="max-w-md bg-background/50"
+                  className="bg-background/50 max-w-md"
                 />
               </div>
             </CardContent>
@@ -206,9 +200,7 @@ export default function AccountPage() {
                 disabled={isUpdating}
                 className="bg-primary/90 hover:bg-primary transition-all duration-300"
               >
-                {isUpdating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update Password
               </Button>
             </CardFooter>
@@ -218,17 +210,17 @@ export default function AccountPage() {
         {/* Sessions Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <Smartphone className="h-3.5 w-3.5 text-primary/70" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            <Smartphone className="text-primary/70 h-3.5 w-3.5" />
+            <h2 className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
               Active Sessions
             </h2>
           </div>
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Active Sessions</CardTitle>
               <CardDescription>
-                This is a list of devices that have logged into your account.
-                Revoke any sessions that you do not recognize.
+                This is a list of devices that have logged into your account. Revoke any sessions
+                that you do not recognize.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -236,19 +228,19 @@ export default function AccountPage() {
                 <div key={session.id}>
                   <div className="flex items-center justify-between py-4">
                     <div className="flex items-center gap-4">
-                      <div className="p-2 bg-primary/10 rounded-full">
-                        <Smartphone className="h-5 w-5 text-primary" />
+                      <div className="bg-primary/10 rounded-full p-2">
+                        <Smartphone className="text-primary h-5 w-5" />
                       </div>
                       <div>
-                        <p className="font-medium flex items-center gap-2">
+                        <p className="flex items-center gap-2 font-medium">
                           {session.device}
                           {session.current && (
-                            <span className="text-[10px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider border border-green-500/20">
+                            <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-green-500 uppercase">
                               Current
                             </span>
                           )}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {session.location} • {session.date}
                         </p>
                       </div>
@@ -273,29 +265,28 @@ export default function AccountPage() {
         {/* Danger Zone Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <Shield className="h-3.5 w-3.5 text-destructive/70" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-destructive/60">
+            <Shield className="text-destructive/70 h-3.5 w-3.5" />
+            <h2 className="text-destructive/60 text-[10px] font-black tracking-[0.2em] uppercase">
               Danger Zone
             </h2>
           </div>
-          <Card className="border border-destructive/20 shadow-xl bg-destructive/5 backdrop-blur-sm">
+          <Card className="border-destructive/20 bg-destructive/5 border shadow-xl backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-destructive">Delete Account</CardTitle>
               <CardDescription>
-                Once you delete your account, there is no going back. Please be
-                certain.
+                Once you delete your account, there is no going back. Please be certain.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                All of your quests, responses, and data will be permanently
-                removed. This action cannot be undone.
+              <p className="text-muted-foreground mb-4 text-sm">
+                All of your quests, responses, and data will be permanently removed. This action
+                cannot be undone.
               </p>
             </CardContent>
             <CardFooter>
               <Button
                 variant="destructive"
-                className="flex items-center gap-2 shadow-lg shadow-destructive/20 scale-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="shadow-destructive/20 flex scale-100 items-center gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Trash2 className="h-4 w-4" /> Delete Account
               </Button>

@@ -1,19 +1,11 @@
 "use client";
 
-import {
-  usePathname,
-  useParams,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
 import { UserMenu } from "@/components/user-menu";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import {
-  Search,
-  Bell,
-  HelpCircle,
   ArrowLeft,
   Play,
   Share2,
@@ -30,17 +22,8 @@ import { useState, useEffect, useRef } from "react";
 import { getQuestById, updateQuest } from "@/lib/actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PublishDialog } from "@/components/publish-dialog";
@@ -48,18 +31,20 @@ import { GlobalSearch } from "@/components/global-search";
 import { NotificationsMenu } from "@/components/notifications-menu";
 import { InfoMenu } from "@/components/info-menu";
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "questions";
 
-  const [quest, setQuest] = useState<any>(null);
+  const [quest, setQuest] = useState<{
+    id: string;
+    title: string;
+    status: string;
+    description?: string | null;
+    [key: string]: unknown;
+  } | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -73,14 +58,16 @@ export default function ClientLayout({
     !pathname.endsWith("/settings");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   useEffect(() => {
-    if (quest?.title) {
+    if (quest?.title && editedTitle === "") {
       setEditedTitle(quest.title);
     }
-  }, [quest?.title]);
+  }, [quest?.title, editedTitle]); // eslint-disable-line react-hooks/set-state-in-effect
 
   useEffect(() => {
     if (isEditingTitle && titleInputRef.current) {
@@ -103,7 +90,7 @@ export default function ClientLayout({
       setQuest(updated);
       setIsEditingTitle(false);
       toast.success("Title updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update title");
       setEditedTitle(quest?.title || "");
       setIsEditingTitle(false);
@@ -132,10 +119,11 @@ export default function ClientLayout({
       loadQuest();
 
       // Listen for updates from the page content (e.g. title changes)
-      const handleUpdate = (e: any) => {
-        if (e.detail) {
-          setQuest(e.detail);
-          setEditedTitle(e.detail.title || "");
+      const handleUpdate = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (customEvent.detail) {
+          setQuest(customEvent.detail);
+          setEditedTitle(customEvent.detail.title || "");
         }
       };
 
@@ -159,27 +147,22 @@ export default function ClientLayout({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative">
+    <div className="bg-background relative flex min-h-screen flex-col">
       {/* Background Decor */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:40px_40px]" />
 
-      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+      <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {isEditor ? (
             // Editor Header
             <>
               <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  asChild
-                  className="rounded-full h-9 w-9"
-                >
+                <Button variant="ghost" size="icon" asChild className="h-9 w-9 rounded-full">
                   <Link href="/quests">
                     <ArrowLeft className="h-5 w-5" />
                   </Link>
                 </Button>
-                <div className="hidden sm:flex flex-col">
+                <div className="hidden flex-col sm:flex">
                   {isEditingTitle ? (
                     <input
                       ref={titleInputRef}
@@ -187,30 +170,28 @@ export default function ClientLayout({
                       onChange={(e) => setEditedTitle(e.target.value)}
                       onBlur={handleTitleSubmit}
                       onKeyDown={handleTitleKeyDown}
-                      className="font-bold text-sm bg-transparent border-none p-0 m-0 outline-none focus:ring-0 w-full min-w-[200px]"
+                      className="m-0 w-full min-w-[200px] border-none bg-transparent p-0 text-sm font-bold outline-none focus:ring-0"
                     />
                   ) : (
                     <span
-                      className="font-bold text-sm line-clamp-1 max-w-[120px] md:max-w-[200px] cursor-pointer transition-all hover:text-primary flex items-center gap-2 group"
+                      className="hover:text-primary group line-clamp-1 flex max-w-[120px] cursor-pointer items-center gap-2 text-sm font-bold transition-all md:max-w-[200px]"
                       onClick={() => setIsEditingTitle(true)}
                       title="Click to edit quest title"
                     >
                       {quest?.title || "Loading..."}
-                      <Settings2 className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                      <Settings2 className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-50" />
                     </span>
                   )}
                 </div>
               </div>
 
               {/* Header Tabs - Icon only as requested */}
-              <div className="flex bg-muted/30 p-1 rounded-full border border-primary/5">
+              <div className="bg-muted/30 border-primary/5 flex rounded-full border p-1">
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant={
-                          activeTab === "questions" ? "secondary" : "ghost"
-                        }
+                        variant={activeTab === "questions" ? "secondary" : "ghost"}
                         size="icon"
                         className={cn(
                           "h-8 w-12 rounded-full transition-all",
@@ -221,9 +202,7 @@ export default function ClientLayout({
                         <FileText
                           className={cn(
                             "h-4 w-4 transition-colors",
-                            activeTab === "questions"
-                              ? "text-primary"
-                              : "text-muted-foreground",
+                            activeTab === "questions" ? "text-primary" : "text-muted-foreground",
                           )}
                         />
                       </Button>
@@ -236,9 +215,7 @@ export default function ClientLayout({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant={
-                          activeTab === "responses" ? "secondary" : "ghost"
-                        }
+                        variant={activeTab === "responses" ? "secondary" : "ghost"}
                         size="icon"
                         className={cn(
                           "h-8 w-12 rounded-full transition-all",
@@ -249,9 +226,7 @@ export default function ClientLayout({
                         <MessageSquare
                           className={cn(
                             "h-4 w-4 transition-colors",
-                            activeTab === "responses"
-                              ? "text-primary"
-                              : "text-muted-foreground",
+                            activeTab === "responses" ? "text-primary" : "text-muted-foreground",
                           )}
                         />
                       </Button>
@@ -264,9 +239,7 @@ export default function ClientLayout({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant={
-                          activeTab === "settings" ? "secondary" : "ghost"
-                        }
+                        variant={activeTab === "settings" ? "secondary" : "ghost"}
                         size="icon"
                         className={cn(
                           "h-8 w-12 rounded-full transition-all",
@@ -277,9 +250,7 @@ export default function ClientLayout({
                         <Settings
                           className={cn(
                             "h-4 w-4 transition-colors",
-                            activeTab === "settings"
-                              ? "text-primary"
-                              : "text-muted-foreground",
+                            activeTab === "settings" ? "text-primary" : "text-muted-foreground",
                           )}
                         />
                       </Button>
@@ -317,11 +288,7 @@ export default function ClientLayout({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 rounded-full"
-                          >
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
                             <Share2 className="h-4 w-4" />
                           </Button>
                         </PopoverTrigger>
@@ -331,21 +298,21 @@ export default function ClientLayout({
                       </TooltipContent>
                     </Tooltip>
                     <PopoverContent
-                      className="w-[380px] p-6 rounded-none bg-background shadow-2xl border-border/50"
+                      className="bg-background border-border/50 w-[380px] rounded-none p-6 shadow-2xl"
                       side="bottom"
                       align="end"
                       sideOffset={12}
                     >
                       <div className="space-y-6">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                          <Label className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
                             Shareable Link
                           </Label>
                           <div className="flex gap-2">
                             <Input
                               readOnly
                               value={`${origin}/share/${params.id}`}
-                              className="h-10 rounded-none bg-muted/30 border-none font-medium text-xs focus-visible:ring-0"
+                              className="bg-muted/30 h-10 rounded-none border-none text-xs font-medium focus-visible:ring-0"
                             />
                             <Button
                               size="icon"
@@ -360,14 +327,14 @@ export default function ClientLayout({
                             </Button>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3 p-3 rounded-none bg-accent/5 border border-border/30">
+                        <div className="bg-accent/5 border-border/30 flex items-center space-x-3 rounded-none border p-3">
                           <Checkbox
                             id="shorten-header"
-                            className="rounded-none border-primary/40 data-[state=checked]:bg-primary"
+                            className="border-primary/40 data-[state=checked]:bg-primary rounded-none"
                           />
                           <Label
                             htmlFor="shorten-header"
-                            className="text-xs font-bold cursor-pointer select-none"
+                            className="cursor-pointer text-xs font-bold select-none"
                           >
                             Shorten URL (r/
                             {params.id?.toString().substring(0, 6)})
@@ -381,9 +348,9 @@ export default function ClientLayout({
                     <TooltipTrigger asChild>
                       <Button
                         className={cn(
-                          "h-9 px-4 shadow-lg rounded-full transition-all active:scale-95 gap-2",
+                          "h-9 gap-2 rounded-full px-4 shadow-lg transition-all active:scale-95",
                           quest?.status === "Published"
-                            ? "bg-green-500 hover:bg-green-600 shadow-green-500/20 text-white"
+                            ? "bg-green-500 text-white shadow-green-500/20 hover:bg-green-600"
                             : "bg-primary hover:bg-primary/90 shadow-primary/20 text-primary-foreground",
                         )}
                         onClick={() => setIsPublishOpen(true)}
@@ -393,18 +360,18 @@ export default function ClientLayout({
                             <div className="relative">
                               <Settings2 className="h-4 w-4" />
                               <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white"></span>
                               </span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">
+                            <span className="xs:inline hidden text-[10px] font-black tracking-widest uppercase">
                               Config
                             </span>
                           </>
                         ) : (
                           <>
                             <Settings2 className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">
+                            <span className="xs:inline hidden text-[10px] font-black tracking-widest uppercase">
                               Publish
                             </span>
                           </>
@@ -421,7 +388,7 @@ export default function ClientLayout({
                   </Tooltip>
                 </TooltipProvider>
 
-                <div className="w-px h-6 bg-border mx-1.5 hidden xs:block" />
+                <div className="bg-border xs:block mx-1.5 hidden h-6 w-px" />
                 <UserMenu />
               </div>
             </>
@@ -437,7 +404,7 @@ export default function ClientLayout({
                 </Link>
               </div>
 
-              <div className="flex flex-1 items-center justify-center px-6 max-w-xl hidden lg:flex">
+              <div className="flex hidden max-w-xl flex-1 items-center justify-center px-6 lg:flex">
                 <GlobalSearch />
               </div>
 
@@ -446,7 +413,7 @@ export default function ClientLayout({
                 <InfoMenu />
                 <NotificationsMenu />
 
-                <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
+                <div className="bg-border mx-2 hidden h-6 w-px sm:block" />
 
                 <UserMenu />
               </div>
@@ -455,7 +422,7 @@ export default function ClientLayout({
         </div>
       </header>
 
-      <main className="flex-1 relative">{children}</main>
+      <main className="relative flex-1">{children}</main>
 
       {isEditor && quest && (
         <PublishDialog
