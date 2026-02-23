@@ -1,7 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Plus,
   Layout,
@@ -18,7 +18,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,7 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TEMPLATES } from "@/lib/templates";
+import { TEMPLATES, Template } from "@/lib/templates";
 import {
   createQuest,
   getQuests,
@@ -51,16 +50,11 @@ interface Quest {
   id: string;
   title: string;
   status: string;
-  responses: number;
+  responses?: number;
   updatedAt: string | Date;
 }
 
-interface Template {
-  id: string;
-  title: string;
-  category: string;
-  backgroundImage?: string;
-}
+// Template interface removed, using import instead
 
 export default function QuestsPage() {
   const router = useRouter();
@@ -80,7 +74,7 @@ export default function QuestsPage() {
       const [questsData, recentData] = await Promise.all([getQuests(), getRecentTemplates()]);
       setQuests(questsData);
       setRecentTemplateIds(recentData);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load dashboard data");
     } finally {
       setIsLoading(false);
@@ -100,7 +94,7 @@ export default function QuestsPage() {
     try {
       const quest = await createQuest("Untitled Quest");
       router.push(`/quests/${quest.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to create quest");
     } finally {
       setIsCreating(null);
@@ -112,7 +106,7 @@ export default function QuestsPage() {
     try {
       const quest = await createQuestFromTemplate(templateId);
       router.push(`/quests/${quest.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to create quest from template");
     } finally {
       setIsCreating(null);
@@ -123,7 +117,7 @@ export default function QuestsPage() {
     toast.promise(deleteQuest(id), {
       loading: "Deleting quest...",
       success: () => {
-        setQuests(quests.filter((q) => q.id !== id));
+        setQuests(quests.filter((q: Quest) => q.id !== id));
         return "Quest deleted successfully";
       },
       error: "Failed to delete quest",
@@ -136,10 +130,12 @@ export default function QuestsPage() {
     setIsUpdating(true);
     try {
       await updateQuest(selectedQuest.id, { title: newTitle });
-      setQuests(quests.map((q) => (q.id === selectedQuest.id ? { ...q, title: newTitle } : q)));
+      setQuests(
+        quests.map((q: Quest) => (q.id === selectedQuest.id ? { ...q, title: newTitle } : q)),
+      );
       setIsRenameDialogOpen(false);
       toast.success("Quest renamed successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to rename quest");
     } finally {
       setIsUpdating(false);
@@ -209,7 +205,7 @@ export default function QuestsPage() {
 
           {/* Recent Templates or Placeholder */}
           {recentTemplates.length > 0 ? (
-            recentTemplates.map((template) => (
+            recentTemplates.map((template: Template) => (
               <button
                 key={template.id}
                 disabled={!!isCreating}
@@ -217,13 +213,14 @@ export default function QuestsPage() {
                 className="group bg-card border-border/40 hover:border-primary/40 relative flex h-64 flex-col items-start justify-end overflow-hidden rounded-[2.5rem] border transition-all duration-500 hover:shadow-2xl disabled:opacity-50"
               >
                 <div className="absolute inset-0 z-0">
-                  <img
+                  <Image
                     src={
                       template.backgroundImage ||
                       "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"
                     }
                     alt={template.title}
-                    className="h-full w-full object-cover opacity-30 grayscale transition-all duration-700 group-hover:scale-105 group-hover:opacity-60 group-hover:grayscale-0"
+                    fill
+                    className="object-cover opacity-30 grayscale transition-all duration-700 group-hover:scale-105 group-hover:opacity-60 group-hover:grayscale-0"
                   />
                   <div className="from-card via-card/60 absolute inset-0 bg-gradient-to-t to-transparent" />
                 </div>
@@ -337,8 +334,8 @@ export default function QuestsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {quests
-              .filter((q) => q.title.toLowerCase().includes(search.toLowerCase()))
-              .map((quest) => (
+              .filter((q: Quest) => q.title.toLowerCase().includes(search.toLowerCase()))
+              .map((quest: Quest) => (
                 <div
                   key={quest.id}
                   className="group border-border/50 bg-card/10 hover:border-primary/30 relative flex h-72 flex-col overflow-hidden rounded-3xl border shadow-sm backdrop-blur-xl transition-all duration-500 hover:shadow-xl"

@@ -59,15 +59,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
+      const currentOrigin = window.location.origin;
+      const timer = setTimeout(() => {
+        setOrigin(currentOrigin);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, []); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
-  useEffect(() => {
-    if (quest?.title && editedTitle === "") {
-      setEditedTitle(quest.title);
-    }
-  }, [quest?.title, editedTitle]); // eslint-disable-line react-hooks/set-state-in-effect
+  const [prevQuestTitle, setPrevQuestTitle] = useState<string | undefined>(undefined);
+  if (quest?.title && quest.title !== prevQuestTitle && editedTitle === "") {
+    setPrevQuestTitle(quest.title);
+    setEditedTitle(quest.title);
+  }
 
   useEffect(() => {
     if (isEditingTitle && titleInputRef.current) {

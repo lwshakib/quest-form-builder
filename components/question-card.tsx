@@ -49,7 +49,7 @@ const TYPE_OPTIONS = [
   { id: "IMAGE", label: "Image" },
 ];
 
-const TYPE_ICONS: any = {
+const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   SHORT_TEXT: Type,
   PARAGRAPH: AlignLeft,
   MULTIPLE_CHOICE: List,
@@ -67,9 +67,19 @@ export function QuestionCard({
   onDuplicate,
   isQuiz,
 }: {
-  question: any;
+  question: Record<string, unknown> & {
+    id: string;
+    type: string;
+    title: string;
+    description?: string | null;
+    required?: boolean;
+    options?: (string | { value: string; image?: string })[];
+    correctAnswer?: string | string[];
+    points?: number;
+    feedback?: string;
+  };
   onDelete: () => void;
-  onUpdate: (data: any) => void;
+  onUpdate: (data: Record<string, unknown>) => void;
   onDuplicate: () => void;
   isQuiz?: boolean;
 }) {
@@ -98,7 +108,7 @@ export function QuestionCard({
       const { secureUrl } = await uploadFileToCloudinary(file);
       onUpdate({ options: [secureUrl] });
       toast.success(`${type === "IMAGE" ? "Image" : "Video"} uploaded successfully`);
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Upload failed");
       console.error(error);
     } finally {
@@ -116,7 +126,7 @@ export function QuestionCard({
   };
 
   const handleTypeChange = (newType: string) => {
-    const data: any = { type: newType };
+    const data: Record<string, unknown> = { type: newType };
     const isChoiceType = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(newType);
     if (isChoiceType && (!question.options || question.options.length === 0)) {
       data.options = ["Option 1"];
@@ -124,9 +134,10 @@ export function QuestionCard({
     onUpdate(data);
   };
 
-  const getOptionValue = (opt: any) =>
+  const getOptionValue = (opt: string | { value: string; image?: string }) =>
     typeof opt === "object" && opt !== null ? opt.value || "" : opt;
-  const getOptionImage = (opt: any) => (typeof opt === "object" && opt !== null ? opt.image : null);
+  const getOptionImage = (opt: string | { value: string; image?: string }) =>
+    typeof opt === "object" && opt !== null ? opt.image : null;
 
   const handleOptionUpload = async (file: File, index: number) => {
     if (!file) return;
@@ -282,7 +293,7 @@ export function QuestionCard({
             question.type === "CHECKBOXES" ||
             question.type === "DROPDOWN") && (
             <div className="space-y-3 pt-4">
-              {question.options?.map((option: any, index: number) => {
+              {question.options?.map((option: string | { value: string; image?: string }, index: number) => {
                 const optionText = getOptionValue(option);
                 const optionImage = getOptionImage(option);
 
@@ -301,7 +312,7 @@ export function QuestionCard({
                       <Input
                         value={optionText}
                         onChange={(e) => {
-                          const newOptions = [...question.options];
+                          const newOptions = [...(question.options || [])];
                           const current = newOptions[index];
                           if (typeof current === "object" && current !== null) {
                             newOptions[index] = {
@@ -390,8 +401,9 @@ export function QuestionCard({
                         onPointerDown={(e) => e.stopPropagation()}
                         className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground/20 h-9 w-9 rounded-full opacity-0 transition-all group-hover/option:opacity-100"
                         onClick={() => {
-                          const newOptions = question.options.filter(
-                            (_: any, i: number) => i !== index,
+                          const newOptions = (question.options || []).filter(
+                            (_: string | { value: string; image?: string }, i: number) =>
+                              i !== index,
                           );
                           onUpdate({ options: newOptions });
                         }}
@@ -443,7 +455,7 @@ export function QuestionCard({
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-4 duration-300">
                 <Input
-                  value={question.options?.[0] || ""}
+                  value={(typeof question.options?.[0] === 'string' ? question.options[0] : '') || ""}
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
@@ -484,7 +496,8 @@ export function QuestionCard({
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                   {(() => {
-                    const url = question.options[0];
+                    const url = typeof question.options![0] === 'string' ? question.options![0] : '';
+                    if (!url) return null;
                     if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                       let videoId = "";
                       if (url.includes("youtube.com/watch")) {
@@ -531,7 +544,7 @@ export function QuestionCard({
             <div className="space-y-4 pt-4">
               <div className="animate-in fade-in slide-in-from-left-2 flex items-center gap-3 duration-300">
                 <Input
-                  value={question.options?.[0] || ""}
+                  value={(typeof question.options?.[0] === 'string' ? question.options[0] : '') || ""}
                   onChange={(e) => onUpdate({ options: [e.target.value] })}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
@@ -572,7 +585,7 @@ export function QuestionCard({
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 group/preview relative mt-4 flex max-h-[400px] items-center justify-center overflow-hidden rounded-xl border">
                   <img
-                    src={question.options[0]}
+                    src={typeof question.options![0] === 'string' ? question.options![0] : ''}
                     alt="Preview"
                     className="max-h-[400px] max-w-full object-contain transition-transform duration-500"
                     onError={(e) => {

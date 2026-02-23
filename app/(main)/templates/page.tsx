@@ -11,14 +11,13 @@ import {
   Briefcase,
   GraduationCap,
   History,
-  Layout,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TEMPLATES, Template } from "@/lib/templates";
 import { createQuestFromTemplate, createQuest, getRecentTemplates } from "@/lib/actions";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export default function TemplatesPage() {
   const router = useRouter();
@@ -40,7 +39,10 @@ export default function TemplatesPage() {
     getRecentTemplates().then(setRecentTemplateIds);
   }, [searchParams]);
 
-  const categories: { name: Template["category"]; icon: any }[] = [
+  const categories: {
+    name: Template["category"];
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
     { name: "Recent", icon: History },
     { name: "Personal", icon: User },
     { name: "Work", icon: Briefcase },
@@ -52,7 +54,7 @@ export default function TemplatesPage() {
     try {
       const quest = await createQuestFromTemplate(templateId);
       router.push(`/quests/${quest.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to create quest from template");
     } finally {
       setIsCreating(null);
@@ -64,7 +66,7 @@ export default function TemplatesPage() {
     try {
       const quest = await createQuest("Untitled Quest");
       router.push(`/quests/${quest.id}`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to create quest");
     } finally {
       setIsCreating(null);
@@ -168,13 +170,14 @@ export default function TemplatesPage() {
                     className="group flex flex-col items-start gap-4 text-left transition-all duration-300 disabled:opacity-50"
                   >
                     <div className="border-border relative aspect-[16/9] w-full overflow-hidden rounded-2xl border shadow-sm transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl">
-                      <img
+                      <Image
                         src={
                           template.backgroundImage ||
                           "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"
                         }
                         alt={template.title}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0" />
                       {isCreating === template.id && (

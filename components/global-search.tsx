@@ -5,12 +5,14 @@ import { Search, Loader2, FileText, Layout, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { globalSearch } from "@/lib/actions";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Template } from "@/lib/templates";
 
 export function GlobalSearch() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<{ quests: any[]; templates: any[] }>({
+  const [results, setResults] = useState<{
+    quests: { id: string; title: string; questions: { id: string; title: string }[] }[];
+    templates: Template[];
+  }>({
     quests: [],
     templates: [],
   });
@@ -82,7 +84,7 @@ export function GlobalSearch() {
               </div>
             ) : results.quests.length === 0 && results.templates.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-muted-foreground text-sm">No matches found for "{query}"</p>
+                <p className="text-muted-foreground text-sm">No matches found for &quot;{query}&quot;</p>
               </div>
             ) : (
               <div className="space-y-4 p-2">

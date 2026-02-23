@@ -1,0 +1,56 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  Plus,
+  Layout,
+  ArrowRight,
+  Search,
+  Filter,
+  MoreHorizontal,
+  FileText,
+  Send,
+  Loader2,
+  Trash2,
+  Edit2,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TEMPLATES, Template } from "@/lib/templates";
+import {
+  createQuest,
+  getQuests,
+  updateQuest,
+  deleteQuest,
+  createQuestFromTemplate,
+  getRecentTemplates,
+} from "@/lib/actions";
+import { toast } from "sonner";
+
+interface Quest {
+  id: string;
+  title: string;
+  status: string;
+  responses?: number;
+  updatedAt: string | Date;
+}

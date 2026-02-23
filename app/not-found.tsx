@@ -22,7 +22,8 @@ export default function NotFound() {
           <h1 className="text-6xl font-black tracking-tighter">404</h1>
           <h2 className="text-2xl font-black tracking-tight">Something is missing</h2>
           <p className="text-muted-foreground text-lg leading-relaxed font-medium">
-            The page you&apos;re looking for doesn&apos;t exist or has been moved to another location.
+            The page you&apos;re looking for doesn&apos;t exist or has been moved to another
+            location.
           </p>
         </div>
 

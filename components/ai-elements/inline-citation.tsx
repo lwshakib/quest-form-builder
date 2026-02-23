@@ -136,13 +136,24 @@ export const InlineCitationCarouselIndex = ({
       return;
     }
 
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
-
-    api.on("select", () => {
+    const updateState = () => {
+      setCount(api.scrollSnapList().length);
       setCurrent(api.selectedScrollSnap() + 1);
-    });
-  }, [api]); // eslint-disable-line react-hooks/set-state-in-effect
+    };
+
+    const timer = setTimeout(updateState, 0);
+
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    };
+
+    api.on("select", onSelect);
+
+    return () => {
+      clearTimeout(timer);
+      api.off("select", onSelect);
+    };
+  }, [api]);
 
   return (
     <div

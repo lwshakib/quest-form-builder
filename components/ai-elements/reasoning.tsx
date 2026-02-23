@@ -65,13 +65,18 @@ export const Reasoning = memo(
     useEffect(() => {
       if (isStreaming) {
         if (startTime === null) {
-          setStartTime(Date.now());
+          const timer = setTimeout(() => setStartTime(Date.now()), 0);
+          return () => clearTimeout(timer);
         }
       } else if (startTime !== null) {
-        setDuration(Math.ceil((Date.now() - startTime) / MS_IN_S));
-        setStartTime(null);
+        const currentDuration = Math.ceil((Date.now() - startTime) / MS_IN_S);
+        const timer = setTimeout(() => {
+          setDuration(currentDuration);
+          setStartTime(null);
+        }, 0);
+        return () => clearTimeout(timer);
       }
-    }, [isStreaming, startTime, setDuration, setStartTime]);
+    }, [isStreaming, startTime, setDuration]);
 
     // Auto-open when streaming starts, auto-close when streaming ends (once only)
     useEffect(() => {

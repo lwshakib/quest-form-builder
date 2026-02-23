@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,13 +27,21 @@ export default function AccountPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Update name when session loads
-  useEffect(() => {
-    if (session?.user?.name && !name) {
-      setName(session.user.name);
-    }
-  }, [session?.user?.name, name]); // eslint-disable-line react-hooks/set-state-in-effect
+  const [prevSessionName, setPrevSessionName] = useState<string | null | undefined>(undefined);
+  if (session?.user?.name && session.user.name !== prevSessionName && !name) {
+    setPrevSessionName(session.user.name);
+    setName(session.user.name);
+  }
 
-  const [sessions] = useState([
+  interface SessionItem {
+    id: string;
+    device: string;
+    location: string;
+    current: boolean;
+    date: string;
+  }
+
+  const [sessions] = useState<SessionItem[]>([
     {
       id: "1",
       device: "Chrome on Windows",
@@ -224,8 +232,8 @@ export default function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {sessions.map((session, index) => (
-                <div key={session.id}>
+              {sessions.map((sessionItem, index) => (
+                <div key={sessionItem.id}>
                   <div className="flex items-center justify-between py-4">
                     <div className="flex items-center gap-4">
                       <div className="bg-primary/10 rounded-full p-2">
@@ -233,19 +241,19 @@ export default function AccountPage() {
                       </div>
                       <div>
                         <p className="flex items-center gap-2 font-medium">
-                          {session.device}
-                          {session.current && (
+                          {sessionItem.device}
+                          {sessionItem.current && (
                             <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-green-500 uppercase">
                               Current
                             </span>
                           )}
                         </p>
                         <p className="text-muted-foreground text-sm">
-                          {session.location} • {session.date}
+                          {sessionItem.location} • {sessionItem.date}
                         </p>
                       </div>
                     </div>
-                    {!session.current && (
+                    {!sessionItem.current && (
                       <Button
                         variant="ghost"
                         size="sm"

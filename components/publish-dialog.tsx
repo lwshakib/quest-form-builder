@@ -26,10 +26,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { updateQuest, publishQuest, unpublishQuest } from "@/lib/actions";
 
 interface PublishDialogProps {
-  quest: any;
+  quest: {
+    id: string;
+    shortId?: string;
+    status?: string;
+    published?: boolean;
+    acceptingResponses?: boolean;
+  };
   isOpen: boolean;
   onClose: () => void;
-  onUpdate?: (updatedQuest: any) => void;
+  onUpdate?: (updatedQuest: Record<string, unknown>) => void;
 }
 
 export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialogProps) {
@@ -45,7 +51,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
       const updated = await publishQuest(quest.id);
       onUpdate?.(updated);
       toast.success("Quest published successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to publish quest");
     } finally {
       setIsPublishing(false);
@@ -58,7 +64,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
       const updated = await unpublishQuest(quest.id);
       onUpdate?.(updated);
       toast.success("Quest unpublished");
-    } catch (error) {
+    } catch {
       toast.error("Failed to unpublish quest");
     } finally {
       setIsPublishing(false);
@@ -72,7 +78,7 @@ export function PublishDialog({ quest, isOpen, onClose, onUpdate }: PublishDialo
       onUpdate?.(updated);
       toast.success("Settings saved");
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);

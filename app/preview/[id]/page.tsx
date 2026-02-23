@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getQuestById } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
@@ -16,20 +16,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Eye, Check, Calendar as CalendarIcon, Clock as ClockIcon } from "lucide-react";
+import { Loader2, Eye, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import { ModeToggle } from "@/components/mode-toggle";
+import Image from "next/image";
+
+interface Question {
+  id: string;
+  type: string;
+  title: string;
+  description: string | null;
+  required: boolean;
+  options?: string[] | { value: string; image?: string }[];
+}
+
+interface Quest {
+  id: string;
+  title: string;
+  description: string | null;
+  backgroundImageUrl: string | null;
+  showProgressBar: boolean;
+  questions: Question[];
+}
 
 export default function PreviewQuestPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [quest, setQuest] = useState<any>(null);
+  const [quest, setQuest] = useState<Quest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isNotFound, setIsNotFound] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [progress, setProgress] = useState(0);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
@@ -38,14 +57,17 @@ export default function PreviewQuestPage() {
   useEffect(() => {
     if (!quest) return;
     const relevantQuestions = quest.questions.filter(
-      (q: any) => q.type !== "VIDEO" && q.type !== "IMAGE",
+      (q: Question) => q.type !== "VIDEO" && q.type !== "IMAGE",
     );
-    const requiredQuestions = relevantQuestions.filter((q: any) => q.required);
+    const requiredQuestions = relevantQuestions.filter((q: Question) => q.required);
 
     if (requiredQuestions.length === 0) {
-      const filledCount = relevantQuestions.filter((q: any) => {
+      const filledCount = relevantQuestions.filter((q: Question) => {
         const val = answers[q.id];
-        return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
+        if (val === undefined || val === null) return false;
+        if (typeof val === "string") return val.trim() !== "";
+        if (Array.isArray(val)) return val.length > 0;
+        return true;
       }).length;
       setProgress(
         relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
@@ -53,9 +75,12 @@ export default function PreviewQuestPage() {
       return;
     }
 
-    const filledRequiredCount = requiredQuestions.filter((q: any) => {
+    const filledRequiredCount = requiredQuestions.filter((q: Question) => {
       const val = answers[q.id];
-      return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
+      if (val === undefined || val === null) return false;
+      if (typeof val === "string") return val.trim() !== "";
+      if (Array.isArray(val)) return val.length > 0;
+      return true;
     }).length;
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
   }, [answers, quest]);
@@ -69,10 +94,10 @@ export default function PreviewQuestPage() {
           return;
         }
 
-        setQuest(data);
+        setQuest(data as unknown as Quest);
 
-        const initialAnswers: Record<string, any> = {};
-        data.questions.forEach((q: any) => {
+        const initialAnswers: Record<string, unknown> = {};
+        (data.questions as Question[]).forEach((q) => {
           if (q.type === "VIDEO" || q.type === "IMAGE") return;
           if (q.type === "CHECKBOXES") {
             initialAnswers[q.id] = [];
@@ -81,7 +106,7 @@ export default function PreviewQuestPage() {
           }
         });
         setAnswers(initialAnswers);
-      } catch (error) {
+      } catch {
         setIsNotFound(true);
       } finally {
         setIsLoading(false);
@@ -97,7 +122,7 @@ export default function PreviewQuestPage() {
     }
   }, [id, session, isSessionLoading, router]);
 
-  const handleInputChange = (questionId: string, value: any) => {
+  const handleInputChange = (questionId: string, value: unknown) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: value,
@@ -106,13 +131,13 @@ export default function PreviewQuestPage() {
 
   const handleCheckboxChange = (questionId: string, option: string, checked: boolean) => {
     setAnswers((prev) => {
-      const currentAnswers = prev[questionId] || [];
+      const currentAnswers = (prev[questionId] as string[]) || [];
       if (checked) {
         return { ...prev, [questionId]: [...currentAnswers, option] };
       } else {
         return {
           ...prev,
-          [questionId]: currentAnswers.filter((a: string) => a !== option),
+          [questionId]: currentAnswers.filter((a) => a !== option),
         };
       }
     });
@@ -144,6 +169,8 @@ export default function PreviewQuestPage() {
       </div>
     );
   }
+
+  if (!quest) return null;
 
   return (
     <div className="bg-background selection:bg-primary selection:text-primary-foreground relative min-h-screen overflow-x-hidden px-6 py-16">
@@ -178,10 +205,11 @@ export default function PreviewQuestPage() {
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
               <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
-                <img
+                <Image
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
             )}
@@ -201,7 +229,7 @@ export default function PreviewQuestPage() {
               </div>
             </div>
 
-            {quest.questions.map((q: any) => (
+            {quest.questions.map((q: Question) => (
               <div
                 key={q.id}
                 className={cn(
@@ -233,7 +261,7 @@ export default function PreviewQuestPage() {
                       <Input
                         placeholder="Your answer..."
                         className="border-border/60 focus-visible:border-primary placeholder:text-muted-foreground/20 h-12 rounded-none border-0 border-b bg-transparent px-0 text-lg font-medium transition-all focus-visible:ring-0"
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                         onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
@@ -242,7 +270,7 @@ export default function PreviewQuestPage() {
                       <Textarea
                         placeholder="Long form response..."
                         className="bg-accent/5 focus:border-primary/20 placeholder:text-muted-foreground/20 min-h-[140px] resize-none rounded-xl border-2 border-transparent p-4 text-base leading-relaxed font-medium transition-all focus:ring-0"
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                         onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
@@ -251,7 +279,7 @@ export default function PreviewQuestPage() {
                       <RadioGroup
                         className="grid grid-cols-1 gap-3"
                         onValueChange={(val) => handleInputChange(q.id, val)}
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                       >
                         {((q.options as string[]) || []).map((option) => (
                           <Label
@@ -265,10 +293,10 @@ export default function PreviewQuestPage() {
                             <div
                               className={cn(
                                 "border-primary/20 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all",
-                                answers[q.id] === option && "border-primary",
+                                (answers[q.id] as string) === option && "border-primary",
                               )}
                             >
-                              {answers[q.id] === option && (
+                              {(answers[q.id] as string) === option && (
                                 <div className="bg-primary animate-in zoom-in h-2.5 w-2.5 rounded-full duration-200" />
                               )}
                             </div>
@@ -285,13 +313,13 @@ export default function PreviewQuestPage() {
                             key={option}
                             className={cn(
                               "border-border/60 hover:bg-accent/5 group/opt flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition-all duration-200",
-                              (answers[q.id] || []).includes(option) &&
+                              ((answers[q.id] as string[]) || []).includes(option) &&
                                 "border-primary/40 bg-primary/5",
                             )}
                           >
                             <Checkbox
                               className="absolute h-0 w-0 opacity-0"
-                              checked={(answers[q.id] || []).includes(option)}
+                              checked={((answers[q.id] as string[]) || []).includes(option)}
                               onCheckedChange={(checked) =>
                                 handleCheckboxChange(q.id, option, checked as boolean)
                               }
@@ -299,11 +327,11 @@ export default function PreviewQuestPage() {
                             <div
                               className={cn(
                                 "border-primary/20 flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all",
-                                (answers[q.id] || []).includes(option) &&
+                                ((answers[q.id] as string[]) || []).includes(option) &&
                                   "bg-primary border-primary",
                               )}
                             >
-                              {(answers[q.id] || []).includes(option) && (
+                              {((answers[q.id] as string[]) || []).includes(option) && (
                                 <Check className="text-primary-foreground animate-in zoom-in h-3.5 w-3.5 duration-200" />
                               )}
                             </div>
@@ -316,7 +344,7 @@ export default function PreviewQuestPage() {
                     {q.type === "DROPDOWN" && (
                       <Select
                         onValueChange={(val) => handleInputChange(q.id, val)}
-                        value={answers[q.id] || undefined}
+                        value={(answers[q.id] as string) || undefined}
                       >
                         <SelectTrigger className="bg-background border-border/60 focus:ring-primary h-12 w-full rounded-xl border px-4 text-sm font-medium transition-all focus:ring-1">
                           <SelectValue placeholder="Select an option" />
@@ -340,7 +368,10 @@ export default function PreviewQuestPage() {
                         {q.options?.[0] && (
                           <div className="border-border/50 bg-accent/5 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                             {(() => {
-                              const url = q.options[0];
+                              const option = q.options?.[0];
+                              const url = typeof option === "string" ? option : "";
+                              if (!url) return null;
+
                               if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                                 let videoId = "";
                                 if (url.includes("youtube.com/watch")) {
@@ -387,16 +418,21 @@ export default function PreviewQuestPage() {
                     {q.type === "IMAGE" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="border-border/50 bg-accent/5 flex items-center justify-center overflow-hidden rounded-xl border">
-                            <img
-                              src={q.options[0]}
-                              alt={q.title}
-                              className="h-auto max-w-full object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  "https://placehold.co/600x400?text=Image+Unavailable";
-                              }}
-                            />
+                          <div className="border-border/50 bg-accent/5 relative aspect-video w-full overflow-hidden rounded-xl border">
+                            {(() => {
+                              const option = q.options?.[0];
+                              const url = typeof option === "string" ? option : "";
+                              if (!url) return null;
+
+                              return (
+                                <Image
+                                  src={url}
+                                  alt={q.title}
+                                  fill
+                                  className="object-contain"
+                                />
+                              );
+                            })()}
                           </div>
                         )}
                       </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getPublicQuest, submitResponse } from "@/lib/actions";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,8 +22,6 @@ import {
   CheckCircle2,
   Send,
   Check,
-  Calendar as CalendarIcon,
-  Clock as ClockIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -30,18 +29,41 @@ import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { authClient } from "@/lib/auth-client";
 
+interface Question {
+  id: string;
+  type: string;
+  title: string;
+  description: string | null;
+  required: boolean;
+  options?: string[] | { value: string; image?: string }[];
+}
+
+interface Quest {
+  id: string;
+  title: string;
+  description: string | null;
+  backgroundImageUrl: string | null;
+  limitToOneResponse: boolean;
+  showProgressBar: boolean;
+  showLinkToSubmitAnother: boolean;
+  viewResultsSummary: boolean;
+  confirmationMessage: string | null;
+  shuffleQuestionOrder: boolean;
+  questions: Question[];
+}
+
 export default function ShareQuestPage() {
   const { id } = useParams();
   const router = useRouter();
 
   const searchParams = useSearchParams();
 
-  const [quest, setQuest] = useState<any>(null);
+  const [quest, setQuest] = useState<Quest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(searchParams.get("submitted") === "true");
+  const [isSubmitted] = useState(searchParams.get("submitted") === "true");
   const [isNotFound, setIsNotFound] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [progress, setProgress] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
@@ -51,17 +73,20 @@ export default function ShareQuestPage() {
   useEffect(() => {
     if (!quest) return;
     const relevantQuestions = quest.questions.filter(
-      (q: any) => q.type !== "VIDEO" && q.type !== "IMAGE",
+      (q: Question) => q.type !== "VIDEO" && q.type !== "IMAGE",
     );
-    const requiredQuestions = relevantQuestions.filter((q: any) => q.required);
+    const requiredQuestions = relevantQuestions.filter((q: Question) => q.required);
 
     const isQuestionFilled = (qId: string) => {
       const val = answers[qId];
-      return val !== undefined && val !== "" && (Array.isArray(val) ? val.length > 0 : true);
+      if (val === undefined || val === null) return false;
+      if (typeof val === "string") return val.trim() !== "";
+      if (Array.isArray(val)) return val.length > 0;
+      return true;
     };
 
     if (requiredQuestions.length === 0) {
-      const filledCount = relevantQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
+      const filledCount = relevantQuestions.filter((q: Question) => isQuestionFilled(q.id)).length;
       setProgress(
         relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
       );
@@ -69,7 +94,9 @@ export default function ShareQuestPage() {
       return;
     }
 
-    const filledRequiredCount = requiredQuestions.filter((q: any) => isQuestionFilled(q.id)).length;
+    const filledRequiredCount = requiredQuestions.filter((q: Question) =>
+      isQuestionFilled(q.id),
+    ).length;
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
     setIsFormValid(filledRequiredCount === requiredQuestions.length);
   }, [answers, quest]);
@@ -90,11 +117,11 @@ export default function ShareQuestPage() {
           questionsToUse = questionsToUse.sort(() => Math.random() - 0.5);
         }
 
-        setQuest({ ...data, questions: questionsToUse });
+        setQuest({ ...data, questions: questionsToUse as unknown as Question[] } as Quest);
         startTime.current = Date.now();
 
-        const initialAnswers: Record<string, any> = {};
-        questionsToUse.forEach((q: any) => {
+        const initialAnswers: Record<string, unknown> = {};
+        (questionsToUse as Question[]).forEach((q) => {
           if (q.type === "VIDEO" || q.type === "IMAGE") return;
           if (q.type === "CHECKBOXES") {
             initialAnswers[q.id] = [];
@@ -103,7 +130,7 @@ export default function ShareQuestPage() {
           }
         });
         setAnswers(initialAnswers);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load quest");
       } finally {
         setIsLoading(false);
@@ -112,7 +139,7 @@ export default function ShareQuestPage() {
     loadQuest();
   }, [id, router]);
 
-  const handleInputChange = (questionId: string, value: any) => {
+  const handleInputChange = (questionId: string, value: unknown) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: value,
@@ -121,7 +148,7 @@ export default function ShareQuestPage() {
 
   const handleCheckboxChange = (questionId: string, option: string, checked: boolean) => {
     setAnswers((prev) => {
-      const currentAnswers = prev[questionId] || [];
+      const currentAnswers = (prev[questionId] as string[]) || [];
       if (checked) {
         return { ...prev, [questionId]: [...currentAnswers, option] };
       } else {
@@ -142,22 +169,24 @@ export default function ShareQuestPage() {
       // Redirect to the same page with a query param to show success state
       // This pattern prevents form resubmission on refresh
       window.location.replace(`${window.location.pathname}?submitted=true`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to submit response. The form might be closed.");
       setIsSubmitting(false);
     }
   };
 
   const handleClear = () => {
-    const initialAnswers: Record<string, any> = {};
-    quest.questions.forEach((q: any) => {
-      if (q.type === "VIDEO" || q.type === "IMAGE") return;
-      if (q.type === "CHECKBOXES") {
-        initialAnswers[q.id] = [];
-      } else {
-        initialAnswers[q.id] = "";
-      }
-    });
+    const initialAnswers: Record<string, unknown> = {};
+    if (quest) {
+      quest.questions.forEach((q: Question) => {
+        if (q.type === "VIDEO" || q.type === "IMAGE") return;
+        if (q.type === "CHECKBOXES") {
+          initialAnswers[q.id] = [];
+        } else {
+          initialAnswers[q.id] = "";
+        }
+      });
+    }
     setAnswers(initialAnswers);
     toast.success("Quest cleared");
   };
@@ -224,7 +253,7 @@ export default function ShareQuestPage() {
           <h1 className="text-4xl font-bold tracking-tight">Quest Not Available</h1>
           <p className="text-muted-foreground text-lg leading-relaxed font-medium">
             This quest doesn&apos;t exist, is no longer accepting responses, or has been unpublished by
-            the creator.
+            Creator.
           </p>
           <div className="pt-8">
             <Button
@@ -304,6 +333,8 @@ export default function ShareQuestPage() {
     );
   }
 
+  if (!quest) return null;
+
   return (
     <div className="bg-background selection:bg-primary selection:text-primary-foreground relative min-h-screen overflow-x-hidden px-6 py-16">
       {/* Theme Toggle */}
@@ -331,10 +362,11 @@ export default function ShareQuestPage() {
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
               <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
-                <img
+                <Image
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
             )}
@@ -354,7 +386,7 @@ export default function ShareQuestPage() {
                 </div>
               </div>
             </div>
-            {quest.questions.map((q: any) => (
+            {quest.questions.map((q: Question) => (
               <div
                 key={q.id}
                 onFocus={() => setActiveQuestionId(q.id)}
@@ -390,7 +422,7 @@ export default function ShareQuestPage() {
                           required={q.required}
                           placeholder="Your answer..."
                           className="border-border/60 focus-visible:border-primary placeholder:text-muted-foreground/20 h-12 rounded-none border-0 border-b bg-transparent px-0 text-lg font-medium transition-all focus-visible:ring-0"
-                          value={answers[q.id] || ""}
+                          value={(answers[q.id] as string) || ""}
                           onChange={(e) => handleInputChange(q.id, e.target.value)}
                         />
                       </div>
@@ -401,7 +433,7 @@ export default function ShareQuestPage() {
                         required={q.required}
                         placeholder="Long form response..."
                         className="bg-accent/5 focus:border-primary/20 placeholder:text-muted-foreground/20 min-h-[140px] resize-none rounded-xl border-2 border-transparent p-4 text-base leading-relaxed font-medium transition-all focus:ring-0"
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                         onChange={(e) => handleInputChange(q.id, e.target.value)}
                       />
                     )}
@@ -411,12 +443,13 @@ export default function ShareQuestPage() {
                         required={q.required}
                         className="grid grid-cols-1 gap-3"
                         onValueChange={(val) => handleInputChange(q.id, val)}
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                       >
-                        {((q.options as any[]) || []).map((option: any) => {
-                          const isComplex = typeof option === "object" && option !== null;
-                          const label = isComplex ? option.value : option;
-                          const image = isComplex ? option.image : null;
+                        {((q.options as (string | { value: string; image?: string })[]) || []).map(
+                          (option) => {
+                            const isComplex = typeof option === "object" && option !== null;
+                            const label = isComplex ? option.value : (option as string);
+                            const image = isComplex ? option.image : null;
 
                           return (
                             <Label
@@ -428,11 +461,12 @@ export default function ShareQuestPage() {
                               )}
                             >
                               {image && (
-                                <div className="bg-accent/5 border-border/40 relative flex w-full justify-center overflow-hidden border-b">
-                                  <img
+                                <div className="bg-accent/5 relative aspect-video w-full overflow-hidden border-b border-border/40">
+                                  <Image
                                     src={image}
                                     alt={label}
-                                    className="max-h-[400px] w-full object-contain transition-transform duration-500 hover:scale-105"
+                                    fill
+                                    className="object-contain transition-transform duration-500 hover:scale-105"
                                   />
                                 </div>
                               )}
@@ -464,11 +498,12 @@ export default function ShareQuestPage() {
 
                     {q.type === "CHECKBOXES" && (
                       <div className="grid grid-cols-1 gap-3">
-                        {((q.options as any[]) || []).map((option: any) => {
-                          const isComplex = typeof option === "object" && option !== null;
-                          const label = isComplex ? option.value : option;
-                          const image = isComplex ? option.image : null;
-                          const isChecked = (answers[q.id] || []).includes(label);
+                        {((q.options as (string | { value: string; image?: string })[]) || []).map(
+                          (option) => {
+                            const isComplex = typeof option === "object" && option !== null;
+                            const label = isComplex ? option.value : (option as string);
+                            const image = isComplex ? option.image : null;
+                            const isChecked = ((answers[q.id] as string[]) || []).includes(label);
 
                           return (
                             <Label
@@ -480,12 +515,8 @@ export default function ShareQuestPage() {
                               )}
                             >
                               {image && (
-                                <div className="bg-accent/5 border-border/40 relative h-48 w-full border-b">
-                                  <img
-                                    src={image}
-                                    alt={label}
-                                    className="h-full w-full object-cover"
-                                  />
+                                <div className="border-border/40 relative aspect-video w-full overflow-hidden border-b bg-accent/5">
+                                  <Image src={image} alt={label} fill className="object-cover" />
                                 </div>
                               )}
                               <div className="flex w-full items-start gap-4 p-4">
@@ -521,15 +552,18 @@ export default function ShareQuestPage() {
                       <Select
                         onValueChange={(val) => handleInputChange(q.id, val)}
                         required={q.required}
-                        value={answers[q.id] || undefined}
+                        value={(answers[q.id] as string) || undefined}
                       >
                         <SelectTrigger className="bg-background border-border/60 focus:ring-primary h-12 w-full rounded-xl border px-4 text-base font-medium transition-all focus:ring-1">
                           <SelectValue placeholder="Select an option" />
                         </SelectTrigger>
                         <SelectContent className="border-border/60 bg-background rounded-xl border shadow-xl">
-                          {((q.options as any[]) || []).map((option: any) => {
-                            const label =
-                              typeof option === "object" && option !== null ? option.value : option;
+                          {((q.options as (string | { value: string; image?: string })[]) || []).map(
+                            (option) => {
+                              const label =
+                                typeof option === "object" && option !== null
+                                  ? option.value
+                                  : (option as string);
                             return (
                               <SelectItem
                                 key={label}
@@ -550,7 +584,7 @@ export default function ShareQuestPage() {
                         required={q.required}
                         className="bg-accent/5 border-border/60 focus-visible:ring-primary h-12 rounded-xl border px-4 text-base font-medium transition-all focus-visible:ring-1"
                         onChange={(e) => handleInputChange(q.id, e.target.value)}
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                       />
                     )}
 
@@ -560,7 +594,7 @@ export default function ShareQuestPage() {
                         required={q.required}
                         className="bg-accent/5 border-border/60 focus-visible:ring-primary h-12 rounded-xl border px-4 text-base font-medium transition-all focus-visible:ring-1"
                         onChange={(e) => handleInputChange(q.id, e.target.value)}
-                        value={answers[q.id] || ""}
+                        value={(answers[q.id] as string) || ""}
                       />
                     )}
 
@@ -569,7 +603,10 @@ export default function ShareQuestPage() {
                         {q.options?.[0] && (
                           <div className="border-border/50 bg-accent/5 flex aspect-video items-center justify-center overflow-hidden rounded-xl border">
                             {(() => {
-                              const url = q.options[0];
+                              const option = q.options?.[0];
+                              const url = typeof option === "string" ? option : "";
+                              if (!url) return null;
+
                               if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
                                 let videoId = "";
                                 if (url.includes("youtube.com/watch")) {
@@ -616,16 +653,16 @@ export default function ShareQuestPage() {
                     {q.type === "IMAGE" && (
                       <div className="space-y-4">
                         {q.options?.[0] && (
-                          <div className="border-border/50 bg-accent/5 flex items-center justify-center overflow-hidden rounded-xl border">
-                            <img
-                              src={q.options[0]}
-                              alt={q.title}
-                              className="h-auto max-w-full object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  "https://placehold.co/600x400?text=Image+Unavailable";
-                              }}
-                            />
+                          <div className="border-border/50 bg-accent/5 relative aspect-video w-full overflow-hidden rounded-xl border">
+                            {(() => {
+                              const option = q.options?.[0];
+                              const url = typeof option === "string" ? option : "";
+                              if (!url) return null;
+
+                              return (
+                                <Image src={url} alt={q.title} fill className="object-contain" />
+                              );
+                            })()}
                           </div>
                         )}
                       </div>

@@ -133,10 +133,10 @@ export async function POST(req: Request) {
   return result.toUIMessageStreamResponse();
 }
 
-function jsonStringify(obj: any) {
+function jsonStringify(obj: unknown) {
   try {
     return JSON.stringify(obj, null, 2);
-  } catch (e) {
+  } catch {
     return "[]";
   }
 }

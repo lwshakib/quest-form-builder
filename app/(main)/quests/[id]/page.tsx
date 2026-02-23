@@ -58,13 +58,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   getQuestById,
@@ -107,6 +101,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Question {
   id: string;
@@ -115,8 +116,8 @@ interface Question {
   description: string | null;
   order: number;
   required: boolean;
-  options?: any;
-  correctAnswer?: any;
+  options?: string[];
+  correctAnswer?: string | string[] | null;
   points?: number;
   feedback?: string | null;
 }
@@ -147,7 +148,7 @@ interface Response {
   createdAt: string | Date;
   answers: {
     questionId: string;
-    value: any;
+    value: unknown;
     question: Question;
   }[];
 }
@@ -235,9 +236,11 @@ export default function QuestDetailPage() {
           router.push("/quests");
           return;
         }
-        setQuest(data as any);
-        setQuestions((data.questions as any) || []);
-      } catch (error) {
+        if (data) {
+          setQuest(data as unknown as Quest);
+          setQuestions((data.questions as unknown as Question[]) || []);
+        }
+      } catch {
         toast.error("Failed to load quest");
         router.push("/quests");
       } finally {
@@ -254,10 +257,10 @@ export default function QuestDetailPage() {
       setIsLoadingResponses(true);
       try {
         const data = await getQuestResponses(id as string);
-        setResponses(data as any);
+        setResponses(data as unknown as Response[]);
         // Clear notifications for this quest
         await markQuestResponsesAsRead(id as string);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load responses");
       } finally {
         setIsLoadingResponses(false);
@@ -289,7 +292,7 @@ export default function QuestDetailPage() {
     try {
       const created = await createQuestion(id as string, type, insertIndex);
       setQuestions((prev) => prev.map((q) => (q.id === optimisticId ? created : q)));
-    } catch (error) {
+    } catch {
       toast.error("Failed to add question");
       await loadQuestData(); // Rollback
     }
@@ -298,8 +301,8 @@ export default function QuestDetailPage() {
   const loadQuestData = async () => {
     const data = await getQuestById(id as string);
     if (data) {
-      setQuest(data as any);
-      setQuestions((data.questions as any) || []);
+      setQuest(data as unknown as Quest);
+      setQuestions((data.questions as unknown as Question[]) || []);
       // Dispatch event to sync with header
       window.dispatchEvent(new CustomEvent("quest-updated", { detail: data }));
     }
@@ -309,7 +312,7 @@ export default function QuestDetailPage() {
     setQuestions((prev) => prev.map((q) => (q.id === questionId ? { ...q, ...data } : q)));
     try {
       await updateQuestion(questionId, id as string, data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to update question");
     }
   };
@@ -320,7 +323,7 @@ export default function QuestDetailPage() {
     try {
       await deleteQuestion(questionId, id as string);
       toast.success("Question deleted");
-    } catch (error) {
+    } catch {
       setQuestions(original);
       toast.error("Failed to delete question");
     }
@@ -328,10 +331,10 @@ export default function QuestDetailPage() {
 
   const handleDuplicateQuestion = async (questionId: string) => {
     try {
-      const duplicated = await duplicateQuestion(questionId, id as string);
+      await duplicateQuestion(questionId, id as string);
       toast.success("Question duplicated");
       await loadQuestData();
-    } catch (error) {
+    } catch {
       toast.error("Failed to duplicate question");
     }
   };
@@ -369,7 +372,7 @@ export default function QuestDetailPage() {
           id as string,
           newQuestions.map((q) => q.id),
         );
-      } catch (error) {
+      } catch {
         toast.error("Failed to update order");
         await loadQuestData();
       }
@@ -414,7 +417,7 @@ export default function QuestDetailPage() {
       window.dispatchEvent(new CustomEvent("quest-updated", { detail: updated }));
       toast.success("Cover image updated");
       setShowBannerUrlInput(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to update cover image");
     }
   };
@@ -594,7 +597,7 @@ export default function QuestDetailPage() {
                               }),
                             );
                             toast.success("Title updated");
-                          } catch (error) {
+                          } catch {
                             toast.error("Failed to update title");
                           }
                         }}
@@ -629,7 +632,7 @@ export default function QuestDetailPage() {
                               detail: updated,
                             }),
                           );
-                        } catch (error) {
+                        } catch {
                           toast.error("Failed to update description");
                         }
                       }}
@@ -855,13 +858,13 @@ export default function QuestDetailPage() {
                   <div className="animate-in fade-in zoom-in-95 space-y-8 duration-300">
                     {questions.map((q, i) => {
                       const answers = responses
-                        .map((r) => r.answers.find((a: any) => a.questionId === q.id)?.value)
+                        .map((r) => r.answers.find((a) => a.questionId === q.id)?.value)
                         .flat()
                         .filter(Boolean);
 
                       // Prepare Chart Data & Config
                       const dataMap: Record<string, number> = {};
-                      answers.forEach((a: string) => {
+                      (answers as string[]).forEach((a: string) => {
                         dataMap[a] = (dataMap[a] || 0) + 1;
                       });
 
@@ -872,7 +875,7 @@ export default function QuestDetailPage() {
                       }));
 
                       const chartConfig = Object.entries(dataMap).reduce(
-                        (acc, [name, _], idx) => ({
+                        (acc, [name], idx) => ({
                           ...acc,
                           [name]: {
                             label: name,
@@ -904,7 +907,7 @@ export default function QuestDetailPage() {
 
                             {["SHORT_TEXT", "PARAGRAPH", "DATE", "TIME"].includes(q.type) ? (
                               <div className="custom-scrollbar max-h-[300px] space-y-4 overflow-y-auto pr-2">
-                                {answers.slice(0, 50).map((ans: string, idx: number) => (
+                                {(answers as string[]).slice(0, 50).map((ans: string, idx: number) => (
                                   <div
                                     key={idx}
                                     className="bg-background border-border/50 text-foreground/80 rounded-lg border p-3 text-sm"
@@ -937,8 +940,9 @@ export default function QuestDetailPage() {
                                           className="fill-foreground font-bold"
                                           stroke="none"
                                           fontSize={12}
-                                          formatter={(value: any) => {
-                                            if (typeof value !== "string") return value;
+                                          formatter={(value: string | number | boolean | null | undefined) => {
+                                            if (value == null) return "";
+                                            if (typeof value !== "string") return value.toString();
                                             const label = chartConfig[value]?.label;
                                             return typeof label === "string" ? label : value;
                                           }}
@@ -1034,7 +1038,9 @@ export default function QuestDetailPage() {
                       {responses.map((r, idx) => {
                         const qId =
                           selectedQuestionId === "all" ? questions[0]?.id : selectedQuestionId;
-                        const answer = r.answers.find((a: { questionId: string }) => a.questionId === qId);
+                        const answer = r.answers.find(
+                          (a: { questionId: string }) => a.questionId === qId,
+                        );
                         return (
                           <div
                             key={r.id}
@@ -1047,7 +1053,7 @@ export default function QuestDetailPage() {
                               <div className="text-foreground text-sm font-medium">
                                 {Array.isArray(answer?.value)
                                   ? answer.value.join(", ")
-                                  : answer?.value || (
+                                  : (answer?.value as string) || (
                                       <span className="text-muted-foreground italic">
                                         No answer
                                       </span>
@@ -1099,11 +1105,12 @@ export default function QuestDetailPage() {
                                 const nameQ = r.answers.find((a: { question: { title: string } }) =>
                                   a.question.title.toLowerCase().includes("name"),
                                 );
-                                if (nameQ) return nameQ.value;
-                                const emailQ = r.answers.find((a: { id: string; question: { title: string }; value: any; }) =>
-                                   a.question.title.toLowerCase().includes("email"),
-                                 );
-                                if (emailQ) return emailQ.value;
+                                if (nameQ) return nameQ.value as string;
+                                const emailQ = r.answers.find(
+                                  (a: { question: { title: string } }) =>
+                                    a.question.title.toLowerCase().includes("email"),
+                                );
+                                if (emailQ) return emailQ.value as string;
                                 return `Response #${responses.length - i}`;
                               })()}
                             </div>
@@ -1160,11 +1167,7 @@ export default function QuestDetailPage() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-8 p-8">
-                          {responses[individualIndex].answers.map((answer: {
-                            id: string;
-                            question: { title: string };
-                            value: any;
-                          }) => (
+                          {responses[individualIndex].answers.map((answer) => (
                             <div key={answer.id} className="space-y-2">
                               <h4 className="text-muted-foreground/70 text-sm font-bold tracking-wider uppercase">
                                 {answer.question.title}
@@ -1453,10 +1456,11 @@ export default function QuestDetailPage() {
                           </p>
                           {quest.backgroundImageUrl && (
                             <div className="border-border/50 relative mt-2 h-32 w-full overflow-hidden rounded-xl border">
-                              <img
+                              <Image
                                 src={quest.backgroundImageUrl}
                                 alt="Background Preview"
-                                className="h-full w-full object-cover"
+                                fill
+                                className="object-cover"
                               />
                             </div>
                           )}
@@ -1603,7 +1607,7 @@ export default function QuestDetailPage() {
                     <>
                       {messages.map((message) => {
                         const parts = message.parts || [];
-                        const toolInvocations = (message as any).toolInvocations || [];
+                        const toolInvocations = message.toolInvocations || [];
 
                         return (
                           <Message from={message.role} key={message.id}>
@@ -1617,12 +1621,14 @@ export default function QuestDetailPage() {
                               })}
 
                               {/* Tool Execution Markers */}
-                              {[...toolInvocations].map((ti: any) => {
+                              {toolInvocations.map((ti) => {
                                 const toolName = ti.toolName;
                                 let statusText = "";
                                 switch (toolName) {
                                   case "createQuestions":
-                                    const qCount = (ti as any).args?.questions?.length || 0;
+                                    const qCount =
+                                      (ti.args as { questions?: unknown[] })?.questions?.length ||
+                                      0;
                                     statusText =
                                       qCount === 1
                                         ? "Creating question"
@@ -1676,7 +1682,7 @@ export default function QuestDetailPage() {
                                   onClick={() => {
                                     const text = message.parts
                                       .filter((p) => p.type === "text")
-                                      .map((p) => (p as any).text)
+                                      .map((p) => (p as { text: string }).text)
                                       .join("\n");
                                     handleCopy(text);
                                   }}
@@ -1701,21 +1707,23 @@ export default function QuestDetailPage() {
                             .slice(-3)
                             .reverse()
                             .flatMap((m) => {
-                              const toolInvocations = (m as any).toolInvocations || [];
+                              const toolInvocations = m.toolInvocations || [];
                               const toolParts =
-                                (m as any).parts
+                                m.parts
                                   ?.filter(
-                                    (p: any) =>
-                                      typeof p.type === "string" && p.type.startsWith("tool-"),
+                                    (p) =>
+                                      p.type === "tool-invocation" || p.type.startsWith("tool-"),
                                   )
-                                  .map((p: any) => ({
-                                    toolName: p.type.replace("tool-", ""),
-                                    state:
-                                      p.state === "input-available" || p.state === "input-streaming"
-                                        ? "call"
-                                        : "result",
-                                    args: p.input,
-                                  })) || [];
+                                  .map((p) => {
+                                    if (p.type === "tool-invocation") {
+                                      return p.toolInvocation;
+                                    }
+                                    return {
+                                      toolName: p.type.replace("tool-", ""),
+                                      state: "call",
+                                      args: (p as { input?: unknown }).input,
+                                    };
+                                  }) || [];
                               return [...toolInvocations, ...toolParts];
                             })
                             .find((ti) => ti.state === "call");
@@ -1724,7 +1732,9 @@ export default function QuestDetailPage() {
                             const toolName = activeTool.toolName;
                             switch (toolName) {
                               case "createQuestions":
-                                const count = (activeTool as any).args?.questions?.length || 0;
+                                const count =
+                                  (activeTool as { args?: { questions?: unknown[] } }).args
+                                    ?.questions?.length || 0;
                                 return count === 1
                                   ? "Creating question..."
                                   : `Creating ${count} questions...`;

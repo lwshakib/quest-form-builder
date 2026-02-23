@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { TextEffect } from "@/components/ui/text-effect";
@@ -67,7 +67,7 @@ export default function HeroSection() {
                       },
                     },
                   },
-                } as any
+                } as Record<string, unknown>
               }
               className="absolute inset-0 top-56 -z-20 mask-b-from-35% mask-b-to-90% lg:top-32"
             >
@@ -87,7 +87,7 @@ export default function HeroSection() {
 
             <div className="mx-auto max-w-7xl px-6">
               <div className="text-center sm:mx-auto lg:mt-0 lg:mr-auto">
-                <AnimatedGroup variants={transitionVariants as any}>
+                <AnimatedGroup variants={transitionVariants as Record<string, unknown>}>
                   <Link
                     href="#link"
                     className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
@@ -142,7 +142,7 @@ export default function HeroSection() {
                         },
                       },
                       ...transitionVariants,
-                    } as any
+                    } as Record<string, unknown>
                   }
                   className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row"
                 >
@@ -183,7 +183,7 @@ export default function HeroSection() {
                     },
                   },
                   ...transitionVariants,
-                } as any
+                } as Record<string, unknown>
               }
             >
               <div className="relative mt-8 -mr-56 overflow-hidden mask-b-from-55% px-2 sm:mt-12 sm:mr-0 md:mt-20">

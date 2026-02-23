@@ -100,9 +100,9 @@ const addDefaultVariants = (variants: Variants) => ({
   visible: { ...defaultItemVariants.visible, ...variants.visible },
 });
 
-const motionCache = new Map<any, any>();
+const motionCache = new Map<React.ElementType, any>();
 
-function getMotionComponent(as: any) {
+function getMotionComponent(as: React.ElementType) {
   if (!motionCache.has(as)) {
     motionCache.set(as, motion.create(as));
   }
@@ -124,22 +124,27 @@ function AnimatedGroup({
   const containerVariants = variants?.container || selectedVariants.container;
   const itemVariants = variants?.item || selectedVariants.item;
 
-  const MotionComponent = getMotionComponent(as);
-  const MotionChild = getMotionComponent(asChild);
+  const motionContainer = getMotionComponent(as);
+  const motionChild = getMotionComponent(asChild);
 
-  return (
-    <MotionComponent
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className={className}
-    >
-      {React.Children.map(children, (child, index) => (
-        <MotionChild key={index} variants={itemVariants}>
-          {child}
-        </MotionChild>
-      ))}
-    </MotionComponent>
+  return React.createElement(
+    motionContainer,
+    {
+      initial: "hidden",
+      animate: "visible",
+      variants: containerVariants,
+      className: className,
+    },
+    React.Children.map(children, (child, index) =>
+      React.createElement(
+        motionChild,
+        {
+          key: index,
+          variants: itemVariants,
+        },
+        child,
+      ),
+    ),
   );
 }
 

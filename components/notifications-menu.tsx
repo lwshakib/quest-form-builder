@@ -10,8 +10,15 @@ import { useRouter, usePathname } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { formatDistanceToNow } from "date-fns";
 
+interface Notification {
+  id: string;
+  title: string;
+  newCount: number;
+  updatedAt: string | Date;
+}
+
 export function NotificationsMenu() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
