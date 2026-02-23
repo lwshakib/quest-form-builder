@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Home, MoveLeft, FileQuestion } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Home, MoveLeft, FileQuestion } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -20,20 +20,32 @@ export default function NotFound() {
 
         <div className="space-y-4">
           <h1 className="text-6xl font-black tracking-tighter">404</h1>
-          <h2 className="text-2xl font-black tracking-tight">Something is missing</h2>
+          <h2 className="text-2xl font-black tracking-tight">
+            Something is missing
+          </h2>
           <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-            The page you're looking for doesn't exist or has been moved to another location.
+            The page you're looking for doesn't exist or has been moved to
+            another location.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Button variant="outline" size="lg" className="h-12 rounded-none px-8 font-bold gap-2 transition-all hover:bg-accent/5 group" asChild>
+          <Button
+            variant="outline"
+            size="lg"
+            className="h-12 rounded-none px-8 font-bold gap-2 transition-all hover:bg-accent/5 group"
+            asChild
+          >
             <Link href="javascript:history.back()">
               <MoveLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               Go Back
             </Link>
           </Button>
-          <Button size="lg" className="h-12 rounded-none px-8 font-black gap-2 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-98" asChild>
+          <Button
+            size="lg"
+            className="h-12 rounded-none px-8 font-black gap-2 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-98"
+            asChild
+          >
             <Link href="/">
               <Home className="h-4 w-4" />
               Back to Home
@@ -42,7 +54,9 @@ export default function NotFound() {
         </div>
 
         <div className="pt-8 opacity-20">
-          <p className="text-[10px] font-black uppercase tracking-[0.5em]">Quest Form Builder</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.5em]">
+            Quest Form Builder
+          </p>
         </div>
       </div>
     </div>

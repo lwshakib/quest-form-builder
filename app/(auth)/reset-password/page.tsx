@@ -7,7 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  ArrowLeft,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
@@ -25,7 +32,9 @@ function ResetPasswordForm() {
     e.preventDefault();
 
     if (!token) {
-      toast.error("Invalid or missing reset token. Please request a new reset link.");
+      toast.error(
+        "Invalid or missing reset token. Please request a new reset link.",
+      );
       return;
     }
 
@@ -94,7 +103,11 @@ function ResetPasswordForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-3.5 text-muted-foreground hover:text-primary transition-colors"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -111,8 +124,8 @@ function ResetPasswordForm() {
             />
           </div>
         </div>
-        <Button 
-          className="w-full h-12 shadow-lg transition-all active:scale-[0.98]" 
+        <Button
+          className="w-full h-12 shadow-lg transition-all active:scale-[0.98]"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -144,17 +157,24 @@ export default function ResetPasswordPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-transform hover:scale-105"
+          >
             <Logo iconSize={24} textSize="1.1rem" />
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <Suspense fallback={
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="text-muted-foreground animate-pulse">Preparing reset form...</p>
-            </div>
-          }>
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="text-muted-foreground animate-pulse">
+                  Preparing reset form...
+                </p>
+              </div>
+            }
+          >
             <ResetPasswordForm />
           </Suspense>
         </div>
@@ -179,7 +199,8 @@ export default function ResetPasswordPage() {
               A fresh start <br /> for your account.
             </h2>
             <p className="text-white/70 text-lg max-w-sm">
-              We've made it easy to recover your access while maintaining the highest security standards.
+              We've made it easy to recover your access while maintaining the
+              highest security standards.
             </p>
           </motion.div>
         </div>

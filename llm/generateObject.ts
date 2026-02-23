@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const generateObjectFromAI = async (
   prompt: string,
-  objectSchema: z.ZodSchema
+  objectSchema: z.ZodSchema,
 ) => {
   const response = await generateObject({
     model: GeminiModel(),

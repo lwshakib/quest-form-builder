@@ -15,7 +15,13 @@ export const publicRoutes = ["/"];
  * These routes will redirect logged in users to /
  * @type {string[]}
  */
-export const authRoutes = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password", "/verify-email"];
+export const authRoutes = [
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+];
 
 /**
  * The prefix for API authentication routes
@@ -44,9 +50,9 @@ export default async function proxy(request: NextRequest) {
   const isLoggedIn = !!session;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = 
-    publicRoutes.includes(nextUrl.pathname) || 
-    nextUrl.pathname.startsWith("/share/") || 
+  const isPublicRoute =
+    publicRoutes.includes(nextUrl.pathname) ||
+    nextUrl.pathname.startsWith("/share/") ||
     nextUrl.pathname.startsWith("/r/");
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 

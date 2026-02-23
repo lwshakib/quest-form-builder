@@ -17,7 +17,7 @@ export const generateImageTool = tool({
     prompt: z
       .string()
       .describe(
-        "Detailed description of the image to generate. Be specific about style, composition, colors, subject, mood, and any other relevant details."
+        "Detailed description of the image to generate. Be specific about style, composition, colors, subject, mood, and any other relevant details.",
       ),
     width: z
       .number()
@@ -34,11 +34,7 @@ export const generateImageTool = tool({
       .default(1024)
       .describe("Height of the image in pixels"),
   }),
-  execute: async ({
-    prompt,
-    width = 1024,
-    height = 1024,
-  }) => {
+  execute: async ({ prompt, width = 1024, height = 1024 }) => {
     console.log(`[GENERATOR] Running Image Tool for prompt: "${prompt}"`);
     if (!NEBIUS_API_KEY) {
       return { success: false, error: "Missing NEBIUS_API_KEY" };
@@ -64,13 +60,13 @@ export const generateImageTool = tool({
             loras: null,
             prompt,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || `API error: ${response.statusText}`
+          errorData.error?.message || `API error: ${response.statusText}`,
         );
       }
 
@@ -104,7 +100,7 @@ export const generateImageTool = tool({
               } else {
                 reject(new Error("Upload returned no result"));
               }
-            }
+            },
           )
           .end(imageBuffer);
       });

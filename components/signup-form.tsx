@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
-import { Loader2, Mail, CheckCircle2, ArrowLeft, ExternalLink } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  CheckCircle2,
+  ArrowLeft,
+  ExternalLink,
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export function SignUpForm({
@@ -72,7 +78,7 @@ export function SignUpForm({
 
   if (isSuccess) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className={cn("flex flex-col gap-6 text-center", className)}
@@ -84,7 +90,8 @@ export function SignUpForm({
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Check your email</h1>
             <p className="text-muted-foreground text-sm text-balance">
-              We&apos;ve sent a verification link to <span className="font-semibold text-foreground">{email}</span>. 
+              We&apos;ve sent a verification link to{" "}
+              <span className="font-semibold text-foreground">{email}</span>.
               Please click the link to activate your account.
             </p>
           </div>
@@ -92,7 +99,11 @@ export function SignUpForm({
 
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full h-11 shadow-lg">
-            <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://mail.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Go to Gmail
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
@@ -106,7 +117,8 @@ export function SignUpForm({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Didn&apos;t receive the email? Check your spam folder or try signing up again.
+          Didn&apos;t receive the email? Check your spam folder or try signing
+          up again.
         </p>
       </motion.div>
     );
@@ -171,7 +183,11 @@ export function SignUpForm({
           />
         </Field>
         <Field>
-          <Button type="submit" disabled={isLoading} className="w-full h-11 shadow-lg transition-all active:scale-[0.98]">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-11 shadow-lg transition-all active:scale-[0.98]"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="size-4 animate-spin mr-2" />
@@ -204,7 +220,10 @@ export function SignUpForm({
           </Button>
           <FieldDescription className="text-center pt-2">
             Already have an account?{" "}
-            <Link href="/sign-in" className="font-medium text-primary underline underline-offset-4 hover:text-primary/80">
+            <Link
+              href="/sign-in"
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
               Sign in
             </Link>
           </FieldDescription>
@@ -213,4 +232,3 @@ export function SignUpForm({
     </form>
   );
 }
-

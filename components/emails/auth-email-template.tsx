@@ -18,13 +18,10 @@ interface AuthEmailTemplateProps {
   url: string;
 }
 
-export const AuthEmailTemplate = ({
-  type,
-  url,
-}: AuthEmailTemplateProps) => {
+export const AuthEmailTemplate = ({ type, url }: AuthEmailTemplateProps) => {
   const isVerification = type === "email-verification";
   const title = isVerification ? "Verify your email" : "Reset your password";
-  const previewText = isVerification 
+  const previewText = isVerification
     ? "Welcome to Quest! Please verify your email."
     : "Reset your Quest password.";
 
@@ -49,7 +46,8 @@ export const AuthEmailTemplate = ({
               </Button>
             </Section>
             <Text style={subtext}>
-              If you're having trouble clicking the button, copy and paste the URL below into your web browser:
+              If you're having trouble clicking the button, copy and paste the
+              URL below into your web browser:
             </Text>
             <Link href={url} style={link}>
               {url}
@@ -69,7 +67,8 @@ export const AuthEmailTemplate = ({
 
 const main = {
   backgroundColor: "#ffffff",
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
+  fontFamily:
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
 };
 
 const container = {
@@ -146,4 +145,3 @@ const footerText = {
   fontSize: "12px",
   margin: "0",
 };
-

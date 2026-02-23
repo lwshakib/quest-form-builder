@@ -4,7 +4,6 @@ about: Suggest an idea for a new feature or improvement for Quest
 title: "[FEATURE] "
 labels: enhancement
 assignees: ""
-
 ---
 
 **Is your feature request related to a problem? Please describe.**
@@ -21,4 +20,3 @@ How would this feature benefit researchers, marketers, or developers using Quest
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
-

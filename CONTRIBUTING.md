@@ -11,6 +11,7 @@ All types of contributions are welcome, from bug reports to new features.
    - A PostgreSQL instance (or use [Neon](https://neon.tech/)).
 
 2. **Clone and Install**:
+
    ```bash
    git clone https://github.com/lwshakib/quest-form-builder.git
    cd quest-form-builder
@@ -21,6 +22,7 @@ All types of contributions are welcome, from bug reports to new features.
    - Copy `.env.example` to `.env` and fill in the required keys (Google OAuth, Gemini API, Cloudinary, Resend).
 
 4. **Database**:
+
    ```bash
    bun x prisma migrate dev
    ```

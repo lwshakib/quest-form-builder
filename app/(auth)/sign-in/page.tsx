@@ -10,7 +10,10 @@ export default function SignInPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-transform hover:scale-105"
+          >
             <Logo iconSize={24} textSize="1.1rem" />
           </Link>
         </div>
@@ -40,7 +43,8 @@ export default function SignInPage() {
               Start your next <br /> creative quest.
             </h2>
             <p className="text-white/70 text-lg max-w-sm">
-              Join thousands of creators building high-fidelity forms and surveys with Quest.
+              Join thousands of creators building high-fidelity forms and
+              surveys with Quest.
             </p>
           </motion.div>
         </div>

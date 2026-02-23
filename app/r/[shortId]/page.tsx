@@ -1,17 +1,17 @@
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function ShortRedirectPage({
-  params
+  params,
 }: {
-  params: Promise<{ shortId: string }>
+  params: Promise<{ shortId: string }>;
 }) {
   const { shortId } = await params;
-  
+
   const quest = await prisma.quest.findUnique({
-    where: { shortId }
+    where: { shortId },
   });
 
   if (!quest) {
@@ -25,12 +25,13 @@ export default async function ShortRedirectPage({
           </div>
           <h1 className="text-4xl font-bold tracking-tight">Invalid Link</h1>
           <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-            The link you're trying to access is invalid or has expired. Please check with the quest creator.
+            The link you're trying to access is invalid or has expired. Please
+            check with the quest creator.
           </p>
           <div className="pt-8">
             <Link href="/">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="px-8 h-12 rounded-full font-bold transition-all hover:bg-muted"
               >
                 Go home

@@ -2,17 +2,18 @@
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics and seamless user experience.
 
-
 ## 📱 App Demo
 
 ### Dashboard
-| Light Mode | Dark Mode |
-|------------|-----------|
+
+| Light Mode                                              | Dark Mode                                             |
+| ------------------------------------------------------- | ----------------------------------------------------- |
 | ![Dashboard Light](public/app-demo/dashboard-light.png) | ![Dashboard Dark](public/app-demo/dashboard-dark.png) |
 
 ### Form
-| Light Mode | Dark Mode |
-|------------|-----------|
+
+| Light Mode                                    | Dark Mode                                   |
+| --------------------------------------------- | ------------------------------------------- |
 | ![Form Light](public/app-demo/form-light.png) | ![Form Dark](public/app-demo/form-dark.png) |
 
 ## 🧩 How it Works
@@ -61,12 +62,14 @@ graph TD
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/lwshakib/quest-form-builder.git
    cd quest-form-builder
    ```
 
 2. Install dependencies:
+
    ```bash
    bun install
    ```
@@ -75,6 +78,7 @@ graph TD
    Create a `.env` file based on `.env.example`.
 
 4. Sync the database:
+
    ```bash
    bun x prisma migrate dev
    ```

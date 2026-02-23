@@ -5,7 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Mail, ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Mail,
+  ArrowRight,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Logo } from "@/components/logo";
@@ -14,7 +21,9 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -54,7 +63,9 @@ function VerifyEmailContent() {
     return (
       <div className="flex flex-col items-center justify-center space-y-4 py-8">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse text-lg">Verifying your email address...</p>
+        <p className="text-muted-foreground animate-pulse text-lg">
+          Verifying your email address...
+        </p>
       </div>
     );
   }
@@ -73,7 +84,8 @@ function VerifyEmailContent() {
         <div className="space-y-2 text-center lg:text-left">
           <h1 className="text-3xl font-bold tracking-tight">Email verified!</h1>
           <p className="text-muted-foreground text-lg">
-            Your account is now fully activated. You can now access all features of Quest.
+            Your account is now fully activated. You can now access all features
+            of Quest.
           </p>
         </div>
         <div className="pt-4">
@@ -94,13 +106,17 @@ function VerifyEmailContent() {
         <XCircle className="h-10 w-10" />
       </div>
       <div className="space-y-2 text-center lg:text-left">
-        <h1 className="text-3xl font-bold tracking-tight">Verification failed</h1>
-        <p className="text-destructive text-lg">
-          {errorMessage}
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Verification failed
+        </h1>
+        <p className="text-destructive text-lg">{errorMessage}</p>
       </div>
       <div className="pt-4 space-y-3">
-        <Button asChild variant="outline" className="w-full h-12 border-muted-foreground/20">
+        <Button
+          asChild
+          variant="outline"
+          className="w-full h-12 border-muted-foreground/20"
+        >
           <Link href="/sign-up">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Sign Up
@@ -116,7 +132,10 @@ export default function VerifyEmailPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-transform hover:scale-105"
+          >
             <Logo iconSize={24} textSize="1.1rem" />
           </Link>
         </div>
@@ -127,12 +146,16 @@ export default function VerifyEmailPage() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md"
           >
-            <Suspense fallback={
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground animate-pulse">Initializing verification...</p>
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="text-muted-foreground animate-pulse">
+                    Initializing verification...
+                  </p>
+                </div>
+              }
+            >
               <VerifyEmailContent />
             </Suspense>
           </motion.div>
@@ -158,7 +181,8 @@ export default function VerifyEmailPage() {
               One last step <br /> to your quest.
             </h2>
             <p className="text-white/70 text-lg max-w-sm">
-              Confirming your email ensures your data remains uniquely yours and accessible whenever you need it.
+              Confirming your email ensures your data remains uniquely yours and
+              accessible whenever you need it.
             </p>
           </motion.div>
         </div>

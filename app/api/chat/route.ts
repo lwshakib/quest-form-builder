@@ -1,14 +1,14 @@
-import { streamText, tool, convertToModelMessages, stepCountIs } from 'ai';
-import { GeminiModel } from '@/llm/model';
-import { z } from 'zod';
-import { 
-  updateQuest, 
-  createQuestion, 
-  updateQuestion, 
+import { streamText, tool, convertToModelMessages, stepCountIs } from "ai";
+import { GeminiModel } from "@/llm/model";
+import { z } from "zod";
+import {
+  updateQuest,
+  createQuestion,
+  updateQuestion,
   deleteQuestion,
-  getQuestById 
-} from '@/lib/actions';
-import { generateImageTool } from '@/lib/image-tool';
+  getQuestById,
+} from "@/lib/actions";
+import { generateImageTool } from "@/lib/image-tool";
 
 export const maxDuration = 30;
 
@@ -43,11 +43,12 @@ export async function POST(req: Request) {
 
     CRITICAL: Do not stop after just generating the title or image. Continue until all questions are created.
     `,
-    toolChoice: 'auto',
+    toolChoice: "auto",
     stopWhen: stepCountIs(10),
     tools: {
       updateQuest: tool({
-        description: 'Update quest details like title, description, settings, or background image.',
+        description:
+          "Update quest details like title, description, settings, or background image.",
         inputSchema: z.object({
           title: z.string().optional(),
           description: z.string().optional(),
@@ -58,33 +59,54 @@ export async function POST(req: Request) {
         }),
         execute: async (props) => {
           await updateQuest(questId, props);
-          return `Updated quest details: ${Object.keys(props).join(', ')}`;
+          return `Updated quest details: ${Object.keys(props).join(", ")}`;
         },
       }),
       generateImage: generateImageTool,
       createQuestions: tool({
-        description: 'Add new questions to the quest. Accepts an array of question objects.',
+        description:
+          "Add new questions to the quest. Accepts an array of question objects.",
         inputSchema: z.object({
-          questions: z.array(z.object({
-            type: z.enum(['SHORT_TEXT', 'PARAGRAPH', 'MULTIPLE_CHOICE', 'CHECKBOXES', 'DROPDOWN', 'DATE', 'TIME', 'VIDEO', 'IMAGE']),
-            title: z.string(),
-            description: z.string().optional(),
-            required: z.boolean().optional(),
-            options: z.array(z.string()).optional(),
-          })),
+          questions: z.array(
+            z.object({
+              type: z.enum([
+                "SHORT_TEXT",
+                "PARAGRAPH",
+                "MULTIPLE_CHOICE",
+                "CHECKBOXES",
+                "DROPDOWN",
+                "DATE",
+                "TIME",
+                "VIDEO",
+                "IMAGE",
+              ]),
+              title: z.string(),
+              description: z.string().optional(),
+              required: z.boolean().optional(),
+              options: z.array(z.string()).optional(),
+            }),
+          ),
         }),
         execute: async ({ questions }) => {
           const latestQuest = await getQuestById(questId);
           let startOrder = latestQuest?.questions?.length || 0;
-          
+
           for (const q of questions) {
-            await createQuestion(questId, q.type, startOrder++, q.title, q.description, q.required, q.options);
+            await createQuestion(
+              questId,
+              q.type,
+              startOrder++,
+              q.title,
+              q.description,
+              q.required,
+              q.options,
+            );
           }
           return `Created ${questions.length} question(s).`;
         },
       }),
       deleteQuestion: tool({
-        description: 'Delete a question by its ID.',
+        description: "Delete a question by its ID.",
         inputSchema: z.object({
           questionId: z.string(),
         }),
@@ -94,7 +116,7 @@ export async function POST(req: Request) {
         },
       }),
       updateQuestion: tool({
-        description: 'Update a question by its ID.',
+        description: "Update a question by its ID.",
         inputSchema: z.object({
           questionId: z.string(),
           title: z.string().optional(),

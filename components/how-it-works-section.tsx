@@ -1,32 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { 
-  MessageSquarePlus, 
-  Settings2, 
-  Send,
-  Trophy
-} from "lucide-react";
+import { MessageSquarePlus, Settings2, Send, Trophy } from "lucide-react";
 
 const steps = [
   {
     title: "Create Your Quest",
-    description: "Use our AI generator or start from scratch with our drag-and-drop builder.",
+    description:
+      "Use our AI generator or start from scratch with our drag-and-drop builder.",
     icon: MessageSquarePlus,
   },
   {
     title: "Customize & Configure",
-    description: "Add branching logic, set up rewards, and style every element to match your brand.",
+    description:
+      "Add branching logic, set up rewards, and style every element to match your brand.",
     icon: Settings2,
   },
   {
     title: "Share with Ease",
-    description: "Distribute your quest via link, QR code, or embed it directly into your website.",
+    description:
+      "Distribute your quest via link, QR code, or embed it directly into your website.",
     icon: Send,
   },
   {
     title: "Get Results",
-    description: "Watch the submissions roll in and analyze performance with real-time data.",
+    description:
+      "Watch the submissions roll in and analyze performance with real-time data.",
     icon: Trophy,
   },
 ];
@@ -36,7 +35,7 @@ export default function HowItWorksSection() {
     <section id="how-it-works" className="py-24 bg-muted/30">
       <div className="container mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -45,7 +44,7 @@ export default function HowItWorksSection() {
           >
             How It Works
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -68,13 +67,10 @@ export default function HowItWorksSection() {
                 className="flex flex-col items-center text-center group"
               >
                 <div className="w-16 h-16 rounded-full bg-background border-4 border-primary/20 flex items-center justify-center mb-6 group-hover:border-primary transition-colors duration-500 shadow-xl">
-
                   <step.icon className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground">
-                  {step.description}
-                </p>
+                <p className="text-muted-foreground">{step.description}</p>
               </motion.div>
             ))}
           </div>

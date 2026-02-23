@@ -43,7 +43,10 @@ export default function ForgotPasswordPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-transform hover:scale-105"
+          >
             <Logo iconSize={24} textSize="1.1rem" />
           </Link>
         </div>
@@ -58,7 +61,9 @@ export default function ForgotPasswordPage() {
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-foreground mb-2">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">Forgot password?</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Forgot password?
+              </h1>
               <p className="text-muted-foreground text-balance">
                 {isSubmitted
                   ? "Check your inbox! We've sent a recovery link to your email address."
@@ -69,7 +74,9 @@ export default function ForgotPasswordPage() {
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email Address
+                  </Label>
                   <div className="relative group">
                     <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
@@ -83,8 +90,8 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
                 </div>
-                <Button 
-                  className="w-full h-12 shadow-lg transition-all active:scale-[0.98]" 
+                <Button
+                  className="w-full h-12 shadow-lg transition-all active:scale-[0.98]"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -101,7 +108,9 @@ export default function ForgotPasswordPage() {
               <div className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted border border-border">
                   <p className="text-sm text-foreground">
-                    Verification email sent to <span className="font-semibold">{email}</span>. Please check your spam folder if you don't see it.
+                    Verification email sent to{" "}
+                    <span className="font-semibold">{email}</span>. Please check
+                    your spam folder if you don't see it.
                   </p>
                 </div>
                 <Button
@@ -146,7 +155,8 @@ export default function ForgotPasswordPage() {
               Securing your creative <br /> journeys.
             </h2>
             <p className="text-white/70 text-lg max-w-sm">
-              Quest provides high-fidelity authentication to keep your quest form data safe and accessible.
+              Quest provides high-fidelity authentication to keep your quest
+              form data safe and accessible.
             </p>
           </motion.div>
         </div>

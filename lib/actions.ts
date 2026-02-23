@@ -7,7 +7,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 import { TEMPLATES } from "./templates";
 
-export async function createQuest(title: string = "Untitled Quest", backgroundImageUrl?: string) {
+export async function createQuest(
+  title: string = "Untitled Quest",
+  backgroundImageUrl?: string,
+) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -38,7 +41,7 @@ export async function createQuestFromTemplate(templateId: string) {
     throw new Error("Unauthorized");
   }
 
-  const template = TEMPLATES.find(t => t.id === templateId);
+  const template = TEMPLATES.find((t) => t.id === templateId);
   if (!template) {
     throw new Error("Template not found");
   }
@@ -62,7 +65,13 @@ export async function createQuestFromTemplate(templateId: string) {
       description: q.description || "",
       order: index,
       required: q.required || false,
-      options: q.options || (q.type === 'MULTIPLE_CHOICE' || q.type === 'CHECKBOXES' || q.type === 'DROPDOWN' ? ["Option 1"] : undefined),
+      options:
+        q.options ||
+        (q.type === "MULTIPLE_CHOICE" ||
+        q.type === "CHECKBOXES" ||
+        q.type === "DROPDOWN"
+          ? ["Option 1"]
+          : undefined),
     }));
 
     await prisma.question.createMany({
@@ -97,7 +106,9 @@ export async function getRecentTemplates() {
     take: 10,
   });
 
-  const uniqueTemplateIds = Array.from(new Set(recentQuests.map(q => q.templateId as string)));
+  const uniqueTemplateIds = Array.from(
+    new Set(recentQuests.map((q) => q.templateId as string)),
+  );
   return uniqueTemplateIds.slice(0, 3);
 }
 
@@ -117,29 +128,42 @@ export async function globalSearch(query: string) {
     where: {
       userId: session.user.id,
       OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { questions: { some: { title: { contains: query, mode: 'insensitive' } } } },
-        { questions: { some: { description: { contains: query, mode: 'insensitive' } } } },
-      ]
+        { title: { contains: query, mode: "insensitive" } },
+        {
+          questions: {
+            some: { title: { contains: query, mode: "insensitive" } },
+          },
+        },
+        {
+          questions: {
+            some: { description: { contains: query, mode: "insensitive" } },
+          },
+        },
+      ],
     },
     include: {
       questions: {
         where: {
           OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } },
-          ]
-        }
-      }
+            { title: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        },
+      },
     },
     take: 5,
   });
 
   // Search templates
-  const matchedTemplates = TEMPLATES.filter(t => 
-    t.title.toLowerCase().includes(q) || 
-    t.description.toLowerCase().includes(q) ||
-    t.questions.some(qn => qn.title.toLowerCase().includes(q) || qn.description?.toLowerCase().includes(q))
+  const matchedTemplates = TEMPLATES.filter(
+    (t) =>
+      t.title.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.questions.some(
+        (qn) =>
+          qn.title.toLowerCase().includes(q) ||
+          qn.description?.toLowerCase().includes(q),
+      ),
   ).slice(0, 5);
 
   return {
@@ -195,25 +219,28 @@ export async function getQuestById(id: string) {
   return quest;
 }
 
-export async function updateQuest(id: string, data: { 
-  title?: string; 
-  description?: string; 
-  status?: string;
-  published?: boolean;
-  acceptingResponses?: boolean;
-  shortId?: string;
-  isQuiz?: boolean;
-  showProgressBar?: boolean;
-  shuffleQuestionOrder?: boolean;
-  confirmationMessage?: string;
-  showLinkToSubmitAnother?: boolean;
-  limitToOneResponse?: boolean;
-  viewResultsSummary?: boolean;
-  questionsRequiredByDefault?: boolean;
-  webhookEnabled?: boolean;
-  webhookUrl?: string;
-  backgroundImageUrl?: string | null;
-}) {
+export async function updateQuest(
+  id: string,
+  data: {
+    title?: string;
+    description?: string;
+    status?: string;
+    published?: boolean;
+    acceptingResponses?: boolean;
+    shortId?: string;
+    isQuiz?: boolean;
+    showProgressBar?: boolean;
+    shuffleQuestionOrder?: boolean;
+    confirmationMessage?: string;
+    showLinkToSubmitAnother?: boolean;
+    limitToOneResponse?: boolean;
+    viewResultsSummary?: boolean;
+    questionsRequiredByDefault?: boolean;
+    webhookEnabled?: boolean;
+    webhookUrl?: string;
+    backgroundImageUrl?: string | null;
+  },
+) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -246,7 +273,7 @@ export async function publishQuest(id: string) {
 
   // Generate a short ID if not exists
   const quest = await prisma.quest.findUnique({
-    where: { id, userId: session.user.id }
+    where: { id, userId: session.user.id },
   });
 
   if (!quest) throw new Error("Quest not found");
@@ -255,7 +282,7 @@ export async function publishQuest(id: string) {
   if (!shortId) {
     // Basic short ID generation - in production use a more robust library
     shortId = Math.random().toString(36).substring(2, 8);
-    
+
     // Simple collision check (just once for demo purposes)
     const existing = await prisma.quest.findUnique({ where: { shortId } });
     if (existing) shortId = Math.random().toString(36).substring(2, 9);
@@ -324,7 +351,15 @@ export async function deleteQuest(id: string) {
 }
 
 // Question Actions
-export async function createQuestion(questId: string, type: string, order: number, title?: string, description?: string, required?: boolean, options?: string[]) {
+export async function createQuestion(
+  questId: string,
+  type: string,
+  order: number,
+  title?: string,
+  description?: string,
+  required?: boolean,
+  options?: string[],
+) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -333,18 +368,26 @@ export async function createQuestion(questId: string, type: string, order: numbe
 
   const quest = await prisma.quest.findUnique({
     where: { id: questId },
-    select: { questionsRequiredByDefault: true }
+    select: { questionsRequiredByDefault: true },
   });
 
   const question = await prisma.question.create({
     data: {
       questId,
       type,
-      title: title || `Untitled ${type.toLowerCase().replace('_', ' ')}`,
+      title: title || `Untitled ${type.toLowerCase().replace("_", " ")}`,
       description,
       order,
       required: required ?? quest?.questionsRequiredByDefault ?? false,
-      options: options || (type === 'MULTIPLE_CHOICE' || type === 'CHECKBOXES' || type === 'DROPDOWN' ? ["Option 1"] : type === 'VIDEO' || type === 'IMAGE' ? [""] : undefined),
+      options:
+        options ||
+        (type === "MULTIPLE_CHOICE" ||
+        type === "CHECKBOXES" ||
+        type === "DROPDOWN"
+          ? ["Option 1"]
+          : type === "VIDEO" || type === "IMAGE"
+            ? [""]
+            : undefined),
     },
   });
 
@@ -390,7 +433,7 @@ export async function duplicateQuestion(id: string, questId: string) {
   if (!session) throw new Error("Unauthorized");
 
   const original = await prisma.question.findUnique({
-    where: { id, questId }
+    where: { id, questId },
   });
 
   if (!original) throw new Error("Question not found");
@@ -413,14 +456,14 @@ export async function duplicateQuestion(id: string, questId: string) {
   // Reorder all questions to accommodate the new one
   const allQuestions = await prisma.question.findMany({
     where: { questId },
-    orderBy: { order: "asc" }
+    orderBy: { order: "asc" },
   });
 
-  const updates = allQuestions.map((q, index) => 
+  const updates = allQuestions.map((q, index) =>
     prisma.question.update({
       where: { id: q.id },
-      data: { order: index }
-    })
+      data: { order: index },
+    }),
   );
 
   await prisma.$transaction(updates);
@@ -429,18 +472,21 @@ export async function duplicateQuestion(id: string, questId: string) {
   return question;
 }
 
-export async function updateQuestionsOrder(questId: string, questionIds: string[]) {
+export async function updateQuestionsOrder(
+  questId: string,
+  questionIds: string[],
+) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) throw new Error("Unauthorized");
 
-  const updates = questionIds.map((id, index) => 
+  const updates = questionIds.map((id, index) =>
     prisma.question.update({
       where: { id, questId },
       data: { order: index },
-    })
+    }),
   );
 
   await prisma.$transaction(updates);
@@ -476,7 +522,11 @@ export async function getPublicQuest(id: string) {
   return quest;
 }
 
-export async function submitResponse(questId: string, answers: Record<string, any>, duration?: number) {
+export async function submitResponse(
+  questId: string,
+  answers: Record<string, any>,
+  duration?: number,
+) {
   const quest = await prisma.quest.findUnique({
     where: { id: questId, published: true, acceptingResponses: true },
   });
@@ -517,33 +567,33 @@ export async function submitResponse(questId: string, answers: Record<string, an
         include: {
           answers: {
             include: {
-              question: true
-            }
-          }
-        }
+              question: true,
+            },
+          },
+        },
       });
 
       if (responseWithAnswers) {
         // Run as fire-and-forget in the background
         fetch(quest.webhookUrl, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            event: 'response.submitted',
+            event: "response.submitted",
             questId: quest.id,
             questTitle: quest.title,
             responseId: response.id,
             submittedAt: responseWithAnswers.createdAt,
             duration: responseWithAnswers.duration,
-            answers: responseWithAnswers.answers.map(a => ({
+            answers: responseWithAnswers.answers.map((a) => ({
               questionId: a.questionId,
               questionTitle: a.question.title,
-              value: a.value
-            }))
+              value: a.value,
+            })),
           }),
-        }).catch(err => console.error("Webhook fetch failed:", err));
+        }).catch((err) => console.error("Webhook fetch failed:", err));
       }
     } catch (webhookErr) {
       console.error("Webhook processing failed:", webhookErr);
@@ -602,21 +652,21 @@ export async function getUnreadNotifications() {
       title: true,
       updatedAt: true,
       lastViewedResponsesAt: true,
-    }
+    },
   });
 
   const unreadQuests = [];
-  
+
   for (const quest of quests) {
     const lastViewed = quest.lastViewedResponsesAt || new Date(0);
-    
+
     const newCount = await prisma.response.count({
       where: {
         questId: quest.id,
         createdAt: {
-          gt: lastViewed
-        }
-      }
+          gt: lastViewed,
+        },
+      },
     });
 
     if (newCount > 0) {
@@ -624,7 +674,7 @@ export async function getUnreadNotifications() {
         id: quest.id,
         title: quest.title,
         newCount,
-        updatedAt: quest.updatedAt
+        updatedAt: quest.updatedAt,
       });
     }
   }

@@ -28,14 +28,18 @@ export default function SignUpPage() {
               Create your account <br /> and start building.
             </h2>
             <p className="text-white/70 text-lg max-w-sm">
-              Expereince the most powerful and flexible form builder designed for modern product teams.
+              Expereince the most powerful and flexible form builder designed
+              for modern product teams.
             </p>
           </motion.div>
         </div>
       </div>
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+          <Link
+            href="/"
+            className="flex items-center gap-2 transition-transform hover:scale-105"
+          >
             <Logo iconSize={24} textSize="1.1rem" />
           </Link>
         </div>

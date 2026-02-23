@@ -4,7 +4,6 @@ about: Suggest an improvement or addition to the documentation
 title: "[DOCS] "
 labels: documentation
 assignees: ""
-
 ---
 
 **Is there a specific page or section that needs improvement?**

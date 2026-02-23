@@ -25,8 +25,7 @@ const plans = [
       monthly: "Free forever",
       yearly: "Free forever",
     },
-    description:
-      "Perfect for individuals and small projects getting started.",
+    description: "Perfect for individuals and small projects getting started.",
     features: [
       "UNlimited forms & quests",
       "AI-assisted generation",
@@ -123,8 +122,8 @@ export default function SimplePricing() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-muted-foreground max-w-md pt-2 text-lg"
           >
-            Start free and scale as you grow. All plans include AI-powered
-            quest generation and real-time analytics.
+            Start free and scale as you grow. All plans include AI-powered quest
+            generation and real-time analytics.
           </motion.p>
         </div>
 
@@ -178,7 +177,7 @@ export default function SimplePricing() {
                     ? "ring-primary/50 dark:shadow-primary/10 shadow-md ring-2"
                     : "hover:border-primary/30",
                   plan.popular &&
-                    "from-primary/[0.03] bg-gradient-to-b to-transparent"
+                    "from-primary/[0.03] bg-gradient-to-b to-transparent",
                 )}
               >
                 {plan.popular && (
@@ -196,7 +195,7 @@ export default function SimplePricing() {
                         "flex h-8 w-8 items-center justify-center rounded-full",
                         plan.popular
                           ? "bg-primary/10 text-primary"
-                          : "bg-secondary text-foreground"
+                          : "bg-secondary text-foreground",
                       )}
                     >
                       <plan.icon className="h-4 w-4" />
@@ -204,7 +203,7 @@ export default function SimplePricing() {
                     <CardTitle
                       className={cn(
                         "text-xl font-bold",
-                        plan.popular && "text-primary"
+                        plan.popular && "text-primary",
                       )}
                     >
                       {plan.name}
@@ -220,7 +219,7 @@ export default function SimplePricing() {
                           <NumberFlow
                             className={cn(
                               "text-3xl font-bold",
-                              plan.popular ? "text-primary" : "text-foreground"
+                              plan.popular ? "text-primary" : "text-foreground",
                             )}
                             format={{
                               style: "currency",
@@ -241,7 +240,7 @@ export default function SimplePricing() {
                         <span
                           className={cn(
                             "text-2xl font-bold",
-                            plan.popular ? "text-primary" : "text-foreground"
+                            plan.popular ? "text-primary" : "text-foreground",
                           )}
                         >
                           {plan.price[frequency as keyof typeof plan.price]}
@@ -264,7 +263,7 @@ export default function SimplePricing() {
                           "flex h-5 w-5 items-center justify-center rounded-full",
                           plan.popular
                             ? "bg-primary/10 text-primary"
-                            : "bg-secondary text-secondary-foreground"
+                            : "bg-secondary text-secondary-foreground",
                         )}
                       >
                         <Check className="h-3.5 w-3.5" />
@@ -288,7 +287,7 @@ export default function SimplePricing() {
                       "w-full font-medium transition-all duration-300",
                       plan.popular
                         ? "bg-primary hover:bg-primary/90 hover:shadow-primary/20 hover:shadow-md"
-                        : "hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                        : "hover:border-primary/30 hover:bg-primary/5 hover:text-primary",
                     )}
                   >
                     {plan.cta}

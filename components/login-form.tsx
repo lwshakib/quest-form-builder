@@ -106,7 +106,7 @@ export function LoginForm({
               />
             </div>
           </Field>
-          
+
           <Field>
             <div className="flex items-center justify-between">
               <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -131,8 +131,8 @@ export function LoginForm({
             </div>
           </Field>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading}
             className="w-full h-12 shadow-lg transition-all active:scale-[0.98]"
           >
@@ -149,8 +149,10 @@ export function LoginForm({
             )}
           </Button>
 
-          <FieldSeparator className="text-muted-foreground/50">Or continue with</FieldSeparator>
-          
+          <FieldSeparator className="text-muted-foreground/50">
+            Or continue with
+          </FieldSeparator>
+
           <div className="flex flex-col gap-4">
             <Button
               variant="outline"
@@ -173,7 +175,10 @@ export function LoginForm({
 
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="font-semibold text-primary hover:text-primary/80 underline underline-offset-4">
+              <Link
+                href="/sign-up"
+                className="font-semibold text-primary hover:text-primary/80 underline underline-offset-4"
+              >
                 Sign up
               </Link>
             </p>

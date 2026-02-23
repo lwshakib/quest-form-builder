@@ -1,23 +1,28 @@
-'use client'
+"use client";
 
-import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  usePathname,
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { UserMenu } from "@/components/user-menu";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
-import { 
-  Search, 
-  Bell, 
-  HelpCircle, 
-  ArrowLeft, 
-  Play, 
-  Share2, 
-  Copy, 
-  Check, 
-  FileText, 
-  MessageSquare, 
+import {
+  Search,
+  Bell,
+  HelpCircle,
+  ArrowLeft,
+  Play,
+  Share2,
+  Copy,
+  Check,
+  FileText,
+  MessageSquare,
   Settings,
-  Settings2
+  Settings2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,8 +30,17 @@ import { useState, useEffect, useRef } from "react";
 import { getQuestById, updateQuest } from "@/lib/actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PublishDialog } from "@/components/publish-dialog";
@@ -43,8 +57,8 @@ export default function ClientLayout({
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'questions';
-  
+  const activeTab = searchParams.get("tab") || "questions";
+
   const [quest, setQuest] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
@@ -52,7 +66,11 @@ export default function ClientLayout({
   const [editedTitle, setEditedTitle] = useState("");
   const [origin, setOrigin] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const isEditor = pathname.startsWith('/quests/') && params.id && !pathname.endsWith('/responses') && !pathname.endsWith('/settings');
+  const isEditor =
+    pathname.startsWith("/quests/") &&
+    params.id &&
+    !pathname.endsWith("/responses") &&
+    !pathname.endsWith("/settings");
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -79,7 +97,9 @@ export default function ClientLayout({
     }
 
     try {
-      const updated = await updateQuest(params.id as string, { title: editedTitle });
+      const updated = await updateQuest(params.id as string, {
+        title: editedTitle,
+      });
       setQuest(updated);
       setIsEditingTitle(false);
       toast.success("Title updated");
@@ -91,9 +111,9 @@ export default function ClientLayout({
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleTitleSubmit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsEditingTitle(false);
       setEditedTitle(quest?.title || "");
     }
@@ -119,8 +139,8 @@ export default function ClientLayout({
         }
       };
 
-      window.addEventListener('quest-updated', handleUpdate);
-      return () => window.removeEventListener('quest-updated', handleUpdate);
+      window.addEventListener("quest-updated", handleUpdate);
+      return () => window.removeEventListener("quest-updated", handleUpdate);
     }
   }, [isEditor, params.id]);
 
@@ -134,7 +154,7 @@ export default function ClientLayout({
 
   const handleTabChange = (tab: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.set('tab', tab);
+    url.searchParams.set("tab", tab);
     router.push(url.pathname + url.search);
   };
 
@@ -142,14 +162,19 @@ export default function ClientLayout({
     <div className="min-h-screen flex flex-col bg-background relative">
       {/* Background Decor */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-      
+
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {isEditor ? (
             // Editor Header
             <>
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" asChild className="rounded-full h-9 w-9">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="rounded-full h-9 w-9"
+                >
                   <Link href="/quests">
                     <ArrowLeft className="h-5 w-5" />
                   </Link>
@@ -165,7 +190,7 @@ export default function ClientLayout({
                       className="font-bold text-sm bg-transparent border-none p-0 m-0 outline-none focus:ring-0 w-full min-w-[200px]"
                     />
                   ) : (
-                    <span 
+                    <span
                       className="font-bold text-sm line-clamp-1 max-w-[120px] md:max-w-[200px] cursor-pointer transition-all hover:text-primary flex items-center gap-2 group"
                       onClick={() => setIsEditingTitle(true)}
                       title="Click to edit quest title"
@@ -182,95 +207,171 @@ export default function ClientLayout({
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        variant={activeTab === 'questions' ? 'secondary' : 'ghost'} 
-                        size="icon" 
-                        className={cn("h-8 w-12 rounded-full transition-all", activeTab === 'questions' && "shadow-sm")}
-                        onClick={() => handleTabChange('questions')}
+                      <Button
+                        variant={
+                          activeTab === "questions" ? "secondary" : "ghost"
+                        }
+                        size="icon"
+                        className={cn(
+                          "h-8 w-12 rounded-full transition-all",
+                          activeTab === "questions" && "shadow-sm",
+                        )}
+                        onClick={() => handleTabChange("questions")}
                       >
-                        <FileText className={cn("h-4 w-4 transition-colors", activeTab === 'questions' ? "text-primary" : "text-muted-foreground")} />
+                        <FileText
+                          className={cn(
+                            "h-4 w-4 transition-colors",
+                            activeTab === "questions"
+                              ? "text-primary"
+                              : "text-muted-foreground",
+                          )}
+                        />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Questions</p></TooltipContent>
+                    <TooltipContent>
+                      <p className="text-xs">Questions</p>
+                    </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        variant={activeTab === 'responses' ? 'secondary' : 'ghost'} 
-                        size="icon" 
-                        className={cn("h-8 w-12 rounded-full transition-all", activeTab === 'responses' && "shadow-sm")}
-                        onClick={() => handleTabChange('responses')}
+                      <Button
+                        variant={
+                          activeTab === "responses" ? "secondary" : "ghost"
+                        }
+                        size="icon"
+                        className={cn(
+                          "h-8 w-12 rounded-full transition-all",
+                          activeTab === "responses" && "shadow-sm",
+                        )}
+                        onClick={() => handleTabChange("responses")}
                       >
-                        <MessageSquare className={cn("h-4 w-4 transition-colors", activeTab === 'responses' ? "text-primary" : "text-muted-foreground")} />
+                        <MessageSquare
+                          className={cn(
+                            "h-4 w-4 transition-colors",
+                            activeTab === "responses"
+                              ? "text-primary"
+                              : "text-muted-foreground",
+                          )}
+                        />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Responses</p></TooltipContent>
+                    <TooltipContent>
+                      <p className="text-xs">Responses</p>
+                    </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        variant={activeTab === 'settings' ? 'secondary' : 'ghost'} 
-                        size="icon" 
-                        className={cn("h-8 w-12 rounded-full transition-all", activeTab === 'settings' && "shadow-sm")}
-                        onClick={() => handleTabChange('settings')}
+                      <Button
+                        variant={
+                          activeTab === "settings" ? "secondary" : "ghost"
+                        }
+                        size="icon"
+                        className={cn(
+                          "h-8 w-12 rounded-full transition-all",
+                          activeTab === "settings" && "shadow-sm",
+                        )}
+                        onClick={() => handleTabChange("settings")}
                       >
-                        <Settings className={cn("h-4 w-4 transition-colors", activeTab === 'settings' ? "text-primary" : "text-muted-foreground")} />
+                        <Settings
+                          className={cn(
+                            "h-4 w-4 transition-colors",
+                            activeTab === "settings"
+                              ? "text-primary"
+                              : "text-muted-foreground",
+                          )}
+                        />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Settings</p></TooltipContent>
+                    <TooltipContent>
+                      <p className="text-xs">Settings</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <TooltipProvider delayDuration={0}>
-                   <ModeToggle />
-                   
+                  <ModeToggle />
+
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 rounded-full"
+                        asChild
+                      >
                         <Link href={`/preview/${params.id}`} target="_blank">
                           <Play className="h-4 w-4" />
                         </Link>
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Preview</p></TooltipContent>
+                    <TooltipContent>
+                      <p className="text-xs">Preview</p>
+                    </TooltipContent>
                   </Tooltip>
 
                   <Popover>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 rounded-full"
+                          >
                             <Share2 className="h-4 w-4" />
                           </Button>
                         </PopoverTrigger>
                       </TooltipTrigger>
-                      <TooltipContent><p className="text-xs">Share Quest</p></TooltipContent>
+                      <TooltipContent>
+                        <p className="text-xs">Share Quest</p>
+                      </TooltipContent>
                     </Tooltip>
-                    <PopoverContent className="w-[380px] p-6 rounded-none bg-background shadow-2xl border-border/50" side="bottom" align="end" sideOffset={12}>
+                    <PopoverContent
+                      className="w-[380px] p-6 rounded-none bg-background shadow-2xl border-border/50"
+                      side="bottom"
+                      align="end"
+                      sideOffset={12}
+                    >
                       <div className="space-y-6">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Shareable Link</Label>
+                          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                            Shareable Link
+                          </Label>
                           <div className="flex gap-2">
-                            <Input 
-                              readOnly 
-                              value={`${origin}/share/${params.id}`} 
-                              className="h-10 rounded-none bg-muted/30 border-none font-medium text-xs focus-visible:ring-0" 
+                            <Input
+                              readOnly
+                              value={`${origin}/share/${params.id}`}
+                              className="h-10 rounded-none bg-muted/30 border-none font-medium text-xs focus-visible:ring-0"
                             />
-                            <Button size="icon" className="h-10 w-10 shrink-0 rounded-none shadow-md" onClick={handleCopyLink}>
-                              {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                            <Button
+                              size="icon"
+                              className="h-10 w-10 shrink-0 rounded-none shadow-md"
+                              onClick={handleCopyLink}
+                            >
+                              {isCopied ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3 p-3 rounded-none bg-accent/5 border border-border/30">
-                          <Checkbox 
-                            id="shorten-header" 
+                          <Checkbox
+                            id="shorten-header"
                             className="rounded-none border-primary/40 data-[state=checked]:bg-primary"
                           />
-                          <Label htmlFor="shorten-header" className="text-xs font-bold cursor-pointer select-none">Shorten URL (r/{params.id?.toString().substring(0,6)})</Label>
+                          <Label
+                            htmlFor="shorten-header"
+                            className="text-xs font-bold cursor-pointer select-none"
+                          >
+                            Shorten URL (r/
+                            {params.id?.toString().substring(0, 6)})
+                          </Label>
                         </div>
                       </div>
                     </PopoverContent>
@@ -278,12 +379,12 @@ export default function ClientLayout({
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
+                      <Button
                         className={cn(
                           "h-9 px-4 shadow-lg rounded-full transition-all active:scale-95 gap-2",
-                          quest?.status === "Published" 
-                            ? "bg-green-500 hover:bg-green-600 shadow-green-500/20 text-white" 
-                            : "bg-primary hover:bg-primary/90 shadow-primary/20 text-primary-foreground"
+                          quest?.status === "Published"
+                            ? "bg-green-500 hover:bg-green-600 shadow-green-500/20 text-white"
+                            : "bg-primary hover:bg-primary/90 shadow-primary/20 text-primary-foreground",
                         )}
                         onClick={() => setIsPublishOpen(true)}
                       >
@@ -296,19 +397,25 @@ export default function ClientLayout({
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
                               </span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">Config</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">
+                              Config
+                            </span>
                           </>
                         ) : (
                           <>
                             <Settings2 className="h-4 w-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">Publish</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden xs:inline">
+                              Publish
+                            </span>
                           </>
                         )}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs">
-                        {quest?.status === "Published" ? "Manage published quest" : "Share your quest"}
+                        {quest?.status === "Published"
+                          ? "Manage published quest"
+                          : "Share your quest"}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -322,7 +429,10 @@ export default function ClientLayout({
             // Dashboard Header
             <>
               <div className="flex items-center gap-8">
-                <Link href="/quests" className="flex items-center space-x-2 transition-transform hover:scale-105">
+                <Link
+                  href="/quests"
+                  className="flex items-center space-x-2 transition-transform hover:scale-105"
+                >
                   <Logo />
                 </Link>
               </div>
@@ -335,22 +445,20 @@ export default function ClientLayout({
                 <ModeToggle />
                 <InfoMenu />
                 <NotificationsMenu />
-                
+
                 <div className="w-px h-6 bg-border mx-2 hidden sm:block" />
-                
+
                 <UserMenu />
               </div>
             </>
           )}
         </div>
       </header>
-      
-      <main className="flex-1 relative">
-        {children}
-      </main>
+
+      <main className="flex-1 relative">{children}</main>
 
       {isEditor && quest && (
-        <PublishDialog 
+        <PublishDialog
           isOpen={isPublishOpen}
           onClose={() => setIsPublishOpen(false)}
           quest={quest}

@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Quest - The Intelligent Form Builder",
-  description: "Create, manage, and analyze professional quests, surveys, and quizzes with real-time insights and automated workflows.",
-   icons: {
+  description:
+    "Create, manage, and analyze professional quests, surveys, and quizzes with real-time insights and automated workflows.",
+  icons: {
     icon: [
       {
         url: "/favicon_io/favicon-16x16.png",

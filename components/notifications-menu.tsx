@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Bell, MessageSquare, Loader2, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { getUnreadNotifications, markQuestResponsesAsRead } from '@/lib/actions';
-import { useRouter, usePathname } from 'next/navigation';
-import { Separator } from '@/components/ui/separator';
-import { formatDistanceToNow } from 'date-fns';
+import { useState, useEffect } from "react";
+import { Bell, MessageSquare, Loader2, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import {
+  getUnreadNotifications,
+  markQuestResponsesAsRead,
+} from "@/lib/actions";
+import { useRouter, usePathname } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
+import { formatDistanceToNow } from "date-fns";
 
 export function NotificationsMenu() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -31,7 +38,7 @@ export function NotificationsMenu() {
 
   useEffect(() => {
     fetchNotifications();
-    
+
     // Refresh every minute
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
@@ -48,16 +55,16 @@ export function NotificationsMenu() {
     setIsOpen(false);
     await markQuestResponsesAsRead(questId);
     // Refresh list locally
-    setNotifications(prev => prev.filter(n => n.id !== questId));
+    setNotifications((prev) => prev.filter((n) => n.id !== questId));
     router.push(`/quests/${questId}?tab=responses`);
   };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="text-muted-foreground hover:text-primary relative rounded-full transition-all h-10 w-10 active:scale-90"
         >
           <Bell className={cn("h-5 w-5", totalNew > 0 && "animate-pulse")} />
@@ -66,13 +73,19 @@ export function NotificationsMenu() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0 overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl" align="end" sideOffset={12}>
+      <PopoverContent
+        className="w-80 p-0 overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl"
+        align="end"
+        sideOffset={12}
+      >
         <div className="p-4 bg-muted/20 border-b border-border/50 flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">Notifications</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+            Notifications
+          </h3>
           {totalNew > 0 && (
-             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-black uppercase">
-               {totalNew} New
-             </span>
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-black uppercase">
+              {totalNew} New
+            </span>
           )}
         </div>
 
@@ -80,7 +93,9 @@ export function NotificationsMenu() {
           {isLoading && notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-3">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/20" />
-              <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30">Syncing...</p>
+              <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30">
+                Syncing...
+              </p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-8 text-center space-y-4">
@@ -88,8 +103,12 @@ export function NotificationsMenu() {
                 <Bell className="h-8 w-8 text-muted-foreground/20" />
               </div>
               <div>
-                <p className="text-sm font-bold text-muted-foreground">All caught up!</p>
-                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30 mt-1">No new responses</p>
+                <p className="text-sm font-bold text-muted-foreground">
+                  All caught up!
+                </p>
+                <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/30 mt-1">
+                  No new responses
+                </p>
               </div>
             </div>
           ) : (
@@ -108,10 +127,12 @@ export function NotificationsMenu() {
                       {notification.title}
                     </p>
                     <p className="text-xs text-muted-foreground/80 font-medium mt-0.5">
-                      {notification.newCount} new {notification.newCount === 1 ? 'user' : 'users'} responded
+                      {notification.newCount} new{" "}
+                      {notification.newCount === 1 ? "user" : "users"} responded
                     </p>
                     <p className="text-[9px] text-muted-foreground/40 font-bold uppercase tracking-wider mt-2">
-                       {formatDistanceToNow(new Date(notification.updatedAt))} ago
+                      {formatDistanceToNow(new Date(notification.updatedAt))}{" "}
+                      ago
                     </p>
                   </div>
                   <div className="mt-1 text-muted-foreground/20 group-hover:text-primary transition-colors">
@@ -125,9 +146,13 @@ export function NotificationsMenu() {
 
         {notifications.length > 0 && (
           <div className="p-3 bg-muted/10 border-t border-border/50 text-center">
-             <Button variant="ghost" className="w-full h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary" onClick={() => router.push('/quests')}>
-               View all quests
-             </Button>
+            <Button
+              variant="ghost"
+              className="w-full h-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary"
+              onClick={() => router.push("/quests")}
+            >
+              View all quests
+            </Button>
           </div>
         )}
       </PopoverContent>

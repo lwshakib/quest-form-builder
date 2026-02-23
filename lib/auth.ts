@@ -33,7 +33,7 @@ export const auth = betterAuth({
         console.error("Resend error:", err);
         throw err;
       }
-    }
+    },
   },
   // Configure OAuth providers (e.g., Google).
   socialProviders: {
@@ -41,7 +41,7 @@ export const auth = betterAuth({
       enabled: true,
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    }
+    },
   },
   // Enable email verification
   emailVerification: {
@@ -66,4 +66,3 @@ export const auth = betterAuth({
     },
   },
 });
-
