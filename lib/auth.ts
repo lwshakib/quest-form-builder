@@ -14,7 +14,7 @@ import { AuthEmailTemplate } from "@/components/emails/auth-email-template";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * The 'auth' instance manages session validation, user registration, 
+ * The 'auth' instance manages session validation, user registration,
  * and authentication flows on the server.
  */
 export const auth = betterAuth({
@@ -27,7 +27,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    
+
     /**
      * Sends a password reset email using the Resend service.
      * @param {Object} context - Contains user information and the reset URL.
@@ -64,7 +64,7 @@ export const auth = betterAuth({
   // Enable email verification workflow.
   emailVerification: {
     sendOnSignUp: true,
-    
+
     /**
      * Sends a verification email to the user.
      * @param {Object} context - Contains user information and the verification URL.

@@ -16,7 +16,7 @@ import { TEMPLATES } from "./templates";
 
 /**
  * Creates a new, empty Quest for the currently authenticated user.
- * 
+ *
  * @param {string} title - The title of the quest.
  * @param {string} [backgroundImageUrl] - Optional URL for the quest's background image.
  * @returns {Promise<Quest>} The created quest object.
@@ -48,7 +48,7 @@ export async function createQuest(title: string = "Untitled Quest", backgroundIm
 
 /**
  * Creates a new Quest pre-populated with questions and settings from a template.
- * 
+ *
  * @param {string} templateId - The ID of the template to use.
  * @returns {Promise<Quest>} The created quest object.
  */
@@ -107,7 +107,7 @@ export async function createQuestFromTemplate(templateId: string) {
 /**
  * Retrieves the IDs of recently used templates for the user.
  * Used for the "Create New" screen to suggest templates.
- * 
+ *
  * @returns {Promise<string[]>} An array of unique template IDs.
  */
 export async function getRecentTemplates() {
@@ -142,7 +142,7 @@ export async function getRecentTemplates() {
 /**
  * Performs a global search across the user's quests and available templates.
  * Matches on quest titles, question titles, and question descriptions.
- * 
+ *
  * @param {string} query - The search term.
  * @returns {Promise<{ quests: Quest[], templates: Template[] }>} Matched items.
  */
@@ -206,7 +206,7 @@ export async function globalSearch(query: string) {
 
 /**
  * Retrieves all quests belonging to the authenticated user, ordered by last update.
- * 
+ *
  * @returns {Promise<Quest[]>} An array of quest objects.
  */
 export async function getQuests() {
@@ -232,7 +232,7 @@ export async function getQuests() {
 
 /**
  * Fetches a specific quest by its ID, including all its associated questions.
- * 
+ *
  * @param {string} id - The unique ID of the quest.
  * @returns {Promise<Quest | null>} The quest object with questions, or null if not found.
  */
@@ -264,7 +264,7 @@ export async function getQuestById(id: string) {
 
 /**
  * Updates a quest's settings or metadata.
- * 
+ *
  * @param {string} id - The ID of the quest to update.
  * @param {Object} data - Partial quest data containing fields to update.
  * @returns {Promise<Quest>} The updated quest object.
@@ -316,7 +316,7 @@ export async function updateQuest(
 /**
  * Publishes a quest, making it accessible to the public.
  * Automatically generates a shared short ID if one doesn't exist.
- * 
+ *
  * @param {string} id - The unique ID of the quest to publish.
  * @returns {Promise<Quest>} The updated quest object.
  */
@@ -366,7 +366,7 @@ export async function publishQuest(id: string) {
 
 /**
  * Reverts a published quest to a draft state, making it inaccessible to the public.
- * 
+ *
  * @param {string} id - The ID of the quest to unpublish.
  * @returns {Promise<Quest>} The updated quest object.
  */
@@ -397,7 +397,7 @@ export async function unpublishQuest(id: string) {
 
 /**
  * Permanently deletes a quest and all its associated data (questions, responses, etc.).
- * 
+ *
  * @param {string} id - The ID of the quest to delete.
  */
 export async function deleteQuest(id: string) {
@@ -421,7 +421,7 @@ export async function deleteQuest(id: string) {
 
 /**
  * Adds a new question to a specific quest.
- * 
+ *
  * @param {string} questId - The parent quest's ID.
  * @param {string} type - The type of question (e.g., MULTIPLE_CHOICE).
  * @param {number} order - The display order for the question.
@@ -477,7 +477,7 @@ export async function createQuestion(
 
 /**
  * Updates an existing question's properties.
- * 
+ *
  * @param {string} id - The unique ID of the question.
  * @param {string} questId - The parent quest's ID (used for security validation).
  * @param {Record<string, unknown>} data - The fields to update.
@@ -501,7 +501,7 @@ export async function updateQuestion(id: string, questId: string, data: Record<s
 
 /**
  * Removes a question from a quest.
- * 
+ *
  * @param {string} id - The ID of the question to delete.
  * @param {string} questId - The parent quest's ID.
  */
@@ -522,7 +522,7 @@ export async function deleteQuestion(id: string, questId: string) {
 /**
  * Creates a copy of an existing question and inserts it immediately after the original.
  * Handles reordering of all subsequent questions to maintain a consistent 'order' sequence.
- * 
+ *
  * @param {string} id - The ID of the question to duplicate.
  * @param {string} questId - The parent quest's ID.
  * @returns {Promise<Question>} The newly created duplicate question.
@@ -578,7 +578,7 @@ export async function duplicateQuestion(id: string, questId: string) {
 
 /**
  * Updates the sort order of multiple questions at once.
- * 
+ *
  * @param {string} questId - The parent quest's ID.
  * @param {string[]} questionIds - An ordered array of question IDs reflecting the new sequence.
  */
@@ -604,7 +604,7 @@ export async function updateQuestionsOrder(questId: string, questionIds: string[
  * Fetches a quest for public viewing (e.g., when a user is taking the quest).
  * Unlike other retrieval actions, this does NOT require an authenticated session,
  * but it DOES require the quest to be published.
- * 
+ *
  * @param {string} id - The unique ID (or shortId) of the quest.
  * @returns {Promise<Quest | null>} The quest object with questions, or null if inaccessible.
  */
@@ -633,7 +633,7 @@ export async function getPublicQuest(id: string) {
 /**
  * Records a user's answers to a quest.
  * This action is typically used by the public-facing 'play' or 'take' view.
- * 
+ *
  * @param {string} questId - The ID of the quest being completed.
  * @param {Record<string, unknown>} answers - A map of question IDs to user-provided values.
  * @param {number} [duration] - Optional time taken to complete the quest (in seconds).
@@ -730,7 +730,7 @@ export async function submitResponse(
 /**
  * Retrieves all submitted responses for a specific quest.
  * Only accessible by the quest owner.
- * 
+ *
  * @param {string} questId - The ID of the quest.
  * @returns {Promise<Response[]>} Responses with their answers and questions.
  */
@@ -768,7 +768,7 @@ export async function getQuestResponses(questId: string) {
 /**
  * Checks for new, unread responses across all of the user's quests.
  * Compares response creation time against the last time the user viewed the responses page.
- * 
+ *
  * @returns {Promise<Notification[]>} List of quests with unread counts.
  */
 export async function getUnreadNotifications() {
@@ -824,7 +824,7 @@ export async function getUnreadNotifications() {
 /**
  * Updates the 'lastViewedResponsesAt' timestamp for a quest to current time.
  * Effectively clears any 'unread' badges or notifications for that quest.
- * 
+ *
  * @param {string} questId - The ID of the quest to mark as read.
  */
 export async function markQuestResponsesAsRead(questId: string) {

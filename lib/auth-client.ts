@@ -1,6 +1,6 @@
 /**
  * This module initializes and exports the authentication client for the frontend.
- * It uses 'better-auth/react' to provide hooks and methods for managing 
+ * It uses 'better-auth/react' to provide hooks and methods for managing
  * user authentication states, signing in/out, and social provider interactions.
  */
 

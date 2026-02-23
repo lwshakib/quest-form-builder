@@ -117,7 +117,7 @@ import { Textarea } from "@/components/ui/textarea";
 type Question = {
   id: string; // Database ID or optimistic temporary ID
   type: string; // The UI type (e.g., MULTIPLE_CHOICE, SHORT_TEXT)
-  title: string; 
+  title: string;
   description: string | null;
   order: number; // For manual sorting with dnd-kit
   required: boolean;
@@ -179,14 +179,14 @@ export const TYPE_OPTIONS = [
 
 /**
  * QuestDetailPage Component
- * 
+ *
  * This is the nerve center of the quest creation experience.
  * It provides a multi-tabbed interface for:
  * 1. Build (Questions): A drag-and-drop editor for designing the quest structure.
  * 2. Settings: Global configuration for the quest (logic, appearance, integrations).
  * 3. Share: Public URLs and QR code generation.
  * 4. Results: Real-time analytics and individual response viewing.
- * 
+ *
  * It integrates with the AI Chat SDK to allow LLM-powered quest modifications.
  */
 
@@ -201,7 +201,7 @@ export default function QuestDetailPage() {
   const [quest, setQuest] = useState<Quest | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // --- UI & INTERACTION STATE ---
   const [activeId, setActiveId] = useState<string | null>(null); // Track the question being dragged
   const [responses, setResponses] = useState<Response[]>([]); // Submission data for the Results tab
@@ -256,7 +256,7 @@ export default function QuestDetailPage() {
 
   /**
    * Dnd-kit sensor configuration.
-   * Defines how drag-and-drop behaves (e.g. 8px distance before drag starts 
+   * Defines how drag-and-drop behaves (e.g. 8px distance before drag starts
    * to avoid accidental clicks on inputs).
    */
   const sensors = useSensors(
@@ -319,13 +319,13 @@ export default function QuestDetailPage() {
 
   /**
    * Adds a new question to the quest with optimistic UI updates.
-   * 
+   *
    * @param {string} type - The question type to add.
    * @param {number} [atIndex] - Optional index for insertion (defaults to end).
    */
   const handleAddQuestion = async (type: string, atIndex?: number) => {
     const insertIndex = atIndex !== undefined ? atIndex : questions.length;
-    
+
     // Create a temporary local object with a 'temp' ID to show the card immediately.
     const optimisticId = `temp-${Date.now()}`;
     const newQuestion = {
@@ -383,7 +383,7 @@ export default function QuestDetailPage() {
       await updateQuestion(questionId, id as string, data);
     } catch {
       toast.error("Failed to update question");
-      // Note: We don't rollback every keystroke to avoid jitter, 
+      // Note: We don't rollback every keystroke to avoid jitter,
       // but substantial failures will show a toast.
     }
   };
@@ -1754,7 +1754,7 @@ export default function QuestDetailPage() {
                                   ti.type.replace("tool-", "");
                                 const toolCallId = ti.toolCallId;
                                 const toolState = ti.state;
-                                
+
                                 // Map tool names to human-friendly status messages
                                 let statusText = "";
                                 switch (toolName) {

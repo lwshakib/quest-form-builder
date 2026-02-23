@@ -15,7 +15,7 @@ cloudinary.config({
 });
 
 /**
- * The initialized Cloudinary client used for server-side operations 
+ * The initialized Cloudinary client used for server-side operations
  * like generating signatures, deleting files, or applying transformations.
  */
 export const cloudinaryClient = cloudinary;

@@ -30,7 +30,7 @@ export function GlobalSearch() {
 
   /**
    * Effect: Debounced Search
-   * We wait for 300ms of inactivity before triggering the server action. 
+   * We wait for 300ms of inactivity before triggering the server action.
    * This prevents excessive database load while the user is typing.
    */
   useEffect(() => {

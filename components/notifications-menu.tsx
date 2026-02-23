@@ -1,6 +1,6 @@
 /**
  * NotificationsMenu component provides a real-time status of new quest responses.
- * It uses a polling mechanism to periodically check for unread data and 
+ * It uses a polling mechanism to periodically check for unread data and
  * provides a central hub for users to jump directly to new submissions.
  */
 
@@ -46,7 +46,7 @@ export function NotificationsMenu() {
 
   /**
    * Effect: Polling
-   * Refreshes the notification count every 60 seconds to keep the UI 'alive' 
+   * Refreshes the notification count every 60 seconds to keep the UI 'alive'
    * without needing a full-page reload.
    */
   useEffect(() => {
@@ -58,7 +58,7 @@ export function NotificationsMenu() {
 
   /**
    * Effect: Route Change Refresh
-   * Re-fetches notifications when the user navigates. Useful if they just 
+   * Re-fetches notifications when the user navigates. Useful if they just
    * finished viewing a response page and we want the red dot to disappear immediately.
    */
   useEffect(() => {
@@ -74,10 +74,10 @@ export function NotificationsMenu() {
   const handleNotificationClick = async (questId: string) => {
     setIsOpen(false);
     await markQuestResponsesAsRead(questId);
-    
+
     // Optimistically update the UI by removing the item from the list
     setNotifications((prev) => prev.filter((n) => n.id !== questId));
-    
+
     // Navigate to the quest detail view with the 'responses' tab pre-selected
     router.push(`/quests/${questId}?tab=responses`);
   };

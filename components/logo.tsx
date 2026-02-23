@@ -1,6 +1,6 @@
 /**
  * This module provides the visual branding components for the application.
- * It includes both the raw SVG icon and a combined logo with text for use in 
+ * It includes both the raw SVG icon and a combined logo with text for use in
  * headers and marketing materials.
  */
 

@@ -1,8 +1,8 @@
 /**
  * API Route: /api/chat
- * 
+ *
  * This is the main orchestration layer for the AI-powered quest builder.
- * It uses Vercel AI SDK to stream responses from Gemini and provides several 
+ * It uses Vercel AI SDK to stream responses from Gemini and provides several
  * server-side tools that the AI can call to manipulate the database in real-time.
  */
 
@@ -81,13 +81,13 @@ export async function POST(req: Request) {
           return `Updated quest details: ${Object.keys(props).join(", ")}`;
         },
       }),
-      
+
       /**
        * Tool: generateImage
        * Leverages the custom tool from lib/image-tool to create AI backgrounds.
        */
       generateImage: generateImageTool,
-      
+
       /**
        * Tool: createQuestions
        * Allows bulk-creation of multiple questions in a single step.
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
           return `Created ${questions.length} question(s).`;
         },
       }),
-      
+
       /**
        * Tool: deleteQuestion
        * Allows the AI to remove specific questions.
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
           return `Deleted question ${questionId}`;
         },
       }),
-      
+
       /**
        * Tool: updateQuestion
        * Allows the AI to refine existing questions.

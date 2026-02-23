@@ -1,7 +1,7 @@
 /**
  * The QuestionCard component is the primary unit of the Quest Builder.
  * It allows users to define the title, type, and specific settings for each question.
- * It handles its own internal state for UX (focus, uploading) and communicates 
+ * It handles its own internal state for UX (focus, uploading) and communicates
  * changes back to the parent quest via the 'onUpdate' callback.
  */
 
@@ -44,7 +44,7 @@ const TYPE_OPTIONS = [
 
 /**
  * Interface and Component Definition for QuestionCard.
- * 
+ *
  * @param {Object} question - The database entity for the question.
  * @param {Function} onDelete - Triggered when the user deletes the card.
  * @param {Function} onUpdate - Triggered when any field (title, type, etc.) is changed.
@@ -129,7 +129,7 @@ export function QuestionCard({
   const handleTypeChange = (newType: string) => {
     const data: Record<string, unknown> = { type: newType };
     const isChoiceType = ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"].includes(newType);
-    
+
     // Automatically add a placeholder option if the new type requires them.
     if (isChoiceType && (!question.options || question.options.length === 0)) {
       data.options = ["Option 1"];
@@ -302,7 +302,7 @@ export function QuestionCard({
           </div>
 
           {/* TYPE-SPECIFIC FIELDS: Rendered dynamically based on the selected question type */}
-          
+
           {/* 1. Choice-based Fields (Multiple Choice, Checkboxes, Dropdown) */}
           {(question.type === "MULTIPLE_CHOICE" ||
             question.type === "CHECKBOXES" ||

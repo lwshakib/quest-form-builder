@@ -25,7 +25,7 @@ export const HeroHeader = () => {
   // Local state for mobile menu toggle and scroll progress
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  
+
   // Real-time session data from Better Auth client
   const { data: session } = authClient.useSession();
 

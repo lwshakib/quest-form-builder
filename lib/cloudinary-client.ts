@@ -1,7 +1,7 @@
 /**
  * This utility function handles the process of uploading a file to Cloudinary from the client side.
  * It follows a secure flow by first obtaining a signed upload request from our backend.
- * 
+ *
  * @param {File} file - The file to be uploaded.
  * @param {AbortSignal} [signal] - An optional abort signal to cancel the upload request.
  * @returns {Promise<{ secureUrl: string, publicId: string, resourceType: string }>} Result of the upload.
@@ -14,7 +14,7 @@ export const uploadFileToCloudinary = async (file: File, signal?: AbortSignal) =
     throw new Error("Failed to get upload signature");
   }
   const signatureData = await sigRes.json();
-  
+
   // Construct the Cloudinary upload URL using the cloud name provided in the signature data.
   const uploadApi = `https://api.cloudinary.com/v1_1/${signatureData.cloudName}/upload`;
 

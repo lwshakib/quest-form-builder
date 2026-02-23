@@ -1,6 +1,6 @@
 /**
  * Custom 404 Error Page.
- * This page is automatically displayed by Next.js when a user navigates 
+ * This page is automatically displayed by Next.js when a user navigates
  * to a route that does not exist within the application.
  */
 

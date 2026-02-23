@@ -23,7 +23,7 @@ cloudinary.config({
 export const generateImageTool = tool({
   description:
     "Generate high-quality, professional images using AI. Use this to create cinematic visuals, illustrations, and background photos for the quest/form. The tool produces fast, high-end content tailored to your specific design prompts.",
-  
+
   // Define the expected input structure using Zod for validation and type safety.
   inputSchema: z.object({
     prompt: z
@@ -53,7 +53,7 @@ export const generateImageTool = tool({
    */
   execute: async ({ prompt, width = 1024, height = 1024 }) => {
     console.log(`[GENERATOR] Running Image Tool for prompt: "${prompt}"`);
-    
+
     // Safety check for API keys
     if (!NEBIUS_API_KEY) {
       return { success: false, error: "Missing NEBIUS_API_KEY" };

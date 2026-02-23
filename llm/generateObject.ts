@@ -10,7 +10,7 @@ import { z } from "zod";
 
 /**
  * Generates a structured object from the AI model based on a provided prompt and schema.
- * 
+ *
  * @param {string} prompt - The natural language instruction for the AI.
  * @param {z.ZodSchema} objectSchema - The Zod schema that defines the structure of the expected object.
  * @returns {Promise<any>} A promise that resolves to the generated object, validated against the schema.
@@ -20,7 +20,7 @@ export const generateObjectFromAI = async (prompt: string, objectSchema: z.ZodSc
   const response = await generateObject({
     model: GeminiModel(), // Use our configured Gemini model
     schema: objectSchema, // Enplace the expected output structure
-    prompt,               // Pass the user instruction
+    prompt, // Pass the user instruction
   });
 
   // Return the validated object from the response

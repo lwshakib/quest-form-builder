@@ -1,6 +1,6 @@
 /**
  * This module provides a centralized place to access environment variables.
- * Doing this ensures that variable names are consistent throughout the app 
+ * Doing this ensures that variable names are consistent throughout the app
  * and provides a single point of entry for debugging environment-related issues.
  */
 

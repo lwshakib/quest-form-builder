@@ -1,8 +1,8 @@
 /**
  * API Route: /api/cloudinary-signature
- * 
+ *
  * Provides a secure, signed signature for client-side file uploads to Cloudinary.
- * This approach allows us to perform direct uploads from the browser without 
+ * This approach allows us to perform direct uploads from the browser without
  * exposing our API Secret on the frontend.
  */
 
@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 
 /**
  * Handles GET requests to generate a new Cloudinary upload signature.
- * 
+ *
  * @returns {NextResponse} JSON containing the signature, timestamp, and API config.
  */
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
     const timestamp = Math.floor(Date.now() / 1000);
     // Organizational folder in Cloudinary where files will be stored.
     const folder = "quest-form-builder";
-    
+
     // Generate the SHA-1 signature using the secret key (server-side only).
     const signature = cloudinaryClient.utils.api_sign_request(
       { timestamp, folder },
@@ -35,7 +35,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error in cloudinary-signature GET:", error);
-    
+
     // Return detailed error in development, generic one in production.
     return NextResponse.json(
       {

@@ -1,6 +1,6 @@
 /**
  * The Root Layout is the top-level wrapper for the entire application.
- * It configures global concerns such as fonts, metadata, and systemic providers 
+ * It configures global concerns such as fonts, metadata, and systemic providers
  * (Theme, Toast) that must be present on every page.
  */
 

@@ -24,7 +24,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
  */
 const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
-// If we're not in production, store the prisma instance in the global scope 
+// If we're not in production, store the prisma instance in the global scope
 // to ensure it persists across HMR cycles.
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
