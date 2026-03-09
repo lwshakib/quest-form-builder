@@ -1390,19 +1390,19 @@ export default function QuestDetailPage() {
                             key={r.id}
                             onClick={() => setIndividualIndex(i)}
                             className={cn(
-                              "flex w-full items-center gap-4 rounded-xl p-4 text-left text-sm transition-all",
+                              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all",
                               individualIndex === i
-                                ? "bg-primary/5 border-primary/20 border shadow-sm"
-                                : "text-muted-foreground/60 hover:bg-background/40 hover:text-foreground",
+                                ? "bg-secondary text-foreground font-medium"
+                                : "text-muted-foreground hover:bg-secondary/50",
                             )}
                           >
-                            <div className={cn(
-                              "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[9px] font-black",
-                              individualIndex === i ? "bg-primary text-white" : "bg-muted/40"
+                            <span className={cn(
+                              "text-[10px] font-bold w-4 text-right",
+                              individualIndex === i ? "text-foreground" : "text-muted-foreground/40"
                             )}>
                               {responses.length - i}
-                            </div>
-                            <div className="flex-1 truncate font-bold">
+                            </span>
+                            <div className="flex-1 truncate">
                               {(() => {
                                 const nameQ = r.answers.find((a: { question: { title: string } }) =>
                                   a.question.title.toLowerCase().includes("name"),
