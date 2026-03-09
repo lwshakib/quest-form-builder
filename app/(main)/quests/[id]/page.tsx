@@ -74,6 +74,7 @@ import {
   getQuestResponses,
   duplicateQuestion,
   markQuestResponsesAsRead,
+  getUserCredits,
 } from "@/lib/actions";
 import { toast } from "sonner";
 import { QuestionCard } from "@/components/question-card";
@@ -229,13 +230,29 @@ export default function QuestDetailPage() {
     }[];
   }[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
+
+  /**
+   * Effect: Load User Credits for AI Chat
+   */
+  useEffect(() => {
+    async function loadCredits() {
+      try {
+        const credits = await getUserCredits();
+        setUserCredits(credits);
+      } catch (e) {
+        console.error("Failed to load user credits", e);
+      }
+    }
+    loadCredits();
+  }, []);
 
   /**
    * Custom stream handler for the /api/chat endpoint.
    * Reads SSE data and updates the conversation state in real-time.
    */
   const handleSendMessage = async (text: string) => {
-    if (!text.trim() || isChatLoading) return;
+    if (!text.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)) return;
 
     const userMessage: any = { 
       role: "user", 
@@ -244,6 +261,9 @@ export default function QuestDetailPage() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsChatLoading(true);
+
+    // Optimistically update credits
+    setUserCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
 
     try {
       const response = await fetch("/api/chat", {
@@ -267,18 +287,22 @@ export default function QuestDetailPage() {
       const assistantId = `assistant-${Date.now()}`;
       setMessages((prev) => [...prev, { role: "assistant", id: assistantId, parts: [] }]);
 
+      let buffer = "";
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
+          const cleanLine = line.trim();
+          if (!cleanLine.startsWith("data: ")) continue;
           
           try {
-            const data = JSON.parse(line.slice(6));
+            const data = JSON.parse(cleanLine.slice(6));
 
             if (data.content) {
               setMessages((prev) =>
@@ -348,9 +372,15 @@ export default function QuestDetailPage() {
     } catch (err) {
       toast.error("Internal Server Error");
       console.error(err);
+      // Restore credits if the request failed completely
+      const credits = await getUserCredits();
+      setUserCredits(credits);
     } finally {
       setIsChatLoading(false);
       await loadQuestData(); // Final sync
+      // Refresh credits to ensure they are fully in sync
+      const credits = await getUserCredits();
+      setUserCredits(credits);
     }
   };
 
@@ -1900,15 +1930,26 @@ export default function QuestDetailPage() {
                 <Button
                   type="submit"
                   size="icon"
-                  disabled={!input.trim() || isChatLoading}
+                  disabled={!input.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)}
                   className="absolute top-1.5 right-1.5 h-10 w-10 rounded-xl"
                 >
                   {isChatLoading ? <Loader className="h-4 w-4" /> : <Send className="h-4 w-4" />}
                 </Button>
               </form>
-              <p className="text-muted-foreground/50 mt-3 text-center text-[10px] font-medium">
-                Quest AI Assistant • Powered by AI
-              </p>
+              <div className="flex items-center justify-between px-2 mt-3">
+                <p className="text-muted-foreground/50 text-[10px] font-medium">
+                  {userCredits !== null && userCredits > 0 ? (
+                    <span className="text-primary/70 font-bold">{userCredits} credits remaining</span>
+                  ) : userCredits !== null && userCredits <= 0 ? (
+                    <span className="text-destructive font-bold">Credits exhausted, wait for daily reset</span>
+                  ) : (
+                    <span className="text-primary/70 font-bold">... credits remaining</span>
+                  )}
+                </p>
+                <p className="text-muted-foreground/50 text-[10px] font-medium">
+                  Quest AI Assistant
+                </p>
+              </div>
             </div>
           </div>
         )}

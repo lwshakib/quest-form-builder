@@ -29,7 +29,7 @@ export interface GLMTool {
 const generateImageTool: GLMTool = {
   description: "Generate a high-quality background image for the quest based on a prompt.",
   parameters: z.object({
-    prompt: z.string().describe("Visual description of the desired image."),
+    prompt: z.string().describe("Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user."),
     width: z.number().int().optional().default(1024),
     height: z.number().int().optional().default(1024),
     steps: z.number().int().optional().default(28).describe("Optimization steps (20-35 recommended)."),

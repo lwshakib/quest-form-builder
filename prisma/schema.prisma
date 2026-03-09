@@ -25,6 +25,9 @@ model User {
   accounts      Account[]
   quests        Quest[]
 
+  credits       Int       @default(10)
+  creditsResetAt DateTime?
+
   @@unique([email])
   @@map("user")
 }

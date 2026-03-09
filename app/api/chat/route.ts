@@ -7,9 +7,11 @@
  */
 
 import { z } from "zod";
-import { getQuestById } from "@/lib/actions";
+import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/actions";
 import { streamText } from "@/llm/streamText";
 import { BUILDER_SYSTEM_PROMPT } from "@/llm/prompts";
+import { TOOLS_REGISTRY } from "@/llm/tools";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Allow the edge function to run for up to 30 seconds to accommodate image generation and multiple tool calls.
 export const maxDuration = 30;
@@ -20,6 +22,16 @@ export const maxDuration = 30;
  */
 export async function POST(req: Request) {
   const { messages, questId } = await req.json();
+
+  const credits = await getUserCredits();
+  if (credits <= 0) {
+    return new Response(JSON.stringify({ error: "Credits exhausted, wait for daily reset" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  await decrementUserCredits();
 
   // Fetch the current state of the quest to provide as a 'Ground Truth' context for the AI.
   const currentQuest = await getQuestById(questId);
@@ -33,9 +45,21 @@ Background Image: ${currentQuest?.backgroundImageUrl || "None"}
 Current Questions: ${JSON.stringify(currentQuest?.questions || [], null, 2)}
   `.trim();
 
+  const toolsContext = `
+### AVAILABLE TOOLS
+Here is the list of tools you can use, along with their input schemas and expected outputs:
+${Object.entries(TOOLS_REGISTRY).map(([name, config]) => `
+- **Name**: \`${name}\`
+  - **Description**: ${config.description}
+  - **Input Schema**: ${jsonStringify(zodToJsonSchema(config.parameters as any))}
+  - **Expected Output**: A string describing the result of the operation (e.g. Success or Error).
+`).join("\n")}
+  `.trim();
+
   // Construct the full conversation history
   const history = [
     { role: "system", content: BUILDER_SYSTEM_PROMPT },
+    { role: "system", content: toolsContext },
     { role: "system", content: questContext },
     ...messages
   ];

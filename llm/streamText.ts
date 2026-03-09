@@ -86,20 +86,28 @@ export async function streamText(
         const decoder = new TextDecoder();
         let assistantMessage: GLMMessage = { role: "assistant", content: "" };
         let currentToolCalls: any[] = [];
+        let buffer = "";
 
         // --- Process Streaming Chunks ---
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
-            if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+            const cleanLine = line.trim();
+            if (!cleanLine.startsWith("data: ") || cleanLine === "data: [DONE]") continue;
 
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(cleanLine.slice(6));
+              
+              if (!data.choices || data.choices.length === 0) {
+                continue;
+              }
+              
               const delta = data.choices[0].delta;
 
               // Handle tool call detection and aggregation

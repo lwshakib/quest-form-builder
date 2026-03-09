@@ -822,6 +822,77 @@ export async function getUnreadNotifications() {
 }
 
 /**
+ * Gets the current user's credits, resetting them to 10 if a new day has started.
+ */
+export async function getUserCredits() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return 0; // Unauthenticated
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { credits: true, creditsResetAt: true },
+  });
+
+  if (!user) return 0;
+
+  const now = new Date();
+  const resetDate = user.creditsResetAt ? new Date(user.creditsResetAt) : null;
+
+  // Reset to 10 if it's the first time or a new calendar day
+  const isNewDay = !resetDate || 
+    resetDate.getFullYear() !== now.getFullYear() || 
+    resetDate.getMonth() !== now.getMonth() || 
+    resetDate.getDate() !== now.getDate();
+
+  if (isNewDay) {
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        credits: 10,
+        creditsResetAt: now,
+      },
+      select: { credits: true },
+    });
+    return updatedUser.credits;
+  }
+
+  return user.credits;
+}
+
+/**
+ * Decrements the user's credits by 1.
+ * Returns true if successful, false if they have no credits left.
+ */
+export async function decrementUserCredits() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { credits: true },
+  });
+
+  if (!user || user.credits <= 0) return false;
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      credits: { decrement: 1 },
+    },
+  });
+
+  return true;
+}
+
+/**
  * Updates the 'lastViewedResponsesAt' timestamp for a quest to current time.
  * Effectively clears any 'unread' badges or notifications for that quest.
  *
