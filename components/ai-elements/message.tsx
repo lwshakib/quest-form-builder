@@ -12,7 +12,7 @@ import { Streamdown } from "streamdown";
 import NextImage from "next/image";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
-  from: UIMessage["role"];
+  from: "user" | "assistant" | "system" | "tool" | string;
 };
 
 export const Message = ({ className, from, ...props }: MessageProps) => (
@@ -183,7 +183,7 @@ export const MessageBranchContent = ({ children, ...props }: MessageBranchConten
 };
 
 export type MessageBranchSelectorProps = HTMLAttributes<HTMLDivElement> & {
-  from: UIMessage["role"];
+  from: "user" | "assistant" | "system" | "tool" | string;
 };
 
 export const MessageBranchSelector = ({ className, ...props }: MessageBranchSelectorProps) => {
