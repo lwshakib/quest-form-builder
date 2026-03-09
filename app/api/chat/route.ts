@@ -2,11 +2,10 @@
  * API Route: /api/chat
  *
  * This is the main orchestration layer for the AI-powered quest builder.
- * It uses a custom GLM-4.7-Flash orchestrator to stream responses and provides 
+ * It uses a custom GLM-4.7-Flash orchestrator to stream responses and provides
  * server-side tools that the AI can call to manipulate the database in real-time.
  */
 
-import { z } from "zod";
 import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/actions";
 import { streamText } from "@/llm/streamText";
 import { BUILDER_SYSTEM_PROMPT } from "@/llm/prompts";
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
 
   // Retrieve the current credit balance for the authenticated user.
   const credits = await getUserCredits();
-  
+
   // If the user has 0 or fewer credits, reject the request early with a 403 Forbidden status.
   if (credits <= 0) {
     return new Response(JSON.stringify({ error: "Credits exhausted, wait for daily reset" }), {
@@ -56,21 +55,28 @@ Current Questions: ${JSON.stringify(currentQuest?.questions || [], null, 2)}
   const toolsContext = `
 ### AVAILABLE TOOLS
 Here is the list of tools you can use, along with their input schemas and expected outputs:
-${Object.entries(TOOLS_REGISTRY).map(([name, config]) => `
+${Object.entries(TOOLS_REGISTRY)
+  .map(
+    ([name, config]) => `
 - **Name**: \`${name}\`
   - **Description**: ${config.description}
-  - **Input Schema**: ${jsonStringify(zodToJsonSchema(config.parameters as any))}
+  - **Input Schema**: ${
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jsonStringify(zodToJsonSchema(config.parameters as any))
+  }
   - **Expected Output**: A string describing the result of the operation (e.g. Success or Error).
-`).join("\n")}
+`,
+  )
+  .join("\n")}
   `.trim();
 
   // Construct the full conversation history to send to the language model.
   // This array combines hardcoded system guidelines, tool contexts, the current quest state, and the user's prompts.
   const history = [
     { role: "system", content: BUILDER_SYSTEM_PROMPT }, // Persona and operating boundary rules
-    { role: "system", content: toolsContext },          // Details about tools the AI can use
-    { role: "system", content: questContext },          // The live snapshot of the user's quest
-    ...messages                                         // The back-and-forth chat history from the interface
+    { role: "system", content: toolsContext }, // Details about tools the AI can use
+    { role: "system", content: questContext }, // The live snapshot of the user's quest
+    ...messages, // The back-and-forth chat history from the interface
   ];
 
   // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history and questId.
@@ -81,11 +87,10 @@ ${Object.entries(TOOLS_REGISTRY).map(([name, config]) => `
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
     },
   });
 }
-
 
 /**
  * Utility function to safely stringify objects for inclusion in the system prompt.

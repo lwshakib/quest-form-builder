@@ -79,7 +79,9 @@ export default function AccountPage() {
           <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
             <div className="border-border/20 bg-muted/5 border-b p-6">
               <h3 className="text-lg font-bold">Profile Information</h3>
-              <p className="text-muted-foreground mt-1 text-sm font-medium">Update your profile information and how others see you.</p>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">
+                Update your profile information and how others see you.
+              </p>
             </div>
             <div className="space-y-6 p-6">
               <div className="space-y-4">
@@ -91,7 +93,9 @@ export default function AccountPage() {
                     onChange={(e) => setName(e.target.value)}
                     className="bg-accent/5 border-border/50 h-11 rounded-xl"
                   />
-                  <p className="text-muted-foreground text-[10px] italic">This name will be displayed on your profile and quests.</p>
+                  <p className="text-muted-foreground text-[10px] italic">
+                    This name will be displayed on your profile and quests.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
@@ -99,13 +103,15 @@ export default function AccountPage() {
                     id="email"
                     value={session.user.email}
                     readOnly
-                    className="bg-muted/50 h-11 rounded-xl cursor-not-allowed"
+                    className="bg-muted/50 h-11 cursor-not-allowed rounded-xl"
                   />
-                  <p className="text-muted-foreground text-[10px] italic">Your email address is managed through your auth provider.</p>
+                  <p className="text-muted-foreground text-[10px] italic">
+                    Your email address is managed through your auth provider.
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end pt-2">
-                <Button 
+                <Button
                   onClick={async () => {
                     setIsUpdating(true);
                     const { error } = await authClient.updateUser({
@@ -117,7 +123,7 @@ export default function AccountPage() {
                       toast.success("Profile updated successfully");
                     }
                     setIsUpdating(false);
-                  }} 
+                  }}
                   disabled={isUpdating}
                   className="rounded-xl font-bold"
                 >
@@ -140,15 +146,17 @@ export default function AccountPage() {
           <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
             <div className="border-border/20 bg-muted/5 border-b p-6">
               <h3 className="text-lg font-bold">Change Password</h3>
-              <p className="text-muted-foreground mt-1 text-sm font-medium">Ensure your account is using a long, random password to stay secure.</p>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">
+                Ensure your account is using a long, random password to stay secure.
+              </p>
             </div>
             <div className="space-y-6 p-6">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="current">Current Password</Label>
-                  <Input 
-                    id="current" 
-                    type="password" 
+                  <Input
+                    id="current"
+                    type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className="bg-accent/5 border-border/50 h-11 rounded-xl"
@@ -157,9 +165,9 @@ export default function AccountPage() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="new">New Password</Label>
-                    <Input 
-                      id="new" 
-                      type="password" 
+                    <Input
+                      id="new"
+                      type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="bg-accent/5 border-border/50 h-11 rounded-xl"
@@ -167,9 +175,9 @@ export default function AccountPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirm">Confirm New Password</Label>
-                    <Input 
-                      id="confirm" 
-                      type="password" 
+                    <Input
+                      id="confirm"
+                      type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="bg-accent/5 border-border/50 h-11 rounded-xl"
@@ -178,7 +186,7 @@ export default function AccountPage() {
                 </div>
               </div>
               <div className="flex justify-end pt-2">
-                <Button 
+                <Button
                   onClick={async () => {
                     if (newPassword !== confirmPassword) {
                       toast.error("Passwords do not match");
@@ -222,7 +230,10 @@ export default function AccountPage() {
           <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
             <div className="border-border/20 bg-muted/5 border-b p-6">
               <h3 className="text-lg font-bold">Active Sessions</h3>
-              <p className="text-muted-foreground mt-1 text-sm font-medium">This is a list of devices that have logged into your account. Revoke any sessions that you do not recognize.</p>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">
+                This is a list of devices that have logged into your account. Revoke any sessions
+                that you do not recognize.
+              </p>
             </div>
             <div className="space-y-0 px-6">
               {sessions.map((sessionItem, index) => (
@@ -261,13 +272,15 @@ export default function AccountPage() {
               ))}
             </div>
             <div className="border-border/10 flex justify-end border-t p-6">
-              <Button variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 rounded-xl font-bold">
+              <Button
+                variant="outline"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 rounded-xl font-bold"
+              >
                 Revoke All Other Sessions
               </Button>
             </div>
           </div>
         </section>
-
       </div>
     </div>
   );

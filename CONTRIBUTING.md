@@ -14,6 +14,7 @@ To get started with local development, follow these steps:
     - Cloudinary, Resend, and Google Gemini API keys for full functionality
 
 2.  **Clone and Install**:
+
     ```bash
     git clone https://github.com/lwshakib/quest-form-builder.git
     cd quest-form-builder
@@ -30,6 +31,7 @@ To get started with local development, follow these steps:
     - AI Worker URLs for GLM and Flux
 
 4.  **Database Migration**:
+
     ```bash
     bun x prisma migrate dev
     ```
@@ -42,15 +44,18 @@ To get started with local development, follow these steps:
 ## 🤝 How Can I Contribute?
 
 ### Reporting Bugs
+
 - **Check for existing issues**: Search the issue tracker to see if the bug has already been reported.
 - **Provide clear steps**: Include a clear list of steps to reproduce the issue.
 - **Environment**: Specify your OS, browser, and version.
 
 ### Suggesting Enhancements
+
 - Start by opening an issue for discussion to ensure alignment with the project's vision.
 - Focus on how the enhancement improves the "premium" user experience.
 
 ### Pull Requests
+
 1.  Fork the repository and create your feature branch from `main`.
 2.  If you've added logic, include relevant tests (`bun test`).
 3.  Ensure the code is linted and formatted:
@@ -64,11 +69,13 @@ To get started with local development, follow these steps:
 ## 📏 Style Guide
 
 ### Git Commit Messages
+
 - Use **Conventional Commits**: `feat: add new question type`, `fix: resolve auth crash`.
 - Use the present tense ("Add feature" not "Added feature").
 - Reference issues and pull requests in the description.
 
 ### Coding Standards
+
 - **Strict TypeScript**: No implicit `any`. Use well-defined interfaces.
 - **UI Components**: Use **Radix UI** primitives and **Tailwind CSS 4**.
 - **Animations**: Use **Motion** for all transitions to maintain the premium feel.

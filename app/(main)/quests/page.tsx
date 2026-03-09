@@ -30,14 +30,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  createQuest,
-  getQuests,
-  updateQuest,
-  deleteQuest,
-} from "@/lib/actions";
+import { createQuest, getQuests, updateQuest, deleteQuest } from "@/lib/actions";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Quest {
   id: string;
@@ -121,9 +116,9 @@ export default function QuestsPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Your Quests</h1>
           <p className="text-muted-foreground text-sm">Manage your forms and surveys.</p>
@@ -134,85 +129,94 @@ export default function QuestsPage() {
             Templates
           </Button>
           <Button onClick={handleCreateBlankQuest} disabled={isCreating} className="gap-2">
-            {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            {isCreating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
             New Quest
           </Button>
         </div>
       </div>
 
-
       {/* Quests Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse h-48 bg-muted/20 border-border/50" />
+            <Card key={i} className="bg-muted/20 border-border/50 h-48 animate-pulse" />
           ))}
         </div>
       ) : quests.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 border rounded-lg bg-accent/5">
-          <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-          <h3 className="text-lg font-medium mb-1">No quests found</h3>
-          <p className="text-muted-foreground text-sm mb-6">Create your first quest to get started.</p>
-          <Button variant="outline" onClick={handleCreateBlankQuest}>Create Quest</Button>
+        <div className="bg-accent/5 flex flex-col items-center justify-center rounded-lg border p-12">
+          <FileText className="text-muted-foreground mb-4 h-12 w-12 opacity-20" />
+          <h3 className="mb-1 text-lg font-medium">No quests found</h3>
+          <p className="text-muted-foreground mb-6 text-sm">
+            Create your first quest to get started.
+          </p>
+          <Button variant="outline" onClick={handleCreateBlankQuest}>
+            Create Quest
+          </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quests
-            .map((quest: Quest) => (
-              <Card key={quest.id} className="group hover:border-primary/50 transition-colors">
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <div className="flex flex-col gap-1">
-                    <CardTitle 
-                      className="text-lg font-semibold line-clamp-1 cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => router.push(`/quests/${quest.id}`)}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {quests.map((quest: Quest) => (
+            <Card key={quest.id} className="group hover:border-primary/50 transition-colors">
+              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                <div className="flex flex-col gap-1">
+                  <CardTitle
+                    className="hover:text-primary line-clamp-1 cursor-pointer text-lg font-semibold transition-colors"
+                    onClick={() => router.push(`/quests/${quest.id}`)}
+                  >
+                    {quest.title}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={quest.status === "Published" ? "default" : "secondary"}
+                      className="h-5 text-[10px]"
                     >
-                      {quest.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={quest.status === "Published" ? "default" : "secondary"} className="h-5 text-[10px]">
-                        {quest.status}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(quest.updatedAt).toLocaleDateString()}
-                      </span>
-                    </div>
+                      {quest.status}
+                    </Badge>
+                    <span className="text-muted-foreground text-[10px]">
+                      {new Date(quest.updatedAt).toLocaleDateString()}
+                    </span>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => router.push(`/quests/${quest.id}`)}>
-                        <Edit2 className="h-4 w-4 mr-2" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open(`/share/${quest.id}`, "_blank")}>
-                        <ExternalLink className="h-4 w-4 mr-2" /> Preview
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => openRenameDialog(quest)}>
-                        <FileText className="h-4 w-4 mr-2" /> Rename
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteQuest(quest.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                    <div className="flex items-center gap-1.5">
-                      <Send className="h-3.5 w-3.5" />
-                      <span>{quest.responses || 0} responses</span>
-                    </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => router.push(`/quests/${quest.id}`)}>
+                      <Edit2 className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.open(`/share/${quest.id}`, "_blank")}>
+                      <ExternalLink className="mr-2 h-4 w-4" /> Preview
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openRenameDialog(quest)}>
+                      <FileText className="mr-2 h-4 w-4" /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteQuest(quest.id)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardHeader>
+              <CardContent>
+                <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Send className="h-3.5 w-3.5" />
+                    <span>{quest.responses || 0} responses</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -221,9 +225,7 @@ export default function QuestsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename Quest</DialogTitle>
-            <DialogDescription>
-              Enter a new title for your quest.
-            </DialogDescription>
+            <DialogDescription>Enter a new title for your quest.</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input

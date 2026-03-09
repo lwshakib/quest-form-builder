@@ -27,18 +27,18 @@ export const cloudinaryClient = cloudinary;
  * @returns Object with the uploaded URL and public ID.
  */
 export const saveImageToCloudinary = async (
-  buffer: Buffer
+  buffer: Buffer,
 ): Promise<{ url: string; publicId: string }> => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader
       .upload_stream(
         {
-          folder: 'quest-backgrounds',
-          resource_type: 'image',
+          folder: "quest-backgrounds",
+          resource_type: "image",
         },
         (error, result) => {
           if (error) {
-            console.error('[CLOUDINARY_UPLOAD_ERROR]', error);
+            console.error("[CLOUDINARY_UPLOAD_ERROR]", error);
             reject(error);
           } else if (result) {
             resolve({
@@ -46,9 +46,9 @@ export const saveImageToCloudinary = async (
               publicId: result.public_id,
             });
           } else {
-            reject(new Error('Cloudinary upload failed without error message'));
+            reject(new Error("Cloudinary upload failed without error message"));
           }
-        }
+        },
       )
       .end(buffer);
   });

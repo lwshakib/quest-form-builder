@@ -19,8 +19,8 @@ import { generateImage } from "./generateImage";
  */
 export interface GLMTool {
   description: string; // The text that tells the AI *when* and *why* to use this tool
-  parameters: z.ZodObject<any>; // Zod schema mapping the expected JSON input
-  handler: (args: any, questId: string) => Promise<string>; // The execution logic executed on the server
+  parameters: z.ZodObject<z.ZodRawShape>; // Zod schema mapping the expected JSON input
+  handler: (args: Record<string, unknown>, questId: string) => Promise<string>; // The execution logic executed on the server
 }
 
 /**
@@ -32,27 +32,42 @@ export interface GLMTool {
 const generateImageTool: GLMTool = {
   description: "Generate a high-quality background image for the quest based on a prompt.",
   parameters: z.object({
-    prompt: z.string().describe("Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user."),
+    prompt: z
+      .string()
+      .describe(
+        "Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user.",
+      ),
     width: z.number().int().optional().default(1024),
     height: z.number().int().optional().default(1024),
-    steps: z.number().int().optional().default(28).describe("Optimization steps (20-35 recommended)."),
+    steps: z
+      .number()
+      .int()
+      .optional()
+      .default(28)
+      .describe("Optimization steps (20-35 recommended)."),
   }),
   handler: async (args, questId) => {
+    const { prompt, width, height, steps } = args as {
+      prompt: string;
+      width?: number;
+      height?: number;
+      steps?: number;
+    };
     // Ping the AI Generation backend with parameters
     const result = await generateImage({
-      prompt: args.prompt,
-      width: args.width ?? 1024,
-      height: args.height ?? 1024,
-      steps: args.steps ?? 28,
-      mode: 'text-to-image',
+      prompt: prompt,
+      width: width ?? 1024,
+      height: height ?? 1024,
+      steps: steps ?? 28,
+      mode: "text-to-image",
     });
-    
+
     // If generated successfully, automatically assign it to the Quest via DB actions
     if (result.success && result.image) {
       await updateQuest(questId, { backgroundImageUrl: result.image });
       return `Success: Background image generated and applied. URL: ${result.image}`;
     }
-    
+
     // Return explicit error to the AI so it can self-correct or inform the user
     return `Error: ${result.error || "Failed to generate image"}`;
   },
@@ -72,7 +87,7 @@ const updateQuestTool: GLMTool = {
   }),
   handler: async (props, questId) => {
     // Perform database mutation immediately
-    await updateQuest(questId, props);
+    await updateQuest(questId, props as Parameters<typeof updateQuest>[1]);
     return `Successfully updated quest details: ${Object.keys(props).join(", ")}`;
   },
 };
@@ -84,30 +99,53 @@ const createQuestionsTool: GLMTool = {
   parameters: z.object({
     questions: z.array(
       z.object({
-        type: z.enum([
-          "SHORT_TEXT",
-          "PARAGRAPH",
-          "MULTIPLE_CHOICE",
-          "CHECKBOXES",
-          "DROPDOWN",
-          "DATE",
-          "TIME",
-          "VIDEO",
-          "IMAGE",
-        ]).describe("The input type. Strictly use the provided enum."),
+        type: z
+          .enum([
+            "SHORT_TEXT",
+            "PARAGRAPH",
+            "MULTIPLE_CHOICE",
+            "CHECKBOXES",
+            "DROPDOWN",
+            "DATE",
+            "TIME",
+            "VIDEO",
+            "IMAGE",
+          ])
+          .describe("The input type. Strictly use the provided enum."),
         title: z.string().describe("Clear, context-specific question title. No placeholders."),
         description: z.string().optional().describe("Helpful hint or context for the question."),
         required: z.boolean().optional().describe("Whether the question is mandatory."),
-        options: z.array(z.string()).optional().describe("List of choices for MULTIPLE_CHOICE, CHECKBOXES, or DROPDOWN."),
-      })
+        options: z
+          .array(z.string())
+          .optional()
+          .describe("List of choices for MULTIPLE_CHOICE, CHECKBOXES, or DROPDOWN."),
+      }),
     ),
   }),
-  handler: async ({ questions }, questId) => {
+  handler: async (args, questId) => {
+    const { questions } = args as {
+      questions: Array<{
+        type:
+          | "SHORT_TEXT"
+          | "PARAGRAPH"
+          | "MULTIPLE_CHOICE"
+          | "CHECKBOXES"
+          | "DROPDOWN"
+          | "DATE"
+          | "TIME"
+          | "VIDEO"
+          | "IMAGE";
+        title: string;
+        description?: string;
+        required?: boolean;
+        options?: string[];
+      }>;
+    };
     // Retrieve current questions to figure out the proper sequential numbering (order factor)
     const latestQuest = await getQuestById(questId);
     let startOrder = latestQuest?.questions?.length || 0;
 
-    // Build each question sequentially. 
+    // Build each question sequentially.
     for (const q of questions) {
       await createQuestion(
         questId,
@@ -116,7 +154,7 @@ const createQuestionsTool: GLMTool = {
         q.title,
         q.description,
         q.required,
-        q.options
+        q.options,
       );
     }
     return `Success: Created ${questions.length} question(s).`;
@@ -130,7 +168,8 @@ const deleteQuestionTool: GLMTool = {
   parameters: z.object({
     questionId: z.string(),
   }),
-  handler: async ({ questionId }, questId) => {
+  handler: async (args, questId) => {
+    const { questionId } = args as { questionId: string };
     await deleteQuestion(questionId, questId);
     return `Success: Deleted question with ID ${questionId}`;
   },
@@ -145,9 +184,19 @@ const updateQuestionTool: GLMTool = {
     title: z.string().optional().describe("New title for the question."),
     description: z.string().optional().describe("New description or hint."),
     required: z.boolean().optional().describe("Whether the question should be mandatory."),
-    options: z.array(z.string()).optional().describe("Updated list of options for choice-based questions."),
+    options: z
+      .array(z.string())
+      .optional()
+      .describe("Updated list of options for choice-based questions."),
   }),
-  handler: async ({ questionId, ...props }, questId) => {
+  handler: async (args, questId) => {
+    const { questionId, ...props } = args as {
+      questionId: string;
+      title?: string;
+      description?: string;
+      required?: boolean;
+      options?: string[];
+    };
     await updateQuestion(questionId, questId, props);
     return `Success: Updated question ${questionId}`;
   },

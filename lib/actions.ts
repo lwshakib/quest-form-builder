@@ -848,12 +848,13 @@ export async function getUserCredits() {
   const now = new Date();
   const resetDate = user.creditsResetAt ? new Date(user.creditsResetAt) : null;
 
-  // Evaluate daily reset condition: 
-  // True if it's their very first time checking (no resetDate), 
+  // Evaluate daily reset condition:
+  // True if it's their very first time checking (no resetDate),
   // or if the calendar year, month, or day values differ from today.
-  const isNewDay = !resetDate || 
-    resetDate.getFullYear() !== now.getFullYear() || 
-    resetDate.getMonth() !== now.getMonth() || 
+  const isNewDay =
+    !resetDate ||
+    resetDate.getFullYear() !== now.getFullYear() ||
+    resetDate.getMonth() !== now.getMonth() ||
     resetDate.getDate() !== now.getDate();
 
   // Perform the daily top-up back to 10

@@ -19,7 +19,6 @@ import {
   Send,
 } from "lucide-react";
 import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
-import { Shimmer as TextShimmer } from "@/components/ai-elements/shimmer";
 import { Loader } from "@/components/ai-elements/loader";
 import {
   Conversation,
@@ -34,11 +33,7 @@ import {
   MessageActions,
   MessageAction,
 } from "@/components/ai-elements/message";
-import {
-  Reasoning,
-  ReasoningTrigger,
-  ReasoningContent,
-} from "@/components/ai-elements/reasoning";
+import { Reasoning, ReasoningTrigger, ReasoningContent } from "@/components/ai-elements/reasoning";
 import { Copy, CheckCircle2 } from "lucide-react";
 import { Pie, PieChart, LabelList } from "recharts";
 import {
@@ -219,16 +214,21 @@ export default function QuestDetailPage() {
   // --- AI CHAT STATE/LOGIC (Custom Implementation) ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{ 
-    role: "user" | "assistant" | "tool"; 
-    id?: string;
-    parts: {
-      type: "text" | "reasoning" | "tool";
-      content?: string;
-      name?: string;
-      status?: "running" | "success" | "error";
-    }[];
-  }[]>([]);
+  const [messages, setMessages] = useState<
+    {
+      role: "user" | "assistant" | "tool";
+      id?: string;
+      parts: {
+        type: "text" | "reasoning" | "tool";
+        content?: string;
+        name?: string;
+        status?: "running" | "success" | "error";
+      }[];
+    }[]
+  >([]);
+
+  type ChatMessage = (typeof messages)[number];
+
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [userCredits, setUserCredits] = useState<number | null>(null);
 
@@ -257,10 +257,9 @@ export default function QuestDetailPage() {
     // Basic guards: Prevent empty messages, concurrent requests, or sending if out of credits
     if (!text.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)) return;
 
-    // Immediately display the user's message in the interface
-    const userMessage: any = { 
-      role: "user", 
-      parts: [{ type: "text", content: text }] 
+    const userMessage: ChatMessage = {
+      role: "user",
+      parts: [{ type: "text", content: text }],
     };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -276,10 +275,16 @@ export default function QuestDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
+          messages: [...messages, userMessage].map((m) => ({
             role: m.role,
-            content: m.parts.filter((p: any) => p.type === "text").map((p: any) => p.content).join(""),
-            reasoning_content: m.parts.filter((p: any) => p.type === "reasoning").map((p: any) => p.content).join("")
+            content: m.parts
+              .filter((p) => p.type === "text")
+              .map((p) => p.content)
+              .join(""),
+            reasoning_content: m.parts
+              .filter((p) => p.type === "reasoning")
+              .map((p) => p.content)
+              .join(""),
           })),
           questId: id,
         }),
@@ -290,7 +295,7 @@ export default function QuestDetailPage() {
       // Set up the reader to parse the raw streaming bytes emitted from the backend loop
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      
+
       // Initialize an empty assistant message template to progressively stream chunk content into
       const assistantId = `assistant-${Date.now()}`;
       setMessages((prev) => [...prev, { role: "assistant", id: assistantId, parts: [] }]);
@@ -309,7 +314,7 @@ export default function QuestDetailPage() {
         for (const line of lines) {
           const cleanLine = line.trim();
           if (!cleanLine.startsWith("data: ")) continue;
-          
+
           try {
             const data = JSON.parse(cleanLine.slice(6));
 
@@ -320,12 +325,15 @@ export default function QuestDetailPage() {
                   const parts = [...m.parts];
                   const lastPart = parts[parts.length - 1];
                   if (lastPart?.type === "text") {
-                    parts[parts.length - 1] = { ...lastPart, content: (lastPart.content || "") + data.content };
+                    parts[parts.length - 1] = {
+                      ...lastPart,
+                      content: (lastPart.content || "") + data.content,
+                    };
                   } else {
                     parts.push({ type: "text", content: data.content });
                   }
                   return { ...m, parts };
-                })
+                }),
               );
             }
 
@@ -336,12 +344,15 @@ export default function QuestDetailPage() {
                   const parts = [...m.parts];
                   const lastPart = parts[parts.length - 1];
                   if (lastPart?.type === "reasoning") {
-                    parts[parts.length - 1] = { ...lastPart, content: (lastPart.content || "") + data.reasoning };
+                    parts[parts.length - 1] = {
+                      ...lastPart,
+                      content: (lastPart.content || "") + data.reasoning,
+                    };
                   } else {
                     parts.push({ type: "reasoning", content: data.reasoning });
                   }
                   return { ...m, parts };
-                })
+                }),
               );
             }
 
@@ -350,11 +361,16 @@ export default function QuestDetailPage() {
                 prev.map((m) => {
                   if (m.id !== assistantId) return m;
                   const parts = [...m.parts];
-                  const existingIdx = parts.findIndex((p) => p.type === "tool" && p.name === data.toolCall && p.status === "running");
-                  
+                  const existingIdx = parts.findIndex(
+                    (p) => p.type === "tool" && p.name === data.toolCall && p.status === "running",
+                  );
+
                   if (data.result || data.error) {
                     if (existingIdx !== -1) {
-                      parts[existingIdx] = { ...parts[existingIdx], status: data.error ? "error" : "success" };
+                      parts[existingIdx] = {
+                        ...parts[existingIdx],
+                        status: data.error ? "error" : "success",
+                      };
                     }
                   } else {
                     if (existingIdx === -1) {
@@ -362,14 +378,14 @@ export default function QuestDetailPage() {
                     }
                   }
                   return { ...m, parts };
-                })
+                }),
               );
 
               if (data.result) {
                 await loadQuestData();
               }
             }
-            
+
             if (data.error) {
               toast.error("Internal Server Error");
             }
@@ -1091,7 +1107,7 @@ export default function QuestDetailPage() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-background/20 border-border/30 flex-1 overflow-hidden rounded-2xl border px-8 py-10 transition-all hover:bg-background/40"
+                  className="bg-background/20 border-border/30 hover:bg-background/40 flex-1 overflow-hidden rounded-2xl border px-8 py-10 transition-all"
                 >
                   <p className="text-muted-foreground/50 text-[10px] font-black tracking-[0.2em]">
                     {stat.label}
@@ -1105,13 +1121,13 @@ export default function QuestDetailPage() {
 
             {/* Actions / Tabs Toolbar */}
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-              <div className="flex items-center gap-1 border-b border-border/30 pb-1">
+              <div className="border-border/30 flex items-center gap-1 border-b pb-1">
                 {(["summary", "question", "individual"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setResponseSubTab(tab)}
                     className={cn(
-                      "px-4 py-2 text-xs font-black tracking-widest transition-all relative capitalize",
+                      "relative px-4 py-2 text-xs font-black tracking-widest capitalize transition-all",
                       responseSubTab === tab
                         ? "text-primary"
                         : "text-muted-foreground/50 hover:text-foreground",
@@ -1119,7 +1135,7 @@ export default function QuestDetailPage() {
                   >
                     {tab}
                     {responseSubTab === tab && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-in fade-in slide-in-from-bottom-1" />
+                      <div className="bg-primary animate-in fade-in slide-in-from-bottom-1 absolute right-0 bottom-0 left-0 h-0.5" />
                     )}
                   </button>
                 ))}
@@ -1212,7 +1228,7 @@ export default function QuestDetailPage() {
                       return (
                         <div
                           key={q.id}
-                          className="border-border/30 bg-background/30 overflow-hidden rounded-2xl border transition-all hover:bg-background/50"
+                          className="border-border/30 bg-background/30 hover:bg-background/50 overflow-hidden rounded-2xl border transition-all"
                         >
                           <div className="flex items-center gap-4 px-8 py-6">
                             <span className="bg-primary/5 text-primary flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold">
@@ -1233,13 +1249,13 @@ export default function QuestDetailPage() {
                                   .map((ans: string, idx: number) => (
                                     <div
                                       key={idx}
-                                      className="border-border/20 bg-accent/5 text-foreground/80 rounded-xl border px-4 py-3 text-sm font-medium transition-all hover:border-border/40"
+                                      className="border-border/20 bg-accent/5 text-foreground/80 hover:border-border/40 rounded-xl border px-4 py-3 text-sm font-medium transition-all"
                                     >
                                       {ans}
                                     </div>
                                   ))}
                                 {answers.length > 10 && (
-                                  <p className="text-muted-foreground/40 text-[10px] pt-2 font-bold tracking-widest text-center">
+                                  <p className="text-muted-foreground/40 pt-2 text-center text-[10px] font-bold tracking-widest">
                                     + {answers.length - 10} more responses
                                   </p>
                                 )}
@@ -1293,10 +1309,22 @@ export default function QuestDetailPage() {
                                 </div>
                                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:w-64 lg:flex-shrink-0">
                                   {chartData.map((c) => (
-                                    <div key={c.option} className="border-border/30 bg-background/50 flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all hover:bg-background/80">
-                                      <div className="h-2 w-full rounded-full mb-3" style={{ backgroundColor: `var(--chart-${(chartData.indexOf(c) % 5) + 1})` }} />
-                                      <span className="text-[10px] font-black tracking-widest truncate w-full px-1">{c.option}</span>
-                                      <span className="text-lg font-black mt-1 leading-none">{c.count}</span>
+                                    <div
+                                      key={c.option}
+                                      className="border-border/30 bg-background/50 hover:bg-background/80 flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all"
+                                    >
+                                      <div
+                                        className="mb-3 h-2 w-full rounded-full"
+                                        style={{
+                                          backgroundColor: `var(--chart-${(chartData.indexOf(c) % 5) + 1})`,
+                                        }}
+                                      />
+                                      <span className="w-full truncate px-1 text-[10px] font-black tracking-widest">
+                                        {c.option}
+                                      </span>
+                                      <span className="mt-1 text-lg leading-none font-black">
+                                        {c.count}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
@@ -1332,13 +1360,15 @@ export default function QuestDetailPage() {
                           }
                           onValueChange={setSelectedQuestionId}
                         >
-                          <SelectTrigger className="bg-background/50 h-11 border-none rounded-xl font-bold focus:ring-1 focus:ring-primary/20">
+                          <SelectTrigger className="bg-background/50 focus:ring-primary/20 h-11 rounded-xl border-none font-bold focus:ring-1">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {questions.map((q, i) => (
                               <SelectItem key={q.id} value={q.id}>
-                                <span className="text-muted-foreground mr-2 font-mono">#{i + 1}</span>{" "}
+                                <span className="text-muted-foreground mr-2 font-mono">
+                                  #{i + 1}
+                                </span>{" "}
                                 {q.title}
                               </SelectItem>
                             ))}
@@ -1384,7 +1414,7 @@ export default function QuestDetailPage() {
                         return (
                           <div
                             key={r.id}
-                            className="border-border/30 bg-background/50 flex flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all hover:bg-background/80"
+                            className="border-border/30 bg-background/50 hover:bg-background/80 flex flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all"
                           >
                             <div className="flex items-center justify-between">
                               <div className="bg-primary/10 text-primary flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-black">
@@ -1394,7 +1424,7 @@ export default function QuestDetailPage() {
                                 {new Date(r.createdAt).toLocaleDateString()}
                               </span>
                             </div>
-                            <div className="text-foreground min-h-[40px] text-sm font-medium leading-relaxed">
+                            <div className="text-foreground min-h-[40px] text-sm leading-relaxed font-medium">
                               {Array.isArray(answer?.value)
                                 ? answer.value.join(", ")
                                 : (answer?.value as string) || (
@@ -1435,10 +1465,14 @@ export default function QuestDetailPage() {
                                 : "text-muted-foreground hover:bg-secondary/50",
                             )}
                           >
-                            <span className={cn(
-                              "text-[10px] font-bold w-4 text-right",
-                              individualIndex === i ? "text-foreground" : "text-muted-foreground/40"
-                            )}>
+                            <span
+                              className={cn(
+                                "w-4 text-right text-[10px] font-bold",
+                                individualIndex === i
+                                  ? "text-foreground"
+                                  : "text-muted-foreground/40",
+                              )}
+                            >
                               {responses.length - i}
                             </span>
                             <div className="flex-1 truncate">
@@ -1509,12 +1543,12 @@ export default function QuestDetailPage() {
                           {responses[individualIndex].answers.map((answer) => (
                             <div key={answer.questionId} className="group/ans space-y-3">
                               <div className="flex items-center gap-3">
-                                <div className="h-1 w-6 bg-primary/20 rounded-full transition-all group-hover/ans:w-10 group-hover/ans:bg-primary" />
+                                <div className="bg-primary/20 group-hover/ans:bg-primary h-1 w-6 rounded-full transition-all group-hover/ans:w-10" />
                                 <h4 className="text-muted-foreground/50 text-[10px] font-black tracking-[0.2em]">
                                   {answer.question.title}
                                 </h4>
                               </div>
-                              <div className="bg-secondary/20 text-foreground border-border/10 rounded-2xl border p-6 text-sm font-medium leading-relaxed transition-all hover:bg-secondary/30">
+                              <div className="bg-secondary/20 text-foreground border-border/10 hover:bg-secondary/30 rounded-2xl border p-6 text-sm leading-relaxed font-medium transition-all">
                                 {Array.isArray(answer.value) ? (
                                   <div className="flex flex-wrap gap-2">
                                     {answer.value.map((v: string, i: number) => (
@@ -1550,21 +1584,27 @@ export default function QuestDetailPage() {
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-2xl space-y-12 pb-40 duration-700">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-              <p className="text-muted-foreground text-sm">Manage your quest's behavior and defaults.</p>
+              <p className="text-muted-foreground text-sm">
+                Manage your quest&apos;s behavior and defaults.
+              </p>
             </div>
 
             <div className="space-y-10">
               {/* Builder Defaults */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Builder Defaults</h3>
+                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                    Builder Defaults
+                  </h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="text-base font-bold">Require questions by default</Label>
-                    <p className="text-muted-foreground text-xs">New questions will have the 'Required' flag on.</p>
+                    <p className="text-muted-foreground text-xs">
+                      New questions will have the &apos;Required&apos; flag on.
+                    </p>
                   </div>
                   <Switch
                     checked={quest.questionsRequiredByDefault}
@@ -1581,7 +1621,9 @@ export default function QuestDetailPage() {
               {/* Submission Experience */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Submission Experience</h3>
+                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                    Submission Experience
+                  </h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1589,7 +1631,9 @@ export default function QuestDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label className="text-base font-bold">Limit to 1 response</Label>
-                      <p className="text-muted-foreground text-xs">Requires respondents to sign in.</p>
+                      <p className="text-muted-foreground text-xs">
+                        Requires respondents to sign in.
+                      </p>
                     </div>
                     <Switch
                       checked={quest.limitToOneResponse}
@@ -1602,8 +1646,12 @@ export default function QuestDetailPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label className="text-base font-bold">Show link to submit another response</Label>
-                      <p className="text-muted-foreground text-xs">Allow respondents to fill out the form multiple times.</p>
+                      <Label className="text-base font-bold">
+                        Show link to submit another response
+                      </Label>
+                      <p className="text-muted-foreground text-xs">
+                        Allow respondents to fill out the form multiple times.
+                      </p>
                     </div>
                     <Switch
                       checked={quest.showLinkToSubmitAnother}
@@ -1619,9 +1667,13 @@ export default function QuestDetailPage() {
                     <Textarea
                       className="bg-accent/5 border-border/50 min-h-[80px] resize-none rounded-xl"
                       defaultValue={quest.confirmationMessage || ""}
-                      onBlur={(e) => updateQuest(id as string, { confirmationMessage: e.target.value })}
+                      onBlur={(e) =>
+                        updateQuest(id as string, { confirmationMessage: e.target.value })
+                      }
                     />
-                    <p className="text-muted-foreground text-[10px] italic">Shown after the quest is completed.</p>
+                    <p className="text-muted-foreground text-[10px] italic">
+                      Shown after the quest is completed.
+                    </p>
                   </div>
                 </div>
               </section>
@@ -1629,7 +1681,9 @@ export default function QuestDetailPage() {
               {/* Presentation Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Presentation</h3>
+                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                    Presentation
+                  </h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1637,7 +1691,9 @@ export default function QuestDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label className="text-base font-bold">Show progress bar</Label>
-                      <p className="text-muted-foreground text-xs">Helps respondents track their position.</p>
+                      <p className="text-muted-foreground text-xs">
+                        Helps respondents track their position.
+                      </p>
                     </div>
                     <Switch
                       checked={quest.showProgressBar}
@@ -1651,7 +1707,9 @@ export default function QuestDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label className="text-base font-bold">Shuffle question order</Label>
-                      <p className="text-muted-foreground text-xs">Randomize questions for each respondent.</p>
+                      <p className="text-muted-foreground text-xs">
+                        Randomize questions for each respondent.
+                      </p>
                     </div>
                     <Switch
                       checked={quest.shuffleQuestionOrder}
@@ -1667,7 +1725,9 @@ export default function QuestDetailPage() {
               {/* Integrations Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Integrations</h3>
+                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                    Integrations
+                  </h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1675,7 +1735,9 @@ export default function QuestDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label className="text-base font-bold">Enable Webhook</Label>
-                      <p className="text-muted-foreground text-xs">Send response data to a custom URL.</p>
+                      <p className="text-muted-foreground text-xs">
+                        Send response data to a custom URL.
+                      </p>
                     </div>
                     <Switch
                       checked={quest.webhookEnabled}
@@ -1688,13 +1750,17 @@ export default function QuestDetailPage() {
 
                   {quest.webhookEnabled && (
                     <div className="animate-in fade-in slide-in-from-top-2 space-y-2">
-                      <Label className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/60">Webhook Endpoint URL</Label>
+                      <Label className="text-muted-foreground/60 text-[10px] font-black tracking-widest uppercase">
+                        Webhook Endpoint URL
+                      </Label>
                       <Input
                         placeholder="https://your-api.com/webhook"
                         value={quest.webhookUrl || ""}
                         onChange={(e) => setQuest({ ...quest, webhookUrl: e.target.value })}
-                        onBlur={() => updateQuest(id as string, { webhookUrl: quest.webhookUrl ?? undefined })}
-                        className="bg-accent/5 focus-visible:ring-primary/20 h-11 border-none rounded-none font-medium focus-visible:ring-1"
+                        onBlur={() =>
+                          updateQuest(id as string, { webhookUrl: quest.webhookUrl ?? undefined })
+                        }
+                        className="bg-accent/5 focus-visible:ring-primary/20 h-11 rounded-none border-none font-medium focus-visible:ring-1"
                       />
                     </div>
                   )}
@@ -1704,24 +1770,26 @@ export default function QuestDetailPage() {
               {/* Danger Zone */}
               <section className="space-y-6 pt-10">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-black tracking-widest uppercase text-destructive/70">Danger Zone</h3>
-                  <Separator className="mt-1 bg-destructive/20" />
+                  <h3 className="text-destructive/70 text-sm font-black tracking-widest uppercase">
+                    Danger Zone
+                  </h3>
+                  <Separator className="bg-destructive/20 mt-1" />
                 </div>
 
-                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6">
+                <div className="border-destructive/20 bg-destructive/5 rounded-xl border p-6">
                   <div className="flex flex-col gap-4">
                     <div className="space-y-1">
-                      <h4 className="text-base font-bold text-destructive">Delete this Quest</h4>
+                      <h4 className="text-destructive text-base font-bold">Delete this Quest</h4>
                       <p className="text-muted-foreground text-xs font-medium">
                         Irreversibly delete this quest and all its responses.
                       </p>
                     </div>
-                    
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="outline"
-                          className="text-destructive hover:bg-destructive hover:text-white border-destructive/30 w-fit gap-2 font-bold transition-all"
+                          className="text-destructive hover:bg-destructive border-destructive/30 w-fit gap-2 font-bold transition-all hover:text-white"
                         >
                           <Trash2 className="h-4 w-4" /> Delete Quest
                         </Button>
@@ -1730,7 +1798,7 @@ export default function QuestDetailPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete "{quest.title}" and all its data.
+                            This will permanently delete &quot;{quest.title}&quot; and all its data.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -1810,10 +1878,10 @@ export default function QuestDetailPage() {
                         title="Ready to help"
                         description="Ask me to create questions, update titles, or generate images for your quest."
                       />
-                      
+
                       {/* Suggested Prompts */}
                       <div className="flex flex-col gap-2 px-2">
-                        <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase mb-1">
+                        <p className="text-muted-foreground mb-1 text-[10px] font-bold tracking-widest uppercase">
                           Suggested Actions
                         </p>
                         {[
@@ -1840,51 +1908,71 @@ export default function QuestDetailPage() {
                             {message.parts.map((part, pIdx) => {
                               if (part.type === "reasoning") {
                                 return (
-                                  <Reasoning 
-                                    key={pIdx} 
-                                    isStreaming={isChatLoading && idx === messages.length - 1 && pIdx === message.parts.length - 1}
+                                  <Reasoning
+                                    key={pIdx}
+                                    isStreaming={
+                                      isChatLoading &&
+                                      idx === messages.length - 1 &&
+                                      pIdx === message.parts.length - 1
+                                    }
                                   >
                                     <ReasoningTrigger />
                                     <ReasoningContent>{part.content || ""}</ReasoningContent>
                                   </Reasoning>
                                 );
                               }
-                              
+
                               if (part.type === "tool") {
                                 return (
-                                  <div key={pIdx} className="mb-2 flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase animate-in fade-in slide-in-from-left-2">
+                                  <div
+                                    key={pIdx}
+                                    className="animate-in fade-in slide-in-from-left-2 mb-2 flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase"
+                                  >
                                     {part.status === "running" ? (
                                       <>
-                                        <Loader className="h-3 w-3 animate-spin text-primary" />
-                                        <span className="text-primary">Running {part.name?.replace(/([A-Z])/g, ' $1')}...</span>
+                                        <Loader className="text-primary h-3 w-3 animate-spin" />
+                                        <span className="text-primary">
+                                          Running {part.name?.replace(/([A-Z])/g, " $1")}...
+                                        </span>
                                       </>
                                     ) : part.status === "success" ? (
                                       <>
-                                        <div className="bg-green-500/10 rounded-full p-0.5">
+                                        <div className="rounded-full bg-green-500/10 p-0.5">
                                           <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
                                         </div>
-                                        <span className="text-muted-foreground/80">{part.name?.replace(/([A-Z])/g, ' $1')} Success</span>
+                                        <span className="text-muted-foreground/80">
+                                          {part.name?.replace(/([A-Z])/g, " $1")} Success
+                                        </span>
                                       </>
                                     ) : (
                                       <>
                                         <X className="h-3 w-3 text-red-500" />
-                                        <span className="text-red-500">{part.name?.replace(/([A-Z])/g, ' $1')} Failed</span>
+                                        <span className="text-red-500">
+                                          {part.name?.replace(/([A-Z])/g, " $1")} Failed
+                                        </span>
                                       </>
                                     )}
                                   </div>
                                 );
                               }
 
-                              return <MessageResponse key={pIdx}>{part.content || ""}</MessageResponse>;
+                              return (
+                                <MessageResponse key={pIdx}>{part.content || ""}</MessageResponse>
+                              );
                             })}
 
                             {/* Initial Loading / Thinking State - Only if no parts yet */}
-                            {message.role === "assistant" && isChatLoading && idx === messages.length - 1 && message.parts.length === 0 && (
-                              <div className="flex items-center gap-2.5 py-1">
-                                <Loader className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
-                                <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">Thinking...</span>
-                              </div>
-                            )}
+                            {message.role === "assistant" &&
+                              isChatLoading &&
+                              idx === messages.length - 1 &&
+                              message.parts.length === 0 && (
+                                <div className="flex items-center gap-2.5 py-1">
+                                  <Loader className="text-muted-foreground h-3.5 w-3.5 animate-spin" />
+                                  <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                                    Thinking...
+                                  </span>
+                                </div>
+                              )}
                           </MessageContent>
 
                           {/* Assistant Actions: Copy all text parts */}
@@ -1892,12 +1980,14 @@ export default function QuestDetailPage() {
                             <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100">
                               <MessageAction
                                 tooltip="Copy response"
-                                onClick={() => handleCopy(
-                                  message.parts
-                                    .filter(p => p.type === "text")
-                                    .map(p => p.content)
-                                    .join("\n")
-                                )}
+                                onClick={() =>
+                                  handleCopy(
+                                    message.parts
+                                      .filter((p) => p.type === "text")
+                                      .map((p) => p.content)
+                                      .join("\n"),
+                                  )
+                                }
                               >
                                 <Copy className="h-3.5 w-3.5" />
                               </MessageAction>
@@ -1907,7 +1997,6 @@ export default function QuestDetailPage() {
                       ))}
                     </>
                   )}
-
                 </ConversationContent>
                 <ConversationScrollButton />
               </Conversation>
@@ -1939,18 +2028,24 @@ export default function QuestDetailPage() {
                 <Button
                   type="submit"
                   size="icon"
-                  disabled={!input.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)}
+                  disabled={
+                    !input.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)
+                  }
                   className="absolute top-1.5 right-1.5 h-10 w-10 rounded-xl"
                 >
                   {isChatLoading ? <Loader className="h-4 w-4" /> : <Send className="h-4 w-4" />}
                 </Button>
               </form>
-              <div className="flex items-center justify-between px-2 mt-3">
+              <div className="mt-3 flex items-center justify-between px-2">
                 <p className="text-muted-foreground/50 text-[10px] font-medium">
                   {userCredits !== null && userCredits > 0 ? (
-                    <span className="text-primary/70 font-bold">{userCredits} credits remaining</span>
+                    <span className="text-primary/70 font-bold">
+                      {userCredits} credits remaining
+                    </span>
                   ) : userCredits !== null && userCredits <= 0 ? (
-                    <span className="text-destructive font-bold">Credits exhausted, wait for daily reset</span>
+                    <span className="text-destructive font-bold">
+                      Credits exhausted, wait for daily reset
+                    </span>
                   ) : (
                     <span className="text-primary/70 font-bold">... credits remaining</span>
                   )}

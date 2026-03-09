@@ -1,10 +1,10 @@
-import { CLOUDFLARE_API_KEY, FLUX_KLEIN_WORKER_URL } from '@/lib/env';
-import { saveImageToCloudinary } from '@/lib/cloudinary';
+import { CLOUDFLARE_API_KEY, FLUX_KLEIN_WORKER_URL } from "@/lib/env";
+import { saveImageToCloudinary } from "@/lib/cloudinary";
 
 /**
  * Supported generation modes for the Flux Klein model.
  */
-export type GenerateImageMode = 'text-to-image' | 'image-to-image' | 'blend' | 'inpaint';
+export type GenerateImageMode = "text-to-image" | "image-to-image" | "blend" | "inpaint";
 
 /**
  * Options for generating an image.
@@ -51,7 +51,7 @@ export interface GenerateImageResult {
   error?: string;
 }
 
-const MODEL_NAME = 'FLUX.2 [klein] 9B';
+const MODEL_NAME = "FLUX.2 [klein] 9B";
 
 /**
  * Generates or manipulates an image using the Flux Klein model.
@@ -61,11 +61,11 @@ const MODEL_NAME = 'FLUX.2 [klein] 9B';
  * @returns Object containing the Cloudinary URL and metadata.
  */
 export const generateImage = async (
-  options: GenerateImageOptions
+  options: GenerateImageOptions,
 ): Promise<GenerateImageResult> => {
   // Extract configuration parameters with safe defaults for missing values
   const {
-    mode = 'text-to-image',
+    mode = "text-to-image",
     prompt,
     images = [],
     mask,
@@ -78,10 +78,10 @@ export const generateImage = async (
 
   // Verify that core API credentials exist in environment variables
   if (!CLOUDFLARE_API_KEY) {
-    console.error('[GENERATE_IMAGE] Missing CLOUDFLARE_API_KEY');
+    console.error("[GENERATE_IMAGE] Missing CLOUDFLARE_API_KEY");
     return {
       success: false,
-      error: 'Missing CLOUDFLARE_API_KEY',
+      error: "Missing CLOUDFLARE_API_KEY",
       prompt,
       model: MODEL_NAME,
     };
@@ -91,15 +91,15 @@ export const generateImage = async (
     let response: Response;
 
     // Determine if we should use JSON or FormData. FormData is required for image files.
-    const isFormDataNeeded = mode !== 'text-to-image' || images.length > 0 || !!mask;
+    const isFormDataNeeded = mode !== "text-to-image" || images.length > 0 || !!mask;
 
     if (!isFormDataNeeded) {
       // Simple Text-to-Image (JSON Payload)
       // Send the query parameters as a standard JSON object.
       response = await fetch(FLUX_KLEIN_WORKER_URL!, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${CLOUDFLARE_API_KEY}`,
         },
         body: JSON.stringify({
@@ -114,28 +114,28 @@ export const generateImage = async (
       // Advanced Workflows (FormData Payload)
       // We must append fields manually because we are transmitting binary files alongside metadata.
       const form = new FormData();
-      form.append('prompt', prompt);
-      if (width) form.append('width', width.toString());
-      if (height) form.append('height', height.toString());
-      if (steps) form.append('steps', steps.toString());
-      if (seed !== undefined) form.append('seed', seed.toString());
+      form.append("prompt", prompt);
+      if (width) form.append("width", width.toString());
+      if (height) form.append("height", height.toString());
+      if (steps) form.append("steps", steps.toString());
+      if (seed !== undefined) form.append("seed", seed.toString());
 
       // If we are modifying an existing image, append it as a Blob.
-      if (mode === 'image-to-image' || mode === 'inpaint') {
-        if (images[0]) form.append('image', images[0] as Blob);
-        if (strength !== undefined) form.append('strength', strength.toString());
+      if (mode === "image-to-image" || mode === "inpaint") {
+        if (images[0]) form.append("image", images[0] as Blob);
+        if (strength !== undefined) form.append("strength", strength.toString());
         // For localized changes, add an alpha mask Blob
-        if (mode === 'inpaint' && mask) {
-          form.append('mask', mask as Blob);
+        if (mode === "inpaint" && mask) {
+          form.append("mask", mask as Blob);
         }
-      } else if (mode === 'blend') {
+      } else if (mode === "blend") {
         // Blending operation requires exactly two constituent images
-        if (images[0]) form.append('image0', images[0] as Blob);
-        if (images[1]) form.append('image1', images[1] as Blob);
+        if (images[0]) form.append("image0", images[0] as Blob);
+        if (images[1]) form.append("image1", images[1] as Blob);
       }
 
       response = await fetch(FLUX_KLEIN_WORKER_URL!, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${CLOUDFLARE_API_KEY}`,
         },
@@ -169,14 +169,14 @@ export const generateImage = async (
       model: MODEL_NAME,
     };
   } catch (error) {
-    console.error('[GENERATE_IMAGE_EXCEPTION]', error);
+    console.error("[GENERATE_IMAGE_EXCEPTION]", error);
     // Return structured exception information without crashing the overall app
     return {
       success: false,
       error:
         error instanceof Error
           ? error.message
-          : 'An unexpected error occurred during image generation',
+          : "An unexpected error occurred during image generation",
       prompt,
       model: MODEL_NAME,
     };

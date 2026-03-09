@@ -175,7 +175,7 @@ export function MainHeader() {
                     />
                   ) : (
                     <span
-                      className="hover:text-primary group flex max-w-[300px] cursor-pointer items-center gap-2 whitespace-nowrap text-sm font-bold transition-all md:max-w-[400px]"
+                      className="hover:text-primary group flex max-w-[300px] cursor-pointer items-center gap-2 text-sm font-bold whitespace-nowrap transition-all md:max-w-[400px]"
                       onClick={() => setIsEditingTitle(true)}
                       title="Click to edit quest title"
                     >

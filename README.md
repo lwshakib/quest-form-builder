@@ -68,12 +68,14 @@ graph TD
 ### Installation
 
 1.  **Clone the repository**:
+
     ```bash
     git clone https://github.com/lwshakib/quest-form-builder.git
     cd quest-form-builder
     ```
 
 2.  **Install dependencies**:
+
     ```bash
     bun install
     ```
@@ -82,6 +84,7 @@ graph TD
     Create a `.env` file based on `.env.example` and fill in your keys.
 
 4.  **Database Migration**:
+
     ```bash
     bun x prisma migrate dev
     ```
