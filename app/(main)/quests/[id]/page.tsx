@@ -225,9 +225,14 @@ export default function QuestDetailPage() {
   // --- AI CHAT STATE/LOGIC (Custom Implementation) ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{ role: "user" | "assistant" | "tool"; content: string; reasoning?: string; id?: string; toolCall?: string; toolResult?: string }[]>([]);
+  const [messages, setMessages] = useState<{ 
+    role: "user" | "assistant" | "tool"; 
+    content: string; 
+    reasoning?: string; 
+    id?: string; 
+    toolCalls?: { name: string; status: "running" | "success" | "error" }[] 
+  }[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [activeTool, setActiveTool] = useState<{ name: string; result?: string } | null>(null);
 
   /**
    * Custom stream handler for the /api/chat endpoint.
@@ -260,7 +265,7 @@ export default function QuestDetailPage() {
       
       // Initialize assistant message placeholder
       const assistantId = `assistant-${Date.now()}`;
-      setMessages((prev) => [...prev, { role: "assistant", content: "", reasoning: "", id: assistantId }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "", reasoning: "", id: assistantId, toolCalls: [] }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -290,12 +295,30 @@ export default function QuestDetailPage() {
             }
 
             if (data.toolCall) {
-              setActiveTool({ name: data.toolCall, result: data.result });
-              // Refresh data to reflect tool effects
-              await loadQuestData();
-              
-              // Clear tool indicator after 2 seconds
-              setTimeout(() => setActiveTool(null), 2000);
+              setMessages((prev) =>
+                prev.map((m) => {
+                  if (m.id !== assistantId) return m;
+                  const calls = [...(m.toolCalls || [])];
+                  const existingIdx = calls.findIndex((c) => c.name === data.toolCall && c.status === "running");
+                  
+                  if (data.result || data.error) {
+                    // Update existing running tool to success/error
+                    if (existingIdx !== -1) {
+                      calls[existingIdx] = { ...calls[existingIdx], status: data.error ? "error" : "success" };
+                    }
+                  } else {
+                    // Start a new running tool if not already running
+                    if (existingIdx === -1) {
+                      calls.push({ name: data.toolCall, status: "running" });
+                    }
+                  }
+                  return { ...m, toolCalls: calls };
+                })
+              );
+
+              if (data.result) {
+                await loadQuestData();
+              }
             }
             
             if (data.error) {
@@ -1830,12 +1853,50 @@ export default function QuestDetailPage() {
                       {messages.map((message, idx) => (
                         <Message from={message.role} key={idx}>
                           <MessageContent>
+                            {/* Reasoning Section */}
                             {message.role === "assistant" && message.reasoning && (
                               <Reasoning isStreaming={isChatLoading && idx === messages.length - 1}>
                                 <ReasoningTrigger />
                                 <ReasoningContent>{message.reasoning}</ReasoningContent>
                               </Reasoning>
                             )}
+
+                            {/* Persistent Tool Status Rows */}
+                            {message.role === "assistant" && message.toolCalls && message.toolCalls.length > 0 && (
+                              <div className="mb-3 flex flex-col gap-2">
+                                {message.toolCalls.map((tc, k) => (
+                                  <div key={k} className="flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase animate-in fade-in slide-in-from-left-2">
+                                    {tc.status === "running" ? (
+                                      <>
+                                        <Loader className="h-3 w-3 animate-spin text-primary" />
+                                        <span className="text-primary">Running {tc.name.replace(/([A-Z])/g, ' $1')}...</span>
+                                      </>
+                                    ) : tc.status === "success" ? (
+                                      <>
+                                        <div className="bg-green-500/10 rounded-full p-0.5">
+                                          <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
+                                        </div>
+                                        <span className="text-muted-foreground/80">{tc.name.replace(/([A-Z])/g, ' $1')} Success</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <X className="h-3 w-3 text-red-500" />
+                                        <span className="text-red-500">{tc.name.replace(/([A-Z])/g, ' $1')} Failed</span>
+                                      </>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Initial Loading / Thinking State */}
+                            {message.role === "assistant" && isChatLoading && idx === messages.length - 1 && !message.content && !message.reasoning && (!message.toolCalls || message.toolCalls.length === 0) && (
+                              <div className="flex items-center gap-2.5 py-1">
+                                <Loader className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
+                                <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">Thinking...</span>
+                              </div>
+                            )}
+
                             <MessageResponse>{message.content}</MessageResponse>
                           </MessageContent>
 
@@ -1855,29 +1916,6 @@ export default function QuestDetailPage() {
                     </>
                   )}
 
-                  {/* LOADING STATE & ACTIVE TOOL INDICATOR */}
-                  {(isChatLoading || activeTool) && (
-                    <div className="text-muted-foreground mt-4 flex flex-col gap-2 px-2 text-xs">
-                      
-                      {activeTool && (
-                        <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-primary animate-in fade-in slide-in-from-left-2">
-                          {!activeTool.result ? (
-                            <>
-                              <Loader className="h-3 w-3 animate-spin" />
-                              <span>Running {activeTool.name.replace(/([A-Z])/g, ' $1')}...</span>
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="h-3 w-3 text-green-500" />
-                              <span className="text-muted-foreground">
-                                {activeTool.name.replace(/([A-Z])/g, ' $1')} Complete
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </ConversationContent>
                 <ConversationScrollButton />
               </Conversation>
