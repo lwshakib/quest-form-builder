@@ -84,117 +84,76 @@ export default function TemplatesPage() {
     .filter(Boolean) as Template[];
 
   return (
-    <div className="bg-background min-h-screen">
-      {/* Sticky Header - Offset by main header height (h-16) */}
-      <div className="bg-background/80 sticky top-16 z-40 border-b backdrop-blur-md">
-        <div className="container mx-auto flex h-20 items-center justify-between gap-6 px-4 lg:px-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.back()}
-              className="rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-black tracking-tight">Template Gallery</h1>
-          </div>
-
-          <div className="group relative max-w-xl flex-1">
-            <Search className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
-            <Input
-              placeholder="Search for templates..."
-              className="bg-muted/50 focus-visible:ring-primary/20 h-12 rounded-2xl border-none pl-12 font-medium transition-all focus-visible:ring-2"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto space-y-20 px-4 py-12 lg:px-8">
-        {/* Categories */}
+    <div className="container mx-auto px-4 py-12 max-w-6xl">
+      <div className="space-y-16">
         {categories.map((cat) => {
           const catTemplates =
             cat.name === "Recent"
               ? recentTemplates
               : filteredTemplates.filter((t) => t.category === cat.name);
+          
           if (cat.name !== "Recent" && catTemplates.length === 0) return null;
+          if (cat.name === "Recent" && catTemplates.length === 0) return null;
 
           return (
-            <section key={cat.name} className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-muted-foreground flex items-center gap-2 text-xl font-bold tracking-tight uppercase">
-                  <cat.icon className="h-5 w-5" />{" "}
-                  {cat.name === "Recent" ? "Recently used templates" : cat.name}
+            <section key={cat.name}>
+              <div className="flex items-center gap-2 mb-6 text-muted-foreground/60">
+                <cat.icon className="h-4 w-4" />
+                <h2 className="text-sm font-bold tracking-tight">
+                  {cat.name === "Recent" ? "Recently used" : cat.name}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
                 {cat.name === "Recent" && (
-                  <button
+                  <div 
+                    className="group cursor-pointer flex flex-col gap-3"
                     onClick={handleCreateBlank}
-                    disabled={!!isCreating}
-                    className="group flex flex-col items-start gap-4 text-left transition-all duration-300 disabled:opacity-50"
                   >
-                    <div className="border-border bg-card hover:bg-primary/5 hover:border-primary/40 relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed shadow-sm transition-all duration-500 hover:shadow-xl">
-                      <div className="bg-primary/5 group-hover:bg-primary/10 border-primary/10 rounded-full border p-3 transition-all duration-500 group-hover:scale-110">
+                    <div className="aspect-video relative rounded-xl border border-dashed hover:border-primary/50 bg-accent/5 flex items-center justify-center transition-all bg-muted/20">
+                      <div className="h-10 w-10 rounded-full border border-dashed flex items-center justify-center">
                         {isCreating === "blank" ? (
-                          <Loader2 className="text-primary h-5 w-5 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Plus className="text-primary h-5 w-5" />
+                          <Plus className="h-4 w-4" />
                         )}
                       </div>
-                      {isCreating === "blank" && (
-                        <div className="bg-background/60 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-                          <Loader2 className="text-primary h-8 w-8 animate-spin" />
-                        </div>
-                      )}
                     </div>
-                    <div className="space-y-1 px-1">
-                      <h3 className="group-hover:text-primary text-base font-bold transition-colors">
-                        Blank Quest
-                      </h3>
-                      <p className="text-muted-foreground line-clamp-1 text-xs font-medium">
-                        Start from scratch
-                      </p>
+                    <div>
+                      <p className="text-sm font-semibold group-hover:text-primary transition-colors">Blank Quest</p>
+                      <p className="text-xs text-muted-foreground">Start from scratch</p>
                     </div>
-                  </button>
+                  </div>
                 )}
 
                 {catTemplates.map((template) => (
-                  <button
+                  <div 
                     key={template.id}
+                    className="group cursor-pointer flex flex-col gap-3"
                     onClick={() => handleCreate(template.id)}
-                    disabled={!!isCreating}
-                    className="group flex flex-col items-start gap-4 text-left transition-all duration-300 disabled:opacity-50"
                   >
-                    <div className="border-border relative aspect-[16/9] w-full overflow-hidden rounded-2xl border shadow-sm transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl">
+                    <div className="aspect-video relative overflow-hidden rounded-xl bg-muted border border-border/50 group-hover:border-primary/30 transition-all">
                       <Image
-                        src={
-                          template.backgroundImage ||
-                          "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"
-                        }
+                        src={template.backgroundImage || "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"}
                         alt={template.title}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover transition-transform group-hover:scale-105 duration-500"
                       />
-                      <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0" />
                       {isCreating === template.id && (
-                        <div className="bg-background/60 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
-                          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+                        <div className="absolute inset-0 bg-background/50 flex items-center justify-center backdrop-blur-sm">
+                          <Loader2 className="h-6 w-6 animate-spin" />
                         </div>
                       )}
                     </div>
-                    <div className="space-y-1 px-1">
-                      <h3 className="group-hover:text-primary text-base font-bold transition-colors">
+                    <div>
+                      <p className="text-sm font-semibold group-hover:text-primary transition-colors line-clamp-1">
                         {template.title}
-                      </h3>
-                      <p className="text-muted-foreground line-clamp-1 text-xs font-medium">
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 font-medium">
                         {template.description}
                       </p>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </section>

@@ -63,7 +63,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   getQuestById,
@@ -106,12 +105,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
 /**
@@ -643,6 +636,62 @@ export default function QuestDetailPage() {
     }
   };
 
+  /**
+   * Generates and downloads a CSV file containing all responses.
+   */
+  const handleExportCsv = () => {
+    if (!responses.length || !questions.length) {
+      toast.error("No data to export");
+      return;
+    }
+
+    // Build the header row
+    const headers = [
+      "Response ID",
+      "Submitted At",
+      "Duration (s)",
+      ...questions.map((q) => q.title.replace(/"/g, '""')),
+    ];
+
+    const csvRows = [headers.map((h) => `"${h}"`).join(",")];
+
+    // Build each data row
+    responses.forEach((r) => {
+      const row = [
+        r.id,
+        new Date(r.createdAt).toLocaleString(),
+        r.duration?.toString() || "",
+        ...questions.map((q) => {
+          const answer = r.answers.find((a) => a.questionId === q.id);
+          let val = "";
+          if (answer) {
+            val = Array.isArray(answer.value)
+              ? answer.value.join(", ")
+              : (answer.value as string) || "";
+          }
+          return val.replace(/"/g, '""');
+        }),
+      ];
+      csvRows.push(row.map((cell) => `"${cell}"`).join(","));
+    });
+
+    // Create and trigger the download
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `quest-${quest.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-responses.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Responses exported as CSV");
+  };
+
   // --- RENDERING LOGIC ---
 
   if (isLoading) {
@@ -978,7 +1027,7 @@ export default function QuestDetailPage() {
         {activeTab === "responses" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-6xl space-y-8 pb-40 duration-700">
             {/* Stats Overview */}
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex flex-col gap-6 sm:flex-row">
               {[
                 {
                   label: "Total Responses",
@@ -1001,50 +1050,52 @@ export default function QuestDetailPage() {
                 },
                 { label: "Completion Rate", value: "100%" }, // Placeholder
               ].map((stat) => (
-                <Card
+                <div
                   key={stat.label}
-                  className="bg-card/40 border-border/50 flex-1 overflow-hidden rounded-2xl border shadow-sm backdrop-blur-md"
+                  className="bg-background/20 border-border/30 flex-1 overflow-hidden rounded-2xl border px-8 py-10 transition-all hover:bg-background/40"
                 >
-                  <div className="bg-primary/10 h-1 w-full" />
-                  <div className="p-6 text-center">
-                    <p className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
-                      {stat.label}
-                    </p>
-                    <h3 className="text-primary mt-2 text-4xl font-black tracking-tighter">
-                      {stat.value}
-                    </h3>
-                  </div>
-                </Card>
+                  <p className="text-muted-foreground/50 text-[10px] font-black tracking-[0.2em]">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-primary mt-3 text-4xl font-black tracking-tighter">
+                    {stat.value}
+                  </h3>
+                </div>
               ))}
             </div>
 
             {/* Actions / Tabs Toolbar */}
-            <div className="bg-card/60 border-border/40 flex flex-col items-center justify-between gap-4 rounded-2xl border p-2 backdrop-blur-sm md:flex-row">
-              <div className="bg-muted/50 flex items-center gap-1 rounded-xl p-1">
+            <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+              <div className="flex items-center gap-1 border-b border-border/30 pb-1">
                 {(["summary", "question", "individual"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setResponseSubTab(tab)}
                     className={cn(
-                      "rounded-lg px-6 py-2 text-sm font-bold capitalize transition-all",
+                      "px-4 py-2 text-xs font-black tracking-widest transition-all relative capitalize",
                       responseSubTab === tab
-                        ? "bg-background text-primary shadow-sm"
-                        : "text-muted-foreground hover:bg-background/50",
+                        ? "text-primary"
+                        : "text-muted-foreground/50 hover:text-foreground",
                     )}
                   >
                     {tab}
+                    {responseSubTab === tab && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-in fade-in slide-in-from-bottom-1" />
+                    )}
                   </button>
                 ))}
               </div>
 
               <div className="flex w-full items-center gap-2 md:w-auto">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="text-muted-foreground h-9 gap-2 rounded-xl font-semibold"
+                  onClick={handleExportCsv}
+                  disabled={responses.length === 0}
+                  className="bg-secondary/20 hover:bg-secondary/30 text-muted-foreground h-9 gap-2 rounded-2xl px-4 text-[10px] font-black tracking-widest transition-all"
                 >
                   <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Download</span>
+                  <span className="hidden sm:inline">Export</span>
                 </Button>
 
                 <AlertDialog>
@@ -1052,10 +1103,10 @@ export default function QuestDetailPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 gap-2 rounded-xl font-semibold"
+                      className="text-destructive/50 hover:bg-destructive/10 hover:text-destructive h-9 gap-2 rounded-2xl px-4 text-[10px] font-black tracking-widest transition-all"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Delete all</span>
+                      <span className="hidden sm:inline">Clear all</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -1120,38 +1171,42 @@ export default function QuestDetailPage() {
                       );
 
                       return (
-                        <Card
+                        <div
                           key={q.id}
-                          className="border-border/50 bg-card/40 overflow-hidden backdrop-blur-sm"
+                          className="border-border/30 bg-background/30 overflow-hidden rounded-2xl border transition-all hover:bg-background/50"
                         >
-                          <CardHeader className="bg-accent/5 border-border/20 border-b py-4">
-                            <CardTitle className="flex items-center gap-3 text-base font-bold">
-                              <span className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-md text-xs">
-                                {i + 1}
-                              </span>
-                              {q.title}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-6">
-                            <div className="text-muted-foreground mb-4 text-sm font-medium">
-                              {answers.length} responses
+                          <div className="flex items-center gap-4 px-8 py-6">
+                            <span className="bg-primary/5 text-primary flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold">
+                              {i + 1}
+                            </span>
+                            <div>
+                              <h4 className="text-sm font-black tracking-tight">{q.title}</h4>
+                              <p className="text-muted-foreground/60 text-[10px] font-bold tracking-widest">
+                                {answers.length} responses
+                              </p>
                             </div>
-
+                          </div>
+                          <div className="px-8 pb-8">
                             {["SHORT_TEXT", "PARAGRAPH", "DATE", "TIME"].includes(q.type) ? (
-                              <div className="custom-scrollbar max-h-[300px] space-y-4 overflow-y-auto pr-2">
+                              <div className="space-y-3">
                                 {(answers as string[])
-                                  .slice(0, 50)
+                                  .slice(0, 10)
                                   .map((ans: string, idx: number) => (
                                     <div
                                       key={idx}
-                                      className="bg-background border-border/50 text-foreground/80 rounded-lg border p-3 text-sm"
+                                      className="border-border/20 bg-accent/5 text-foreground/80 rounded-xl border px-4 py-3 text-sm font-medium transition-all hover:border-border/40"
                                     >
                                       {ans}
                                     </div>
                                   ))}
+                                {answers.length > 10 && (
+                                  <p className="text-muted-foreground/40 text-[10px] pt-2 font-bold tracking-widest text-center">
+                                    + {answers.length - 10} more responses
+                                  </p>
+                                )}
                               </div>
                             ) : (
-                              <div className="flex flex-col items-start gap-8 sm:flex-row">
+                              <div className="flex flex-col items-start gap-12 lg:flex-row">
                                 <div className="min-h-[300px] w-full flex-1">
                                   <ChartContainer
                                     config={chartConfig}
@@ -1197,10 +1252,19 @@ export default function QuestDetailPage() {
                                     </PieChart>
                                   </ChartContainer>
                                 </div>
+                                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:w-64 lg:flex-shrink-0">
+                                  {chartData.map((c) => (
+                                    <div key={c.option} className="border-border/30 bg-background/50 flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all hover:bg-background/80">
+                                      <div className="h-2 w-full rounded-full mb-3" style={{ backgroundColor: `var(--chart-${(chartData.indexOf(c) % 5) + 1})` }} />
+                                      <span className="text-[10px] font-black tracking-widest truncate w-full px-1">{c.option}</span>
+                                      <span className="text-lg font-black mt-1 leading-none">{c.count}</span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -1208,19 +1272,20 @@ export default function QuestDetailPage() {
 
                 {/* QUESTION VIEW */}
                 {responseSubTab === "question" && (
-                  <div className="animate-in fade-in zoom-in-95 space-y-6 duration-300">
-                    <div className="bg-card border-border/50 flex items-center gap-4 rounded-xl border p-4">
-                      <div className="flex items-center gap-2">
+                  <div className="animate-in fade-in zoom-in-95 space-y-8 duration-300">
+                    <div className="border-border/30 bg-background/50 flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl border p-2 sm:flex-row">
+                      <div className="flex w-full items-center gap-2 sm:w-auto">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
+                          className="h-10 w-10 shrink-0 rounded-xl"
                           disabled={questions.findIndex((q) => q.id === selectedQuestionId) <= 0}
                           onClick={() => {
                             const idx = questions.findIndex((q) => q.id === selectedQuestionId);
                             if (idx > 0) setSelectedQuestionId(questions[idx - 1].id);
                           }}
                         >
-                          <ChevronLeft className="h-4 w-4" />
+                          <ChevronLeft className="h-5 w-5" />
                         </Button>
                         <Select
                           value={
@@ -1228,21 +1293,22 @@ export default function QuestDetailPage() {
                           }
                           onValueChange={setSelectedQuestionId}
                         >
-                          <SelectTrigger className="w-[300px] font-medium">
+                          <SelectTrigger className="bg-background/50 h-11 border-none rounded-xl font-bold focus:ring-1 focus:ring-primary/20">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {questions.map((q, i) => (
                               <SelectItem key={q.id} value={q.id}>
-                                <span className="text-muted-foreground mr-2">#{i + 1}</span>{" "}
+                                <span className="text-muted-foreground mr-2 font-mono">#{i + 1}</span>{" "}
                                 {q.title}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
+                          className="h-10 w-10 shrink-0 rounded-xl"
                           disabled={
                             questions.findIndex((q) => q.id === selectedQuestionId) >=
                             questions.length - 1
@@ -1256,21 +1322,20 @@ export default function QuestDetailPage() {
                               setSelectedQuestionId(questions[idx + 1].id);
                           }}
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-5 w-5" />
                         </Button>
                       </div>
-                      <div className="text-muted-foreground ml-auto text-sm font-medium">
-                        Question{" "}
+                      <div className="text-muted-foreground/60 px-4 pb-4 text-[10px] font-black tracking-widest sm:pb-0">
                         {questions.findIndex(
                           (q) =>
                             q.id ===
                             (selectedQuestionId === "all" ? questions[0]?.id : selectedQuestionId),
                         ) + 1}{" "}
-                        of {questions.length}
+                        / {questions.length} Questions
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {responses.map((r, idx) => {
                         const qId =
                           selectedQuestionId === "all" ? questions[0]?.id : selectedQuestionId;
@@ -1280,24 +1345,24 @@ export default function QuestDetailPage() {
                         return (
                           <div
                             key={r.id}
-                            className="bg-card border-border/50 flex items-start gap-4 rounded-xl border p-4"
+                            className="border-border/30 bg-background/50 flex flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all hover:bg-background/80"
                           >
-                            <div className="bg-primary/10 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold">
-                              {responses.length - idx}
+                            <div className="flex items-center justify-between">
+                              <div className="bg-primary/10 text-primary flex h-7 w-7 items-center justify-center rounded-lg text-[10px] font-black">
+                                #{responses.length - idx}
+                              </div>
+                              <span className="text-muted-foreground/40 text-[9px] font-bold tracking-widest">
+                                {new Date(r.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
-                            <div>
-                              <div className="text-foreground text-sm font-medium">
-                                {Array.isArray(answer?.value)
-                                  ? answer.value.join(", ")
-                                  : (answer?.value as string) || (
-                                      <span className="text-muted-foreground italic">
-                                        No answer
-                                      </span>
-                                    )}
-                              </div>
-                              <div className="text-muted-foreground mt-1 text-xs">
-                                {new Date(r.createdAt).toLocaleString()}
-                              </div>
+                            <div className="text-foreground min-h-[40px] text-sm font-medium leading-relaxed">
+                              {Array.isArray(answer?.value)
+                                ? answer.value.join(", ")
+                                : (answer?.value as string) || (
+                                    <span className="text-muted-foreground/30 italic">
+                                      No answer provided
+                                    </span>
+                                  )}
                             </div>
                           </div>
                         );
@@ -1308,36 +1373,37 @@ export default function QuestDetailPage() {
 
                 {/* INDIVIDUAL VIEW */}
                 {responseSubTab === "individual" && (
-                  <div className="animate-in fade-in zoom-in-95 grid grid-cols-1 items-start gap-6 duration-300 md:grid-cols-[300px_1fr]">
+                  <div className="animate-in fade-in zoom-in-95 grid grid-cols-1 items-start gap-8 duration-300 md:grid-cols-[280px_1fr]">
                     {/* Sidebar List (Desktop) / Navigation */}
-                    <div className="bg-card border-border/50 overflow-hidden rounded-xl border shadow-sm md:sticky md:top-6">
-                      <div className="border-border/50 bg-muted/20 flex items-center justify-between border-b p-3">
-                        <span className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
-                          Responses
+                    <div className="border-border/30 bg-background/30 overflow-hidden rounded-2xl border md:sticky md:top-6">
+                      <div className="border-border/10 bg-muted/10 flex items-center justify-between border-b px-5 py-4">
+                        <span className="text-muted-foreground/70 text-[10px] font-black tracking-widest">
+                          Entries
                         </span>
-                        <span className="text-muted-foreground text-xs font-medium">
-                          {responses.length} total
+                        <span className="bg-primary/10 text-primary rounded-md px-2 py-0.5 text-[10px] font-black">
+                          {responses.length}
                         </span>
                       </div>
-                      <div className="custom-scrollbar max-h-[500px] space-y-1 overflow-y-auto p-2">
+                      <div className="custom-scrollbar max-h-[600px] overflow-y-auto p-2">
                         {responses.map((r, i) => (
                           <button
                             key={r.id}
                             onClick={() => setIndividualIndex(i)}
                             className={cn(
-                              "flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm transition-all",
+                              "flex w-full items-center gap-4 rounded-xl p-4 text-left text-sm transition-all",
                               individualIndex === i
-                                ? "bg-primary/10 text-primary font-bold"
-                                : "hover:bg-accent/50 text-muted-foreground hover:text-foreground",
+                                ? "bg-primary/5 border-primary/20 border shadow-sm"
+                                : "text-muted-foreground/60 hover:bg-background/40 hover:text-foreground",
                             )}
                           >
-                            <div className="bg-background border-border/50 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border text-[10px] font-medium shadow-sm">
+                            <div className={cn(
+                              "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[9px] font-black",
+                              individualIndex === i ? "bg-primary text-white" : "bg-muted/40"
+                            )}>
                               {responses.length - i}
                             </div>
-                            <div className="flex-1 truncate">
-                              {/* Try to find a name or email field, otherwise generic */}
+                            <div className="flex-1 truncate font-bold">
                               {(() => {
-                                // Quick heuristic to find a 'name' or 'email' answer
                                 const nameQ = r.answers.find((a: { question: { title: string } }) =>
                                   a.question.title.toLowerCase().includes("name"),
                                 );
@@ -1347,7 +1413,7 @@ export default function QuestDetailPage() {
                                     a.question.title.toLowerCase().includes("email"),
                                 );
                                 if (emailQ) return emailQ.value as string;
-                                return `Response #${responses.length - i}`;
+                                return `Entry #${responses.length - i}`;
                               })()}
                             </div>
                           </button>
@@ -1381,40 +1447,41 @@ export default function QuestDetailPage() {
                       </div>
 
                       {/* Content */}
-                      <Card className="border-border/50 border shadow-md">
-                        <CardHeader className="border-border/20 bg-muted/5 border-b py-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <CardTitle className="text-xl font-bold">Response Details</CardTitle>
-                              <CardDescription className="mt-1 flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                Submitted on{" "}
-                                {new Date(responses[individualIndex].createdAt).toLocaleString()}
-                              </CardDescription>
-                            </div>
-                            <div className="text-right">
-                              {responses[individualIndex].duration && (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                  {Math.floor(responses[individualIndex].duration / 60)}m{" "}
-                                  {responses[individualIndex].duration % 60}s time
-                                </span>
-                              )}
-                            </div>
+                      <div className="border-border/30 bg-background/50 overflow-hidden rounded-2xl border transition-all">
+                        <div className="border-border/10 bg-muted/5 flex items-center justify-between border-b px-8 py-6">
+                          <div>
+                            <h3 className="text-xl font-black tracking-tight">Response Details</h3>
+                            <p className="text-muted-foreground/60 mt-1 flex items-center gap-2 text-[10px] font-bold tracking-widest">
+                              <Clock className="h-3 w-3" />
+                              Submitted on{" "}
+                              {new Date(responses[individualIndex].createdAt).toLocaleString()}
+                            </p>
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-8 p-8">
+                          {responses[individualIndex].duration && (
+                            <div className="text-right">
+                              <span className="bg-primary/5 text-primary rounded-xl px-4 py-1.5 text-[10px] font-black tracking-widest">
+                                {Math.floor(responses[individualIndex].duration / 60)}m{" "}
+                                {responses[individualIndex].duration % 60}s duration
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-10 p-8">
                           {responses[individualIndex].answers.map((answer) => (
-                            <div key={answer.questionId} className="space-y-2">
-                              <h4 className="text-muted-foreground/70 text-sm font-bold tracking-wider uppercase">
-                                {answer.question.title}
-                              </h4>
-                              <div className="bg-accent/5 border-border/30 text-foreground rounded-xl border p-4 leading-relaxed font-medium">
+                            <div key={answer.questionId} className="group/ans space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="h-1 w-6 bg-primary/20 rounded-full transition-all group-hover/ans:w-10 group-hover/ans:bg-primary" />
+                                <h4 className="text-muted-foreground/50 text-[10px] font-black tracking-[0.2em]">
+                                  {answer.question.title}
+                                </h4>
+                              </div>
+                              <div className="bg-secondary/20 text-foreground border-border/10 rounded-2xl border p-6 text-sm font-medium leading-relaxed transition-all hover:bg-secondary/30">
                                 {Array.isArray(answer.value) ? (
                                   <div className="flex flex-wrap gap-2">
                                     {answer.value.map((v: string, i: number) => (
                                       <span
                                         key={i}
-                                        className="bg-background border-border rounded-md border px-2 py-1 text-sm"
+                                        className="bg-background/80 border-border/20 rounded-lg border px-3 py-1 text-xs font-bold"
                                       >
                                         {v}
                                       </span>
@@ -1422,7 +1489,7 @@ export default function QuestDetailPage() {
                                   </div>
                                 ) : (
                                   (answer.value as string) || (
-                                    <span className="text-muted-foreground/50 italic">
+                                    <span className="text-muted-foreground/30 italic">
                                       No answer provided
                                     </span>
                                   )
@@ -1430,8 +1497,8 @@ export default function QuestDetailPage() {
                               </div>
                             </div>
                           ))}
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1441,356 +1508,211 @@ export default function QuestDetailPage() {
         )}
 
         {activeTab === "settings" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-2xl space-y-8 pb-40 duration-700">
-            <Card className="border-border/50 bg-card/60 overflow-hidden rounded-[2.5rem] border shadow-xl backdrop-blur-md">
-              <CardHeader className="border-border/30 bg-accent/5 border-b px-10 pt-10 sm:px-12">
-                <div className="space-y-1">
-                  <CardTitle className="text-3xl font-black tracking-tight">
-                    Quest Settings
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground/80 text-lg font-medium">
-                    Control how your quest behaves and looks.
-                  </CardDescription>
+          <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-2xl space-y-12 pb-40 duration-700">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+              <p className="text-muted-foreground text-sm">Manage your quest's behavior and defaults.</p>
+            </div>
+
+            <div className="space-y-10">
+              {/* Builder Defaults */}
+              <section className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Builder Defaults</h3>
+                  <Separator className="mt-1 opacity-20" />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-8 px-10 py-10 sm:px-12">
-                {/* Quiz Section */}
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor="isQuiz"
-                        className="cursor-pointer text-xl font-black tracking-tight"
-                      >
-                        Make this a quiz
-                      </Label>
-                      <p className="text-muted-foreground/70 text-sm font-medium">
-                        Assign point values, set answers, and automatically provide feedback.
-                      </p>
-                    </div>
-                    <Switch
-                      id="isQuiz"
-                      checked={quest.isQuiz}
-                      onCheckedChange={(val) => {
-                        setQuest({ ...quest, isQuiz: val });
-                        updateQuest(id as string, { isQuiz: val });
-                      }}
-                    />
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-bold">Require questions by default</Label>
+                    <p className="text-muted-foreground text-xs">New questions will have the 'Required' flag on.</p>
                   </div>
+                  <Switch
+                    checked={quest.questionsRequiredByDefault}
+                    onCheckedChange={(val) => {
+                      setQuest({ ...quest, questionsRequiredByDefault: val });
+                      updateQuest(id as string, {
+                        questionsRequiredByDefault: val,
+                      });
+                    }}
+                  />
+                </div>
+              </section>
+
+              {/* Submission Experience */}
+              <section className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Submission Experience</h3>
+                  <Separator className="mt-1 opacity-20" />
                 </div>
 
-                <Separator className="opacity-30" />
-
-                <Accordion type="multiple" className="w-full">
-                  {/* Responses Section */}
-                  <AccordionItem value="responses" className="border-none">
-                    <AccordionTrigger className="py-4 hover:no-underline">
-                      <div className="flex flex-col items-start text-left">
-                        <span className="text-xl font-black tracking-tight">Responses</span>
-                        <span className="text-muted-foreground/70 text-sm font-medium">
-                          Manage how responses are collected.
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-8 pt-4 pb-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base font-bold">Limit to 1 response</Label>
-                          <p className="text-muted-foreground/60 text-sm">
-                            Requires respondents to sign in to the Quest.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={quest.limitToOneResponse}
-                          onCheckedChange={(val) => {
-                            setQuest({ ...quest, limitToOneResponse: val });
-                            updateQuest(id as string, {
-                              limitToOneResponse: val,
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base font-bold">
-                            Show link to submit another response
-                          </Label>
-                          <p className="text-muted-foreground/60 text-sm">
-                            Allow respondents to fill out the form multiple times.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={quest.showLinkToSubmitAnother}
-                          onCheckedChange={(val) => {
-                            setQuest({
-                              ...quest,
-                              showLinkToSubmitAnother: val,
-                            });
-                            updateQuest(id as string, {
-                              showLinkToSubmitAnother: val,
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base font-bold">View results summary</Label>
-                          <p className="text-muted-foreground/60 text-sm">
-                            Show summary charts to respondents after submission.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={quest.viewResultsSummary}
-                          onCheckedChange={(val) => {
-                            setQuest({ ...quest, viewResultsSummary: val });
-                            updateQuest(id as string, {
-                              viewResultsSummary: val,
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label className="text-base font-bold">Confirmation Message</Label>
-                        <Textarea
-                          className="bg-accent/5 border-border/50 min-h-[100px] resize-none rounded-xl"
-                          defaultValue={quest.confirmationMessage || ""}
-                          onBlur={(e) =>
-                            updateQuest(id as string, {
-                              confirmationMessage: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <Separator className="my-2 opacity-30" />
-
-                  {/* Presentation Section */}
-                  <AccordionItem value="presentation" className="border-none">
-                    <AccordionTrigger className="py-4 hover:no-underline">
-                      <div className="flex flex-col items-start text-left">
-                        <span className="text-xl font-black tracking-tight">Presentation</span>
-                        <span className="text-muted-foreground/70 text-sm font-medium">
-                          Control how the quest is presented to users.
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-8 pt-4 pb-6">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base font-bold">Show progress bar</Label>
-                          <p className="text-muted-foreground/60 text-sm">
-                            Helps respondents track their position in the quest.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={quest.showProgressBar}
-                          onCheckedChange={(val) => {
-                            setQuest({ ...quest, showProgressBar: val });
-                            updateQuest(id as string, { showProgressBar: val });
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label className="text-base font-bold">Shuffle question order</Label>
-                          <p className="text-muted-foreground/60 text-sm">
-                            Randomize the order of questions for each respondent.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={quest.shuffleQuestionOrder}
-                          onCheckedChange={(val) => {
-                            setQuest({ ...quest, shuffleQuestionOrder: val });
-                            updateQuest(id as string, {
-                              shuffleQuestionOrder: val,
-                            });
-                          }}
-                        />
-                      </div>
-
-                      <Separator className="opacity-30" />
-
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label className="text-base font-bold">Enable Webhook</Label>
-                            <p className="text-muted-foreground/60 text-sm">
-                              Send response data to a custom URL when submitted.
-                            </p>
-                          </div>
-                          <Switch
-                            checked={quest.webhookEnabled}
-                            onCheckedChange={(val) => {
-                              setQuest({ ...quest, webhookEnabled: val });
-                              updateQuest(id as string, {
-                                webhookEnabled: val,
-                              });
-                            }}
-                          />
-                        </div>
-
-                        {quest.webhookEnabled && (
-                          <div className="animate-in fade-in slide-in-from-top-2 space-y-2 duration-300">
-                            <Label className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
-                              Webhook Endpoint URL
-                            </Label>
-                            <Input
-                              placeholder="https://your-api.com/webhook"
-                              value={quest.webhookUrl || ""}
-                              onChange={(e) =>
-                                setQuest({
-                                  ...quest,
-                                  webhookUrl: e.target.value,
-                                })
-                              }
-                              onBlur={() =>
-                                updateQuest(id as string, {
-                                  webhookUrl: quest.webhookUrl ?? undefined,
-                                })
-                              }
-                              className="bg-muted/30 focus-visible:ring-primary/20 h-12 rounded-none border-none font-medium focus-visible:ring-1"
-                            />
-                            <p className="text-muted-foreground/40 text-[10px] italic">
-                              We&apos;ll send a POST request with the response data.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <Separator className="opacity-30" />
-
-                      <div className="space-y-4">
-                        <Label className="text-base font-bold">Background & Theme</Label>
-                        <div className="space-y-2">
-                          <Label className="text-muted-foreground/60 text-[10px] font-black tracking-[0.2em] uppercase">
-                            Background Image URL
-                          </Label>
-                          <Input
-                            placeholder="https://images.unsplash.com/..."
-                            value={quest.backgroundImageUrl || ""}
-                            onChange={(e) =>
-                              setQuest({
-                                ...quest,
-                                backgroundImageUrl: e.target.value,
-                              })
-                            }
-                            onBlur={() =>
-                              updateQuest(id as string, {
-                                backgroundImageUrl: quest.backgroundImageUrl,
-                              })
-                            }
-                            className="bg-muted/30 focus-visible:ring-primary/20 h-12 rounded-none border-none font-medium focus-visible:ring-1"
-                          />
-                          <p className="text-muted-foreground/40 text-[10px] italic">
-                            Provide a direct link to an image to use as the background.
-                          </p>
-                          {quest.backgroundImageUrl && (
-                            <div className="border-border/50 relative mt-2 h-32 w-full overflow-hidden rounded-xl border">
-                              <Image
-                                src={quest.backgroundImageUrl}
-                                alt="Background Preview"
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                <Separator className="opacity-30" />
-
-                {/* Default Section */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label className="text-xl font-black tracking-tight">Defaults</Label>
-                      <p className="text-muted-foreground/70 text-sm font-medium">
-                        Set default behavior for new questions.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="group flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <p className="text-base font-bold">Make questions required by default</p>
-                      <p className="text-muted-foreground/60 text-sm">
-                        New questions will have the &apos;Required&apos; flag on.
-                      </p>
+                      <Label className="text-base font-bold">Limit to 1 response</Label>
+                      <p className="text-muted-foreground text-xs">Requires respondents to sign in.</p>
                     </div>
                     <Switch
-                      checked={quest.questionsRequiredByDefault}
+                      checked={quest.limitToOneResponse}
                       onCheckedChange={(val) => {
-                        setQuest({ ...quest, questionsRequiredByDefault: val });
-                        updateQuest(id as string, {
-                          questionsRequiredByDefault: val,
-                        });
+                        setQuest({ ...quest, limitToOneResponse: val });
+                        updateQuest(id as string, { limitToOneResponse: val });
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-base font-bold">Show link to submit another response</Label>
+                      <p className="text-muted-foreground text-xs">Allow respondents to fill out the form multiple times.</p>
+                    </div>
+                    <Switch
+                      checked={quest.showLinkToSubmitAnother}
+                      onCheckedChange={(val) => {
+                        setQuest({ ...quest, showLinkToSubmitAnother: val });
+                        updateQuest(id as string, { showLinkToSubmitAnother: val });
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-base font-bold">Confirmation Message</Label>
+                    <Textarea
+                      className="bg-accent/5 border-border/50 min-h-[80px] resize-none rounded-xl"
+                      defaultValue={quest.confirmationMessage || ""}
+                      onBlur={(e) => updateQuest(id as string, { confirmationMessage: e.target.value })}
+                    />
+                    <p className="text-muted-foreground text-[10px] italic">Shown after the quest is completed.</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Presentation Section */}
+              <section className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Presentation</h3>
+                  <Separator className="mt-1 opacity-20" />
+                </div>
+
+                <div className="space-y-8">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-base font-bold">Show progress bar</Label>
+                      <p className="text-muted-foreground text-xs">Helps respondents track their position.</p>
+                    </div>
+                    <Switch
+                      checked={quest.showProgressBar}
+                      onCheckedChange={(val) => {
+                        setQuest({ ...quest, showProgressBar: val });
+                        updateQuest(id as string, { showProgressBar: val });
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-base font-bold">Shuffle question order</Label>
+                      <p className="text-muted-foreground text-xs">Randomize questions for each respondent.</p>
+                    </div>
+                    <Switch
+                      checked={quest.shuffleQuestionOrder}
+                      onCheckedChange={(val) => {
+                        setQuest({ ...quest, shuffleQuestionOrder: val });
+                        updateQuest(id as string, { shuffleQuestionOrder: val });
                       }}
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </section>
 
-            {/* Danger Zone */}
-            <Card className="border-destructive/20 bg-destructive/5 overflow-hidden rounded-[2.5rem] border shadow-xl backdrop-blur-md">
-              <CardContent className="space-y-6 p-10 sm:p-12">
-                <div className="space-y-2">
-                  <p className="text-destructive text-xs font-black tracking-[0.3em] uppercase">
-                    Danger Zone
-                  </p>
-                  <CardTitle className="text-destructive/80 text-2xl font-black">
-                    Permanent Actions
-                  </CardTitle>
-                  <p className="text-muted-foreground/80 text-base leading-relaxed font-medium">
-                    Deleting this quest is irreversible. All collected responses, data, and
-                    analytics will be permanently wiped from our servers.
-                  </p>
+              {/* Integrations Section */}
+              <section className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-primary/70">Integrations</h3>
+                  <Separator className="mt-1 opacity-20" />
                 </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="text-destructive hover:bg-destructive border-destructive/30 group h-16 w-full justify-center gap-4 rounded-2xl text-lg font-black transition-all hover:text-white"
-                    >
-                      <Trash2 className="h-6 w-6 group-hover:animate-bounce" /> Delete this Quest
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the quest
-                        <strong> &quot;{quest.title}&quot;</strong> and all of its associated
-                        responses.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={async () => {
-                          await updateQuest(id as string, {
-                            status: "Deleted",
-                          }); // Example logic or call delete action
-                          toast.success("Quest deleted");
-                          router.push("/quests");
-                        }}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete Permanently
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardContent>
-            </Card>
+
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-base font-bold">Enable Webhook</Label>
+                      <p className="text-muted-foreground text-xs">Send response data to a custom URL.</p>
+                    </div>
+                    <Switch
+                      checked={quest.webhookEnabled}
+                      onCheckedChange={(val) => {
+                        setQuest({ ...quest, webhookEnabled: val });
+                        updateQuest(id as string, { webhookEnabled: val });
+                      }}
+                    />
+                  </div>
+
+                  {quest.webhookEnabled && (
+                    <div className="animate-in fade-in slide-in-from-top-2 space-y-2">
+                      <Label className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/60">Webhook Endpoint URL</Label>
+                      <Input
+                        placeholder="https://your-api.com/webhook"
+                        value={quest.webhookUrl || ""}
+                        onChange={(e) => setQuest({ ...quest, webhookUrl: e.target.value })}
+                        onBlur={() => updateQuest(id as string, { webhookUrl: quest.webhookUrl ?? undefined })}
+                        className="bg-accent/5 focus-visible:ring-primary/20 h-11 border-none rounded-none font-medium focus-visible:ring-1"
+                      />
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* Danger Zone */}
+              <section className="space-y-6 pt-10">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-black tracking-widest uppercase text-destructive/70">Danger Zone</h3>
+                  <Separator className="mt-1 bg-destructive/20" />
+                </div>
+
+                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6">
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-1">
+                      <h4 className="text-base font-bold text-destructive">Delete this Quest</h4>
+                      <p className="text-muted-foreground text-xs font-medium">
+                        Irreversibly delete this quest and all its responses.
+                      </p>
+                    </div>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="text-destructive hover:bg-destructive hover:text-white border-destructive/30 w-fit gap-2 font-bold transition-all"
+                        >
+                          <Trash2 className="h-4 w-4" /> Delete Quest
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete "{quest.title}" and all its data.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              await updateQuest(id as string, { status: "Deleted" });
+                              toast.success("Quest deleted");
+                              router.push("/quests");
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete Permanently
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         )}
       </div>

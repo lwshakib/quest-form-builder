@@ -4,16 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Lock, Shield, Trash2, Smartphone, Loader2 } from "lucide-react";
+import { User, Lock, Smartphone, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
@@ -84,55 +76,57 @@ export default function AccountPage() {
               Profile Settings
             </h2>
           </div>
-          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
-                Update your profile information and how others see you.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Display Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="bg-background/50 max-w-md"
-                />
+          <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
+            <div className="border-border/20 bg-muted/5 border-b p-6">
+              <h3 className="text-lg font-bold">Profile Information</h3>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">Update your profile information and how others see you.</p>
+            </div>
+            <div className="space-y-6 p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Display Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="bg-accent/5 border-border/50 h-11 rounded-xl"
+                  />
+                  <p className="text-muted-foreground text-[10px] italic">This name will be displayed on your profile and quests.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    value={session.user.email}
+                    readOnly
+                    className="bg-muted/50 h-11 rounded-xl cursor-not-allowed"
+                  />
+                  <p className="text-muted-foreground text-[10px] italic">Your email address is managed through your auth provider.</p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  value={session.user.email}
-                  readOnly
-                  className="bg-muted/50 max-w-md cursor-not-allowed"
-                />
+              <div className="flex justify-end pt-2">
+                <Button 
+                  onClick={async () => {
+                    setIsUpdating(true);
+                    const { error } = await authClient.updateUser({
+                      name: name,
+                    });
+                    if (error) {
+                      toast.error(error.message || "Failed to update profile");
+                    } else {
+                      toast.success("Profile updated successfully");
+                    }
+                    setIsUpdating(false);
+                  }} 
+                  disabled={isUpdating}
+                  className="rounded-xl font-bold"
+                >
+                  {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={async () => {
-                  setIsUpdating(true);
-                  const { error } = await authClient.updateUser({
-                    name: name,
-                  });
-                  if (error) {
-                    toast.error(error.message || "Failed to update profile");
-                  } else {
-                    toast.success("Profile updated successfully");
-                  }
-                  setIsUpdating(false);
-                }}
-                disabled={isUpdating}
-                className="bg-primary/90 hover:bg-primary transition-all duration-300"
-              >
-                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Security Section */}
@@ -143,76 +137,78 @@ export default function AccountPage() {
               Security & Privacy
             </h2>
           </div>
-          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>
-                Ensure your account is using a long, random password to stay secure.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current">Current Password</Label>
-                <Input
-                  id="current"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-background/50 max-w-md"
-                />
+          <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
+            <div className="border-border/20 bg-muted/5 border-b p-6">
+              <h3 className="text-lg font-bold">Change Password</h3>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">Ensure your account is using a long, random password to stay secure.</p>
+            </div>
+            <div className="space-y-6 p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current">Current Password</Label>
+                  <Input 
+                    id="current" 
+                    type="password" 
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="bg-accent/5 border-border/50 h-11 rounded-xl"
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="new">New Password</Label>
+                    <Input 
+                      id="new" 
+                      type="password" 
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-accent/5 border-border/50 h-11 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm">Confirm New Password</Label>
+                    <Input 
+                      id="confirm" 
+                      type="password" 
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-accent/5 border-border/50 h-11 rounded-xl"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="new">New Password</Label>
-                <Input
-                  id="new"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-background/50 max-w-md"
-                />
+              <div className="flex justify-end pt-2">
+                <Button 
+                  onClick={async () => {
+                    if (newPassword !== confirmPassword) {
+                      toast.error("Passwords do not match");
+                      return;
+                    }
+                    setIsUpdating(true);
+                    const { error } = await authClient.changePassword({
+                      newPassword: newPassword,
+                      currentPassword: currentPassword,
+                      revokeOtherSessions: true,
+                    });
+                    if (error) {
+                      toast.error(error.message || "Failed to change password");
+                    } else {
+                      toast.success("Password updated successfully");
+                      setCurrentPassword("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }
+                    setIsUpdating(false);
+                  }}
+                  disabled={isUpdating}
+                  className="rounded-xl font-bold"
+                >
+                  {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Update Password
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm">Confirm New Password</Label>
-                <Input
-                  id="confirm"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-background/50 max-w-md"
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={async () => {
-                  if (newPassword !== confirmPassword) {
-                    toast.error("Passwords do not match");
-                    return;
-                  }
-                  setIsUpdating(true);
-                  const { error } = await authClient.changePassword({
-                    newPassword: newPassword,
-                    currentPassword: currentPassword,
-                    revokeOtherSessions: true,
-                  });
-                  if (error) {
-                    toast.error(error.message || "Failed to change password");
-                  } else {
-                    toast.success("Password updated successfully");
-                    setCurrentPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }
-                  setIsUpdating(false);
-                }}
-                disabled={isUpdating}
-                className="bg-primary/90 hover:bg-primary transition-all duration-300"
-              >
-                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Password
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         </section>
 
         {/* Sessions Section */}
@@ -223,15 +219,12 @@ export default function AccountPage() {
               Active Sessions
             </h2>
           </div>
-          <Card className="bg-card/50 border-none shadow-xl backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Active Sessions</CardTitle>
-              <CardDescription>
-                This is a list of devices that have logged into your account. Revoke any sessions
-                that you do not recognize.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="border-border/50 bg-card overflow-hidden rounded-xl border shadow-sm">
+            <div className="border-border/20 bg-muted/5 border-b p-6">
+              <h3 className="text-lg font-bold">Active Sessions</h3>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">This is a list of devices that have logged into your account. Revoke any sessions that you do not recognize.</p>
+            </div>
+            <div className="space-y-0 px-6">
               {sessions.map((sessionItem, index) => (
                 <div key={sessionItem.id}>
                   <div className="flex items-center justify-between py-4">
@@ -266,41 +259,15 @@ export default function AccountPage() {
                   {index < sessions.length - 1 && <Separator />}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+            <div className="border-border/10 flex justify-end border-t p-6">
+              <Button variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 rounded-xl font-bold">
+                Revoke All Other Sessions
+              </Button>
+            </div>
+          </div>
         </section>
 
-        {/* Danger Zone Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <Shield className="text-destructive/70 h-3.5 w-3.5" />
-            <h2 className="text-destructive/60 text-[10px] font-black tracking-[0.2em] uppercase">
-              Danger Zone
-            </h2>
-          </div>
-          <Card className="border-destructive/20 bg-destructive/5 border shadow-xl backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-destructive">Delete Account</CardTitle>
-              <CardDescription>
-                Once you delete your account, there is no going back. Please be certain.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4 text-sm">
-                All of your quests, responses, and data will be permanently removed. This action
-                cannot be undone.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="destructive"
-                className="shadow-destructive/20 flex scale-100 items-center gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Trash2 className="h-4 w-4" /> Delete Account
-              </Button>
-            </CardFooter>
-          </Card>
-        </section>
       </div>
     </div>
   );
