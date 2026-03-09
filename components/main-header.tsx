@@ -31,7 +31,7 @@ import { GlobalSearch } from "@/components/global-search";
 import { NotificationsMenu } from "@/components/notifications-menu";
 import { InfoMenu } from "@/components/info-menu";
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+export function MainHeader() {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -151,10 +151,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   };
 
   return (
-    <div className="bg-background relative flex min-h-screen flex-col">
-      {/* Background Decor */}
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:40px_40px]" />
-
+    <>
       <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur-md">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {isEditor ? (
@@ -425,8 +422,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      <main className="relative flex-1">{children}</main>
-
       {isEditor && quest && (
         <PublishDialog
           isOpen={isPublishOpen}
@@ -435,6 +430,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           onUpdate={(updatedQuest) => setQuest(updatedQuest as typeof quest)}
         />
       )}
-    </div>
+    </>
   );
 }
