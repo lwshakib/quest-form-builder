@@ -178,12 +178,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                     />
                   ) : (
                     <span
-                      className="hover:text-primary group line-clamp-1 flex max-w-[120px] cursor-pointer items-center gap-2 text-sm font-bold transition-all md:max-w-[200px]"
+                      className="hover:text-primary group flex max-w-[300px] cursor-pointer items-center gap-2 whitespace-nowrap text-sm font-bold transition-all md:max-w-[400px]"
                       onClick={() => setIsEditingTitle(true)}
                       title="Click to edit quest title"
                     >
                       {quest?.title || "Loading..."}
-                      <Settings2 className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-50" />
                     </span>
                   )}
                 </div>

@@ -227,10 +227,13 @@ export default function QuestDetailPage() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ 
     role: "user" | "assistant" | "tool"; 
-    content: string; 
-    reasoning?: string; 
-    id?: string; 
-    toolCalls?: { name: string; status: "running" | "success" | "error" }[] 
+    id?: string;
+    parts: {
+      type: "text" | "reasoning" | "tool";
+      content?: string;
+      name?: string;
+      status?: "running" | "success" | "error";
+    }[];
   }[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
@@ -241,7 +244,10 @@ export default function QuestDetailPage() {
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isChatLoading) return;
 
-    const userMessage: { role: "user"; content: string } = { role: "user", content: text };
+    const userMessage: any = { 
+      role: "user", 
+      parts: [{ type: "text", content: text }] 
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsChatLoading(true);
@@ -251,7 +257,11 @@ export default function QuestDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: [...messages, userMessage].map(m => ({
+            role: m.role,
+            content: m.parts.filter((p: any) => p.type === "text").map((p: any) => p.content).join(""),
+            reasoning_content: m.parts.filter((p: any) => p.type === "reasoning").map((p: any) => p.content).join("")
+          })),
           questId: id,
         }),
       });
@@ -260,12 +270,9 @@ export default function QuestDetailPage() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let assistantContent = "";
-      let assistantReasoning = "";
-      
       // Initialize assistant message placeholder
       const assistantId = `assistant-${Date.now()}`;
-      setMessages((prev) => [...prev, { role: "assistant", content: "", reasoning: "", id: assistantId, toolCalls: [] }]);
+      setMessages((prev) => [...prev, { role: "assistant", id: assistantId, parts: [] }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -281,16 +288,34 @@ export default function QuestDetailPage() {
             const data = JSON.parse(line.slice(6));
 
             if (data.content) {
-              assistantContent += data.content;
               setMessages((prev) =>
-                prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
+                prev.map((m) => {
+                  if (m.id !== assistantId) return m;
+                  const parts = [...m.parts];
+                  const lastPart = parts[parts.length - 1];
+                  if (lastPart?.type === "text") {
+                    parts[parts.length - 1] = { ...lastPart, content: (lastPart.content || "") + data.content };
+                  } else {
+                    parts.push({ type: "text", content: data.content });
+                  }
+                  return { ...m, parts };
+                })
               );
             }
 
             if (data.reasoning) {
-              assistantReasoning += data.reasoning;
               setMessages((prev) =>
-                prev.map((m) => (m.id === assistantId ? { ...m, reasoning: assistantReasoning } : m))
+                prev.map((m) => {
+                  if (m.id !== assistantId) return m;
+                  const parts = [...m.parts];
+                  const lastPart = parts[parts.length - 1];
+                  if (lastPart?.type === "reasoning") {
+                    parts[parts.length - 1] = { ...lastPart, content: (lastPart.content || "") + data.reasoning };
+                  } else {
+                    parts.push({ type: "reasoning", content: data.reasoning });
+                  }
+                  return { ...m, parts };
+                })
               );
             }
 
@@ -298,21 +323,19 @@ export default function QuestDetailPage() {
               setMessages((prev) =>
                 prev.map((m) => {
                   if (m.id !== assistantId) return m;
-                  const calls = [...(m.toolCalls || [])];
-                  const existingIdx = calls.findIndex((c) => c.name === data.toolCall && c.status === "running");
+                  const parts = [...m.parts];
+                  const existingIdx = parts.findIndex((p) => p.type === "tool" && p.name === data.toolCall && p.status === "running");
                   
                   if (data.result || data.error) {
-                    // Update existing running tool to success/error
                     if (existingIdx !== -1) {
-                      calls[existingIdx] = { ...calls[existingIdx], status: data.error ? "error" : "success" };
+                      parts[existingIdx] = { ...parts[existingIdx], status: data.error ? "error" : "success" };
                     }
                   } else {
-                    // Start a new running tool if not already running
                     if (existingIdx === -1) {
-                      calls.push({ name: data.toolCall, status: "running" });
+                      parts.push({ type: "tool", name: data.toolCall, status: "running" });
                     }
                   }
-                  return { ...m, toolCalls: calls };
+                  return { ...m, parts };
                 })
               );
 
@@ -1853,59 +1876,67 @@ export default function QuestDetailPage() {
                       {messages.map((message, idx) => (
                         <Message from={message.role} key={idx}>
                           <MessageContent>
-                            {/* Reasoning Section */}
-                            {message.role === "assistant" && message.reasoning && (
-                              <Reasoning isStreaming={isChatLoading && idx === messages.length - 1}>
-                                <ReasoningTrigger />
-                                <ReasoningContent>{message.reasoning}</ReasoningContent>
-                              </Reasoning>
-                            )}
-
-                            {/* Persistent Tool Status Rows */}
-                            {message.role === "assistant" && message.toolCalls && message.toolCalls.length > 0 && (
-                              <div className="mb-3 flex flex-col gap-2">
-                                {message.toolCalls.map((tc, k) => (
-                                  <div key={k} className="flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase animate-in fade-in slide-in-from-left-2">
-                                    {tc.status === "running" ? (
+                            {message.parts.map((part, pIdx) => {
+                              if (part.type === "reasoning") {
+                                return (
+                                  <Reasoning 
+                                    key={pIdx} 
+                                    isStreaming={isChatLoading && idx === messages.length - 1 && pIdx === message.parts.length - 1}
+                                  >
+                                    <ReasoningTrigger />
+                                    <ReasoningContent>{part.content || ""}</ReasoningContent>
+                                  </Reasoning>
+                                );
+                              }
+                              
+                              if (part.type === "tool") {
+                                return (
+                                  <div key={pIdx} className="mb-2 flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase animate-in fade-in slide-in-from-left-2">
+                                    {part.status === "running" ? (
                                       <>
                                         <Loader className="h-3 w-3 animate-spin text-primary" />
-                                        <span className="text-primary">Running {tc.name.replace(/([A-Z])/g, ' $1')}...</span>
+                                        <span className="text-primary">Running {part.name?.replace(/([A-Z])/g, ' $1')}...</span>
                                       </>
-                                    ) : tc.status === "success" ? (
+                                    ) : part.status === "success" ? (
                                       <>
                                         <div className="bg-green-500/10 rounded-full p-0.5">
                                           <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
                                         </div>
-                                        <span className="text-muted-foreground/80">{tc.name.replace(/([A-Z])/g, ' $1')} Success</span>
+                                        <span className="text-muted-foreground/80">{part.name?.replace(/([A-Z])/g, ' $1')} Success</span>
                                       </>
                                     ) : (
                                       <>
                                         <X className="h-3 w-3 text-red-500" />
-                                        <span className="text-red-500">{tc.name.replace(/([A-Z])/g, ' $1')} Failed</span>
+                                        <span className="text-red-500">{part.name?.replace(/([A-Z])/g, ' $1')} Failed</span>
                                       </>
                                     )}
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                );
+                              }
 
-                            {/* Initial Loading / Thinking State */}
-                            {message.role === "assistant" && isChatLoading && idx === messages.length - 1 && !message.content && !message.reasoning && (!message.toolCalls || message.toolCalls.length === 0) && (
+                              return <MessageResponse key={pIdx}>{part.content || ""}</MessageResponse>;
+                            })}
+
+                            {/* Initial Loading / Thinking State - Only if no parts yet */}
+                            {message.role === "assistant" && isChatLoading && idx === messages.length - 1 && message.parts.length === 0 && (
                               <div className="flex items-center gap-2.5 py-1">
                                 <Loader className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
                                 <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">Thinking...</span>
                               </div>
                             )}
-
-                            <MessageResponse>{message.content}</MessageResponse>
                           </MessageContent>
 
-                          {/* Assistant Actions: Copy to clipboard */}
+                          {/* Assistant Actions: Copy all text parts */}
                           {message.role === "assistant" && !isChatLoading && (
                             <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100">
                               <MessageAction
                                 tooltip="Copy response"
-                                onClick={() => handleCopy(message.content)}
+                                onClick={() => handleCopy(
+                                  message.parts
+                                    .filter(p => p.type === "text")
+                                    .map(p => p.content)
+                                    .join("\n")
+                                )}
                               >
                                 <Copy className="h-3.5 w-3.5" />
                               </MessageAction>
