@@ -1,8 +1,9 @@
 # <img src="public/logo.svg" width="32" height="32" /> Quest - The Intelligent Form Builder
 
 [![CI](https://github.com/lwshakib/quest-form-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/lwshakib/quest-form-builder/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics and seamless user experience.
+Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics, smart automation, and a seamless user experience.
 
 ## 📱 App Demo
 
@@ -12,7 +13,7 @@ Quest is a premium, high-performance form builder designed for researchers, mark
 | ------------------------------------------------------- | ----------------------------------------------------- |
 | ![Dashboard Light](public/app-demo/dashboard-light.png) | ![Dashboard Dark](public/app-demo/dashboard-dark.png) |
 
-### Form
+### Form Editor
 
 | Light Mode                                    | Dark Mode                                   |
 | --------------------------------------------- | ------------------------------------------- |
@@ -22,79 +23,87 @@ Quest is a premium, high-performance form builder designed for researchers, mark
 
 ```mermaid
 graph TD
-    A[Create Quest] --> B[Share Link]
-    B --> C[Participants Respond]
-    C --> D[Real-time Analytics]
-    D --> E[Export Data]
+    A[Create Quest/Quiz] --> B[Customize Design]
+    B --> C[Share with Participants]
+    C --> D[Real-time Submissions]
+    D --> E[AI-Driven Analytics]
+    E --> F[Automate via Webhooks]
 ```
 
 ## ✨ Features
 
-- **🚀 Professional Editor**: Intuitive drag-and-drop interface for building complex forms in minutes.
-- **🧠 AI Powered**: Leverages Google Gemini for smart form generation and analysis.
-- **⚡ Real-time Analytics**: Monitor responses and trends as they happen with beautiful charts.
-- **🔗 Smart Sharing**: Short urls, custom responder links, and social-ready previews.
-- **🛡️ Secure Access**: Limit to one response per user with Google Sign-in integration.
-- **📡 Webhook Support**: Automate your workflow by sending data to your own endpoints instantly.
-- **🌓 Dark Mode**: Premium dark aesthetic throughout the entire application.
+- **🚀 Professional Editor**: Intuitive drag-and-drop interface for building complex forms and quizzes in minutes.
+- **🧠 AI Powered**: Leverages **Google Gemini** for smart form generation and **GLM-4.7-Flash** for rapid data analysis.
+- **🎨 Visual Excellence**: Premium aesthetics with **Tailwind CSS 4**, custom glassmorphism, and smooth **Motion** animations.
+- **📊 Advanced Analytics**: Monitor responses and trends as they happen with beautiful **Recharts** integrations.
+- **🛠️ Quiz Mode**: Built-in support for graded quizzes with points, correct answers, and instant feedback.
+- **🔗 Smart Sharing**: Short URLs, custom responder links, and social-ready previews.
+- **🛡️ Secure Access**: Integrated **Better Auth** with Google Sign-in support and response limiting.
+- **📡 Webhook Integration**: Automate your workflow by sending data to your own endpoints instantly.
+- **🌓 Adaptive Theme**: Seamless light and dark mode support with a focus on high-end dark aesthetics.
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 16+](https://nextjs.org/)
-- **AI Engine**: [Google Gemini (AI SDK)](https://sdk.vercel.ai/)
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL
-- **Auth**: [Better-Auth](https://better-auth.com/)
-- **Media**: [Cloudinary](https://cloudinary.com/) (Image hosting)
-- **Emails**: [Resend](https://resend.com/)
-- **UI Components**: [Radix UI](https://www.radix-ui.com/), [Motion](https://www.motion.dev/) (formerly Framer Motion), & [Lucide Icons](https://lucide.dev/)
-- **Runtime**: [Bun](https://bun.sh/)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components)
+- **Runtime**: [Bun](https://bun.sh/) (Fastest JS runtime)
+- **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL (Hosted on [Neon](https://neon.tech/))
+- **AI Engine**: [Google Gemini](https://sdk.vercel.ai/), [GLM-4.7-Flash](https://bigmodel.cn/), & [Flux-2-Klein](https://blackforestlabs.ai/)
+- **Auth**: [Better-Auth](https://better-auth.com/) (Secure, flexible authentication)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), & [Motion](https://www.motion.dev/)
+- **Media**: [Cloudinary](https://cloudinary.com/) (Image hosting and optimization)
+- **Emails**: [Resend](https://resend.com/) & [React Email](https://react.email/)
+- **State**: [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) installed (primary runtime)
-- PostgreSQL database (Local or [Neon](https://neon.tech/))
-- Google OAuth Credentials (for Authentication)
-- Google Gemini API Key (for AI features)
-- Cloudinary Account (for image uploads)
-- Resend API Key (for transactional emails)
+- [Bun](https://bun.sh/) installed
+- PostgreSQL database
+- Google OAuth Credentials
+- Google Gemini API Key
+- Cloudinary Account
+- Resend API Key
 
 ### Installation
 
-1. Clone the repository:
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/lwshakib/quest-form-builder.git
+    cd quest-form-builder
+    ```
 
-   ```bash
-   git clone https://github.com/lwshakib/quest-form-builder.git
-   cd quest-form-builder
-   ```
+2.  **Install dependencies**:
+    ```bash
+    bun install
+    ```
 
-2. Install dependencies:
+3.  **Environment Setup**:
+    Create a `.env` file based on `.env.example` and fill in your keys.
 
-   ```bash
-   bun install
-   ```
+4.  **Database Migration**:
+    ```bash
+    bun x prisma migrate dev
+    ```
 
-3. Set up your environment variables:
-   Create a `.env` file based on `.env.example`.
+5.  **Start Development**:
+    ```bash
+    bun dev
+    ```
 
-4. Sync the database:
+## 🧪 Testing
 
-   ```bash
-   bun x prisma migrate dev
-   ```
+```bash
+# Unit Tests
+bun test
 
-5. Start the development server:
-   ```bash
-   bun dev
-   ```
+# E2E Tests (Playwright)
+bun run test:e2e
+```
 
 ## 🤝 Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our development workflow.
 
 ## ⚖️ License
 
