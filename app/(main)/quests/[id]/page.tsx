@@ -640,7 +640,7 @@ export default function QuestDetailPage() {
    * Generates and downloads a CSV file containing all responses.
    */
   const handleExportCsv = () => {
-    if (!responses.length || !questions.length) {
+    if (!quest || !responses.length || !questions.length) {
       toast.error("No data to export");
       return;
     }
