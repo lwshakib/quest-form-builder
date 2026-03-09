@@ -822,7 +822,11 @@ export async function getUnreadNotifications() {
 }
 
 /**
- * Gets the current user's credits, resetting them to 10 if a new day has started.
+ * Retrieves the current authenticated user's AI interaction credits.
+ * Automatically handles the daily reset logic: if the user hasn't
+ * refreshed their credits today, it resets them back to the default 10.
+ *
+ * @returns {Promise<number>} Remaining credits. Defaults to 0 if unauthenticated.
  */
 export async function getUserCredits() {
   const session = await auth.api.getSession({
@@ -830,9 +834,10 @@ export async function getUserCredits() {
   });
 
   if (!session) {
-    return 0; // Unauthenticated
+    return 0; // Unauthenticated users have no access to credits
   }
 
+  // Fetch the current credit balance and the last time it was reset
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { credits: true, creditsResetAt: true },
@@ -843,12 +848,15 @@ export async function getUserCredits() {
   const now = new Date();
   const resetDate = user.creditsResetAt ? new Date(user.creditsResetAt) : null;
 
-  // Reset to 10 if it's the first time or a new calendar day
+  // Evaluate daily reset condition: 
+  // True if it's their very first time checking (no resetDate), 
+  // or if the calendar year, month, or day values differ from today.
   const isNewDay = !resetDate || 
     resetDate.getFullYear() !== now.getFullYear() || 
     resetDate.getMonth() !== now.getMonth() || 
     resetDate.getDate() !== now.getDate();
 
+  // Perform the daily top-up back to 10
   if (isNewDay) {
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -865,8 +873,10 @@ export async function getUserCredits() {
 }
 
 /**
- * Decrements the user's credits by 1.
- * Returns true if successful, false if they have no credits left.
+ * Decrements the authenticated user's AI interaction credits by exactly 1.
+ * This is called server-side right before executing an AI tool dispatch.
+ *
+ * @returns {Promise<boolean>} True if successful, False if the user ran out.
  */
 export async function decrementUserCredits() {
   const session = await auth.api.getSession({
@@ -875,6 +885,7 @@ export async function decrementUserCredits() {
 
   if (!session) return false;
 
+  // Verify the user actually has credits remaining to spend
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { credits: true },
@@ -882,6 +893,7 @@ export async function decrementUserCredits() {
 
   if (!user || user.credits <= 0) return false;
 
+  // Safely decrement the credit counter in the database
   await prisma.user.update({
     where: { id: session.user.id },
     data: {

@@ -234,6 +234,7 @@ export default function QuestDetailPage() {
 
   /**
    * Effect: Load User Credits for AI Chat
+   * Fetches the user's available credits from the backend when the component initially mounts.
    */
   useEffect(() => {
     async function loadCredits() {
@@ -249,11 +250,14 @@ export default function QuestDetailPage() {
 
   /**
    * Custom stream handler for the /api/chat endpoint.
-   * Reads SSE data and updates the conversation state in real-time.
+   * Manages user text input, local optimistic updates to the UI, sending the request to the
+   * custom orchestration API route, and iterating over the incoming Server-Sent Events (SSE).
    */
   const handleSendMessage = async (text: string) => {
+    // Basic guards: Prevent empty messages, concurrent requests, or sending if out of credits
     if (!text.trim() || isChatLoading || (userCredits !== null && userCredits <= 0)) return;
 
+    // Immediately display the user's message in the interface
     const userMessage: any = { 
       role: "user", 
       parts: [{ type: "text", content: text }] 
@@ -262,10 +266,12 @@ export default function QuestDetailPage() {
     setInput("");
     setIsChatLoading(true);
 
-    // Optimistically update credits
+    // Optimistically update credits locally so the UI feels fast and responsive
     setUserCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
 
     try {
+      // Transmit conversation history. We map our complex UI state back down to simple
+      // text payloads expected by the server's AI abstraction.
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -281,12 +287,15 @@ export default function QuestDetailPage() {
 
       if (!response.body) throw new Error("Stream body missing");
 
+      // Set up the reader to parse the raw streaming bytes emitted from the backend loop
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      // Initialize assistant message placeholder
+      
+      // Initialize an empty assistant message template to progressively stream chunk content into
       const assistantId = `assistant-${Date.now()}`;
       setMessages((prev) => [...prev, { role: "assistant", id: assistantId, parts: [] }]);
 
+      // We maintain a buffer to account for partial stream bytes arriving asynchronously
       let buffer = "";
 
       while (true) {
