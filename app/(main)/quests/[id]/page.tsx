@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useChat } from "@ai-sdk/react";
+
 import {
   MessageSquare,
   Plus,
@@ -34,6 +34,11 @@ import {
   MessageActions,
   MessageAction,
 } from "@/components/ai-elements/message";
+import {
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+} from "@/components/ai-elements/reasoning";
 import { Copy, CheckCircle2 } from "lucide-react";
 import { Pie, PieChart, LabelList } from "recharts";
 import {
@@ -217,21 +222,98 @@ export default function QuestDetailPage() {
   const [showBannerUrlInput, setShowBannerUrlInput] = useState(false);
   const [bannerUrlInput, setBannerUrlInput] = useState("");
 
-  // --- AI CHAT STATE/LOGIC ---
+  // --- AI CHAT STATE/LOGIC (Custom Implementation) ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
-  // useChat links this page to the backend /api/chat route for conversational building.
-  const { messages, sendMessage, status } = useChat({
-    onFinish: async () => {
-      // Refresh the editor view once the AI finishes its tool calls (e.g. added questions)
-      await loadQuestData();
-    },
-    onError: () => {
-      toast.error("Failed to generate quest. Try later.");
-    },
-  });
+  const [messages, setMessages] = useState<{ role: "user" | "assistant" | "tool"; content: string; reasoning?: string; id?: string; toolCall?: string; toolResult?: string }[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [activeTool, setActiveTool] = useState<{ name: string; result?: string } | null>(null);
 
-  const isChatLoading = status === "streaming" || status === "submitted";
+  /**
+   * Custom stream handler for the /api/chat endpoint.
+   * Reads SSE data and updates the conversation state in real-time.
+   */
+  const handleSendMessage = async (text: string) => {
+    if (!text.trim() || isChatLoading) return;
+
+    const userMessage: { role: "user"; content: string } = { role: "user", content: text };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          questId: id,
+        }),
+      });
+
+      if (!response.body) throw new Error("Stream body missing");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+      let assistantReasoning = "";
+      
+      // Initialize assistant message placeholder
+      const assistantId = `assistant-${Date.now()}`;
+      setMessages((prev) => [...prev, { role: "assistant", content: "", reasoning: "", id: assistantId }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.content) {
+              assistantContent += data.content;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
+              );
+            }
+
+            if (data.reasoning) {
+              assistantReasoning += data.reasoning;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantId ? { ...m, reasoning: assistantReasoning } : m))
+              );
+            }
+
+            if (data.toolCall) {
+              setActiveTool({ name: data.toolCall, result: data.result });
+              // Refresh data to reflect tool effects
+              await loadQuestData();
+              
+              // Clear tool indicator after 2 seconds
+              setTimeout(() => setActiveTool(null), 2000);
+            }
+            
+            if (data.error) {
+              toast.error("Internal Server Error");
+            }
+          } catch (e) {
+            console.error("Error parsing stream chunk", e);
+          }
+        }
+      }
+    } catch (err) {
+      toast.error("Internal Server Error");
+      console.error(err);
+    } finally {
+      setIsChatLoading(false);
+      await loadQuestData(); // Final sync
+    }
+  };
 
   /**
    * Utility to copy text to the user's clipboard.
@@ -247,11 +329,7 @@ export default function QuestDetailPage() {
    */
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!input.trim()) return;
-
-    // Pass the questId in the body so the backend can fetch the current state.
-    await sendMessage({ text: input }, { body: { questId: id } });
-    setInput("");
+    await handleSendMessage(input);
   };
 
   /**
@@ -1719,171 +1797,85 @@ export default function QuestDetailPage() {
                 <ConversationContent className="pt-4 pb-20">
                   {messages.length === 0 ? (
                     /* Initial state */
-                    <ConversationEmptyState
-                      icon={<MessageSquare className="text-muted-foreground/40 size-10" />}
-                      title="Ready to help"
-                      description="Ask me to create questions, update titles, or generate images for your quest."
-                    />
+                    <div className="flex flex-col gap-6">
+                      <ConversationEmptyState
+                        icon={<MessageSquare className="text-muted-foreground/40 size-10" />}
+                        title="Ready to help"
+                        description="Ask me to create questions, update titles, or generate images for your quest."
+                      />
+                      
+                      {/* Suggested Prompts */}
+                      <div className="flex flex-col gap-2 px-2">
+                        <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase mb-1">
+                          Suggested Actions
+                        </p>
+                        {[
+                          "Create a 5-question survey about customer satisfaction",
+                          "Generate a vibrant cyber-punk background image",
+                          "Make this quest a quiz with progress bar enabled",
+                        ].map((prompt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setInput(prompt)}
+                            className="bg-muted/30 hover:bg-muted/60 border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-xs transition-all active:scale-[0.98]"
+                          >
+                            <span className="line-clamp-1">{prompt}</span>
+                            <Plus className="h-3 w-3 opacity-50" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ) : (
                     <>
-                      {messages.map((message) => {
-                        // Extracting standard text and tool calls from the message parts array.
-                        const parts = message.parts || [];
-                        const toolParts = parts.filter(
-                          (p): p is Extract<typeof p, { type: `tool-${string}` }> =>
-                            typeof p.type === "string" && p.type.startsWith("tool-"),
-                        );
-
-                        return (
-                          <Message from={message.role} key={message.id}>
-                            <MessageContent>
-                              {/* RENDER: Standard Text Parts */}
-                              {parts.map((part, i) => {
-                                if (part.type === "text") {
-                                  return <MessageResponse key={i}>{part.text}</MessageResponse>;
-                                }
-                                return null;
-                              })}
-
-                              {/* RENDER: Tool Execution Indicators 
-                                  Shows the user what the AI is actually doing 'under the hood' 
-                                  (e.g., 'Creating 5 questions...'). */}
-                              {toolParts.map((ti) => {
-                                const toolName =
-                                  (ti as unknown as { toolName?: string }).toolName ??
-                                  ti.type.replace("tool-", "");
-                                const toolCallId = ti.toolCallId;
-                                const toolState = ti.state;
-
-                                // Map tool names to human-friendly status messages
-                                let statusText = "";
-                                switch (toolName) {
-                                  case "createQuestions": {
-                                    const qCount =
-                                      (ti as unknown as { args?: { questions?: unknown[] } }).args
-                                        ?.questions?.length || 0;
-                                    statusText =
-                                      qCount === 1
-                                        ? "Creating question"
-                                        : `Creating ${qCount} questions`;
-                                    break;
-                                  }
-                                  case "updateQuestion":
-                                    statusText = "Updating question";
-                                    break;
-                                  case "deleteQuestion":
-                                    statusText = "Deleting question";
-                                    break;
-                                  case "updateQuest":
-                                    statusText = "Updating quest details";
-                                    break;
-                                  case "generateImage":
-                                    statusText = "Generating custom image";
-                                    break;
-                                  default:
-                                    statusText = `Running ${toolName}`;
-                                }
-
-                                return (
-                                  <div
-                                    key={toolCallId}
-                                    className="mt-3 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase opacity-70"
-                                  >
-                                    {!toolState.startsWith("output") ? (
-                                      /* Tool is currently executing */
-                                      <>
-                                        <Loader className="h-3 w-3" />
-                                        <span className="text-primary animate-pulse">
-                                          {statusText}...
-                                        </span>
-                                      </>
-                                    ) : (
-                                      /* Tool execution finished */
-                                      <>
-                                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                        <span className="text-muted-foreground">
-                                          {statusText} Done
-                                        </span>
-                                      </>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </MessageContent>
-
-                            {/* Assistant Actions: Copy to clipboard */}
-                            {message.role === "assistant" && status !== "streaming" && (
-                              <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100">
-                                <MessageAction
-                                  tooltip="Copy response"
-                                  onClick={() => {
-                                    const text = message.parts
-                                      .filter((p) => p.type === "text")
-                                      .map((p) => (p as { text: string }).text)
-                                      .join("\n");
-                                    handleCopy(text);
-                                  }}
-                                >
-                                  <Copy className="h-3.5 w-3.5" />
-                                </MessageAction>
-                              </MessageActions>
+                      {messages.map((message, idx) => (
+                        <Message from={message.role} key={idx}>
+                          <MessageContent>
+                            {message.role === "assistant" && message.reasoning && (
+                              <Reasoning isStreaming={isChatLoading && idx === messages.length - 1}>
+                                <ReasoningTrigger />
+                                <ReasoningContent>{message.reasoning}</ReasoningContent>
+                              </Reasoning>
                             )}
-                          </Message>
-                        );
-                      })}
+                            <MessageResponse>{message.content}</MessageResponse>
+                          </MessageContent>
+
+                          {/* Assistant Actions: Copy to clipboard */}
+                          {message.role === "assistant" && !isChatLoading && (
+                            <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100">
+                              <MessageAction
+                                tooltip="Copy response"
+                                onClick={() => handleCopy(message.content)}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </MessageAction>
+                            </MessageActions>
+                          )}
+                        </Message>
+                      ))}
                     </>
                   )}
 
-                  {/* LOADING STATE: Mapping the most recent active tool to a status message. */}
-                  {isChatLoading && (
-                    <div className="text-muted-foreground mt-4 flex items-center gap-2 px-2 text-xs">
-                      <Loader className="h-3.5 w-3.5" />
-                      <TextShimmer className="text-muted-foreground font-semibold">
-                        {(() => {
-                          const activeTool = messages
-                            .slice(-3) // Check recent messages
-                            .reverse()
-                            .flatMap((m) => {
-                              return (m.parts || [])
-                                .filter(
-                                  (p): p is Extract<typeof p, { type: `tool-${string}` }> =>
-                                    typeof p.type === "string" && p.type.startsWith("tool-"),
-                                )
-                                .map((p) => ({
-                                  toolName:
-                                    (p as unknown as { toolName?: string }).toolName ??
-                                    p.type.replace("tool-", ""),
-                                  state: p.state,
-                                  args: (p as unknown as { input?: unknown }).input,
-                                }));
-                            })
-                            .find((ti) => !ti.state.startsWith("output"));
-
-                          if (activeTool) {
-                            const toolName = activeTool.toolName;
-                            switch (toolName) {
-                              case "createQuestions":
-                                const count =
-                                  (activeTool as { args?: { questions?: unknown[] } }).args
-                                    ?.questions?.length || 0;
-                                return count === 1
-                                  ? "Creating question..."
-                                  : `Creating ${count} questions...`;
-                              case "updateQuestion":
-                                return "Updating question...";
-                              case "deleteQuestion":
-                                return "Deleting question...";
-                              case "updateQuest":
-                                return "Updating quest details...";
-                              case "generateImage":
-                                return "Generating custom image...";
-                              default:
-                                return `Running ${toolName}...`;
-                            }
-                          }
-                          return "Generating Answer...";
-                        })()}
-                      </TextShimmer>
+                  {/* LOADING STATE & ACTIVE TOOL INDICATOR */}
+                  {(isChatLoading || activeTool) && (
+                    <div className="text-muted-foreground mt-4 flex flex-col gap-2 px-2 text-xs">
+                      
+                      {activeTool && (
+                        <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-primary animate-in fade-in slide-in-from-left-2">
+                          {!activeTool.result ? (
+                            <>
+                              <Loader className="h-3 w-3 animate-spin" />
+                              <span>Running {activeTool.name.replace(/([A-Z])/g, ' $1')}...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              <span className="text-muted-foreground">
+                                {activeTool.name.replace(/([A-Z])/g, ' $1')} Complete
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </ConversationContent>
@@ -1924,7 +1916,7 @@ export default function QuestDetailPage() {
                 </Button>
               </form>
               <p className="text-muted-foreground/50 mt-3 text-center text-[10px] font-medium">
-                Quest AI Assistant • Powered by Google Gemini
+                Quest AI Assistant • Powered by AI
               </p>
             </div>
           </div>

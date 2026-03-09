@@ -19,3 +19,37 @@ cloudinary.config({
  * like generating signatures, deleting files, or applying transformations.
  */
 export const cloudinaryClient = cloudinary;
+
+/**
+ * Persists an image buffer to Cloudinary.
+ *
+ * @param buffer - The binary image data.
+ * @returns Object with the uploaded URL and public ID.
+ */
+export const saveImageToCloudinary = async (
+  buffer: Buffer
+): Promise<{ url: string; publicId: string }> => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream(
+        {
+          folder: 'quest-backgrounds',
+          resource_type: 'image',
+        },
+        (error, result) => {
+          if (error) {
+            console.error('[CLOUDINARY_UPLOAD_ERROR]', error);
+            reject(error);
+          } else if (result) {
+            resolve({
+              url: result.secure_url,
+              publicId: result.public_id,
+            });
+          } else {
+            reject(new Error('Cloudinary upload failed without error message'));
+          }
+        }
+      )
+      .end(buffer);
+  });
+};

@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.15",
-    "@ai-sdk/react": "^3.0.59",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -58,7 +57,6 @@
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@react-email/components": "^1.0.8",
     "@xyflow/react": "^12.10.0",
-    "ai": "^6.0.57",
     "better-auth": "^1.4.15",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.9.0",
@@ -89,6 +87,7 @@
     "use-stick-to-bottom": "^1.1.1",
     "vaul": "^1.1.2",
     "zod": "^4.3.5",
+    "zod-to-json-schema": "^3.25.1",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
