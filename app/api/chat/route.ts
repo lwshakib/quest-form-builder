@@ -21,9 +21,13 @@ export const maxDuration = 30;
  * Orchestrates tools and streams the GLM model's response back to the client.
  */
 export async function POST(req: Request) {
+  // Extract user messages array and the targeted questId from the incoming JSON body.
   const { messages, questId } = await req.json();
 
+  // Retrieve the current credit balance for the authenticated user.
   const credits = await getUserCredits();
+  
+  // If the user has 0 or fewer credits, reject the request early with a 403 Forbidden status.
   if (credits <= 0) {
     return new Response(JSON.stringify({ error: "Credits exhausted, wait for daily reset" }), {
       status: 403,
@@ -31,12 +35,14 @@ export async function POST(req: Request) {
     });
   }
 
+  // Deduct 1 credit from the user's account for this AI request.
   await decrementUserCredits();
 
-  // Fetch the current state of the quest to provide as a 'Ground Truth' context for the AI.
+  // Fetch the current state of the quest from the database to provide as a 'Ground Truth' context for the AI.
   const currentQuest = await getQuestById(questId);
 
-  // Prepare the dynamic context for the quest
+  // Prepare a dynamic, text-based representation of the quest's current state.
+  // This helps the AI understand what the form looks like right now so it can answer contextually.
   const questContext = `
 ### CURRENT QUEST CONTEXT
 Title: ${currentQuest?.title || "Untitled Quest"}
@@ -45,6 +51,8 @@ Background Image: ${currentQuest?.backgroundImageUrl || "None"}
 Current Questions: ${JSON.stringify(currentQuest?.questions || [], null, 2)}
   `.trim();
 
+  // Dynamically generate the documentation for the tools the AI is allowed to call.
+  // We use zodToJsonSchema to parse the tool validators into an understandable JSON schema format for the AI.
   const toolsContext = `
 ### AVAILABLE TOOLS
 Here is the list of tools you can use, along with their input schemas and expected outputs:
@@ -56,18 +64,19 @@ ${Object.entries(TOOLS_REGISTRY).map(([name, config]) => `
 `).join("\n")}
   `.trim();
 
-  // Construct the full conversation history
+  // Construct the full conversation history to send to the language model.
+  // This array combines hardcoded system guidelines, tool contexts, the current quest state, and the user's prompts.
   const history = [
-    { role: "system", content: BUILDER_SYSTEM_PROMPT },
-    { role: "system", content: toolsContext },
-    { role: "system", content: questContext },
-    ...messages
+    { role: "system", content: BUILDER_SYSTEM_PROMPT }, // Persona and operating boundary rules
+    { role: "system", content: toolsContext },          // Details about tools the AI can use
+    { role: "system", content: questContext },          // The live snapshot of the user's quest
+    ...messages                                         // The back-and-forth chat history from the interface
   ];
 
-  // Initialize the streaming process using our custom GLM orchestrator
+  // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history and questId.
   const stream = await streamText(history, questId);
 
-  // Return the stream directly to the client
+  // Return the stream directly to the client interface so it can render text and tool operations in real-time.
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
@@ -79,7 +88,8 @@ ${Object.entries(TOOLS_REGISTRY).map(([name, config]) => `
 
 
 /**
- * Utility to safely stringify objects for inclusion in the system prompt.
+ * Utility function to safely stringify objects for inclusion in the system prompt.
+ * If stringification fails (e.g. Circular logic), it defaults to an empty array string.
  */
 function jsonStringify(obj: unknown) {
   try {

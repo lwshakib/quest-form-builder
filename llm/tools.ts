@@ -15,17 +15,20 @@ import { generateImage } from "./generateImage";
 
 /**
  * Interface representing a tool definition for the GLM model.
+ * This structure maps exactly to the expected OpenAI-style tool spec.
  */
 export interface GLMTool {
-  description: string;
-  parameters: z.ZodObject<any>;
-  handler: (args: any, questId: string) => Promise<string>;
+  description: string; // The text that tells the AI *when* and *why* to use this tool
+  parameters: z.ZodObject<any>; // Zod schema mapping the expected JSON input
+  handler: (args: any, questId: string) => Promise<string>; // The execution logic executed on the server
 }
 
 /**
  * --- Tool Definitions ---
  */
 
+// Tool 1: generateImageTool
+// Invokes the Flux model to render new background images for Quests
 const generateImageTool: GLMTool = {
   description: "Generate a high-quality background image for the quest based on a prompt.",
   parameters: z.object({
@@ -35,6 +38,7 @@ const generateImageTool: GLMTool = {
     steps: z.number().int().optional().default(28).describe("Optimization steps (20-35 recommended)."),
   }),
   handler: async (args, questId) => {
+    // Ping the AI Generation backend with parameters
     const result = await generateImage({
       prompt: args.prompt,
       width: args.width ?? 1024,
@@ -43,15 +47,19 @@ const generateImageTool: GLMTool = {
       mode: 'text-to-image',
     });
     
+    // If generated successfully, automatically assign it to the Quest via DB actions
     if (result.success && result.image) {
       await updateQuest(questId, { backgroundImageUrl: result.image });
       return `Success: Background image generated and applied. URL: ${result.image}`;
     }
     
+    // Return explicit error to the AI so it can self-correct or inform the user
     return `Error: ${result.error || "Failed to generate image"}`;
   },
 };
 
+// Tool 2: updateQuestTool
+// Allows the AI to modify top-level settings of the form/quest
 const updateQuestTool: GLMTool = {
   description: "Update quest details like title, description, settings, or background image.",
   parameters: z.object({
@@ -63,11 +71,14 @@ const updateQuestTool: GLMTool = {
     shuffleQuestionOrder: z.boolean().optional(),
   }),
   handler: async (props, questId) => {
+    // Perform database mutation immediately
     await updateQuest(questId, props);
     return `Successfully updated quest details: ${Object.keys(props).join(", ")}`;
   },
 };
 
+// Tool 3: createQuestionsTool
+// Crucial tool for bulk-adding questions so the AI can rapidly create whole surveys at once
 const createQuestionsTool: GLMTool = {
   description: "Add multiple new questions to the quest at once.",
   parameters: z.object({
@@ -92,9 +103,11 @@ const createQuestionsTool: GLMTool = {
     ),
   }),
   handler: async ({ questions }, questId) => {
+    // Retrieve current questions to figure out the proper sequential numbering (order factor)
     const latestQuest = await getQuestById(questId);
     let startOrder = latestQuest?.questions?.length || 0;
 
+    // Build each question sequentially. 
     for (const q of questions) {
       await createQuestion(
         questId,
@@ -110,6 +123,8 @@ const createQuestionsTool: GLMTool = {
   },
 };
 
+// Tool 4: deleteQuestionTool
+// Single action deletion utility based on question ID
 const deleteQuestionTool: GLMTool = {
   description: "Delete a specific question by its unique ID.",
   parameters: z.object({
@@ -121,6 +136,8 @@ const deleteQuestionTool: GLMTool = {
   },
 };
 
+// Tool 5: updateQuestionTool
+// Patch an existing single question (ideal for fixing typos or inserting options)
 const updateQuestionTool: GLMTool = {
   description: "Update the content or settings of an existing question.",
   parameters: z.object({
@@ -138,9 +155,9 @@ const updateQuestionTool: GLMTool = {
 
 /**
  * --- Tools Registry ---
- * Maps tool names to their respective tool definitions.
+ * Maps tool names to their respective tool definitions to be securely
+ * exported to the AI API routing layer without passing the actual code.
  */
-
 export const TOOLS_REGISTRY = {
   generateImage: generateImageTool,
   updateQuest: updateQuestTool,
@@ -149,4 +166,5 @@ export const TOOLS_REGISTRY = {
   updateQuestion: updateQuestionTool,
 };
 
+// Exports valid parameter key types
 export type ToolName = keyof typeof TOOLS_REGISTRY;
