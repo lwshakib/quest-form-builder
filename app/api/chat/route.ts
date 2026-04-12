@@ -8,8 +8,8 @@
 
 import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/actions";
 import { streamText } from "@/llm/streamText";
-import { BUILDER_SYSTEM_PROMPT } from "@/llm/prompts";
-import { TOOLS_REGISTRY } from "@/llm/tools";
+import { BUILDER_SYSTEM_PROMPT } from "@/lib/prompts";
+import { TOOLS_REGISTRY } from "@/lib/tools";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Allow the edge function to run for up to 30 seconds to accommodate image generation and multiple tool calls.

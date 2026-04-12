@@ -11,7 +11,7 @@ import {
   deleteQuestion,
   getQuestById,
 } from "@/lib/actions";
-import { generateImage } from "./generateImage";
+import { generateImage } from "@/llm/generateImage";
 
 /**
  * Interface representing a tool definition for the GLM model.
