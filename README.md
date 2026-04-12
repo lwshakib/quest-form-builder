@@ -1,6 +1,5 @@
 # <img src="public/logo.svg" width="32" height="32" /> Quest - The Intelligent Form Builder
 
-[![CI](https://github.com/lwshakib/quest-form-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/lwshakib/quest-form-builder/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics, smart automation, and a seamless user experience.
@@ -93,16 +92,6 @@ graph TD
     ```bash
     bun dev
     ```
-
-## 🧪 Testing
-
-```bash
-# Unit Tests
-bun test
-
-# E2E Tests (Playwright)
-bun run test:e2e
-```
 
 ## 🤝 Contributing
 

@@ -57,14 +57,13 @@ To get started with local development, follow these steps:
 ### Pull Requests
 
 1.  Fork the repository and create your feature branch from `main`.
-2.  If you've added logic, include relevant tests (`bun test`).
-3.  Ensure the code is linted and formatted:
+2.  If you've added logic, ensure the code is linted and formatted:
     ```bash
     bun run lint
     bun run format:check
     ```
-4.  Follow the commit style guide below.
-5.  Open your pull request! 🌌
+3.  Follow the commit style guide below.
+4.  Open your pull request! 🌌
 
 ## 📏 Style Guide
 
