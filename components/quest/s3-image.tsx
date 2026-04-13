@@ -15,7 +15,7 @@ interface S3ImageProps extends Omit<ImageProps, "src"> {
  * A wrapper around Next.js Image component that handles S3 paths.
  * If the src is an S3 key (not a full URL), it fetches a signed URL before rendering.
  */
-export function S3Image({ src, className, fallbackClassName, ...props }: S3ImageProps) {
+export function S3Image({ src, className, fallbackClassName, alt, ...props }: S3ImageProps) {
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -85,5 +85,5 @@ export function S3Image({ src, className, fallbackClassName, ...props }: S3Image
     );
   }
 
-  return <Image alt={props.alt || ""} {...props} src={resolvedSrc} className={className} />;
+  return <Image alt={alt || ""} {...props} src={resolvedSrc} className={className} />;
 }
