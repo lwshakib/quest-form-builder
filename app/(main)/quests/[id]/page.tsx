@@ -401,16 +401,9 @@ export default function QuestDetailPage() {
             }
 
             if (data.error) {
-              setMessages((prev) =>
-                prev.map((m) => {
-                  if (m.id !== assistantId) return m;
-                  const parts = [...m.parts];
-                  parts.push({ type: "text", content: `\n\n⚠️ **AI Execution Failed**: ${data.error}` });
-                  return { ...m, parts };
-                }),
-              );
+              console.error("AI Generation Error:", data.error);
               setThoughtsOpen((prev) => ({ ...prev, [assistantId]: false }));
-              toast.error(data.error || "Internal Server Error");
+              toast.error("Internal Server Error");
             }
           } catch (e) {
             console.error("Error parsing stream chunk", e);
@@ -418,9 +411,8 @@ export default function QuestDetailPage() {
         }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
-      toast.error(errorMessage);
-      console.error(err);
+      console.error("Critical Chat Error:", err);
+      toast.error("Internal Server Error");
       // Restore credits if the request failed completely
       const credits = await getUserCredits();
       setUserCredits(credits);

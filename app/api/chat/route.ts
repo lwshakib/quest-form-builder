@@ -78,11 +78,44 @@ ${Object.entries(TOOLS_REGISTRY)
     ...messages, // The back-and-forth chat history from the interface
   ];
 
-  // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history, questId, and TOOLS_REGISTRY.
-  const stream = await aiService.streamText(history, questId, TOOLS_REGISTRY);
+  let stream;
+  try {
+    // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history, questId, and TOOLS_REGISTRY.
+    stream = await aiService.streamText(history, questId, TOOLS_REGISTRY);
+  } catch (err) {
+    console.error("[FairCredit] Stream initialization failed, refunding credit:", err);
+    await import("@/lib/actions").then((m) => m.refundUserCredit());
+    return new Response(JSON.stringify({ error: "Failed to initialize AI stream" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  // Return the stream directly to the client interface so it can render text and tool operations in real-time.
-  return new Response(stream, {
+  let hasProducedValue = false;
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  // Create a TransformStream to monitor the content passing through
+  const monitoringStream = new TransformStream({
+    async transform(chunk, controller) {
+      const text = decoder.decode(chunk, { stream: true });
+      // Check if this chunk contains any meaningful output data
+      if (text.includes('"content"') || text.includes('"reasoning"') || text.includes('"result"')) {
+        hasProducedValue = true;
+      }
+      controller.enqueue(chunk);
+    },
+    async flush() {
+      // If the stream finished without producing any value, refund the credit
+      if (!hasProducedValue) {
+        console.log("[FairCredit] Refund triggered: No productive output detected.");
+        await import("@/lib/actions").then((m) => m.refundUserCredit());
+      }
+    },
+  });
+
+  // Return the monitored stream directly to the client interface
+  return new Response(stream.pipeThrough(monitoringStream), {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",

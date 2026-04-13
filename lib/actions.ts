@@ -906,6 +906,29 @@ export async function decrementUserCredits() {
 }
 
 /**
+ * Safely refunds 1 credit to the user.
+ * Used when an AI orchestration fails before any meaningful output is produced.
+ *
+ * @returns {Promise<boolean>} True if successful.
+ */
+export async function refundUserCredit() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) return false;
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      credits: { increment: 1 },
+    },
+  });
+
+  return true;
+}
+
+/**
  * Updates the 'lastViewedResponsesAt' timestamp for a quest to current time.
  * Effectively clears any 'unread' badges or notifications for that quest.
  *
