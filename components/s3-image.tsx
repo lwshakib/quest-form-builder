@@ -29,8 +29,19 @@ export function S3Image({ src, className, fallbackClassName, ...props }: S3Image
       }
 
       // If it's already a full URL, use it directly
-      if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("blob:")) {
+      if (
+        typeof src === "string" &&
+        (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("blob:"))
+      ) {
         setResolvedSrc(src);
+        setIsLoading(false);
+        return;
+      }
+
+      // If it's not a string, we can't process it as an S3 key
+      if (typeof src !== "string") {
+        console.error("S3Image: src must be a string, received:", typeof src, src);
+        setError(true);
         setIsLoading(false);
         return;
       }

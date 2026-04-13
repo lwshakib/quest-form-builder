@@ -875,7 +875,7 @@ export default function QuestDetailPage() {
                           onChange={handleBannerUpload}
                           disabled={isUploadingBanner}
                         />
-                        <span className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
+                        <span className="text-muted-foreground text-xs font-medium">
                           or
                         </span>
                         <Button
@@ -888,7 +888,7 @@ export default function QuestDetailPage() {
                       </div>
                     )}
                     {!showBannerUrlInput && (
-                      <p className="text-muted-foreground/60 text-[10px] font-medium tracking-widest uppercase">
+                      <p className="text-muted-foreground/60 text-[10px] font-medium">
                         Recommended size: 1200x400px • Max 2MB
                       </p>
                     )}
@@ -1008,7 +1008,7 @@ export default function QuestDetailPage() {
                             value={opt.id}
                             className="focus:bg-primary/10 focus:text-primary cursor-pointer rounded-none px-4 py-3 transition-colors"
                           >
-                            <span className="text-[10px] font-bold tracking-widest uppercase">
+                            <span className="text-[10px] font-bold">
                               {opt.label}
                             </span>
                           </SelectItem>
@@ -1025,7 +1025,7 @@ export default function QuestDetailPage() {
                     <div className="bg-primary/5 group-hover/btn:bg-primary/10 rounded-full p-2 transition-colors">
                       <Plus className="h-5 w-5" />
                     </div>
-                    <span className="text-[12px] font-black tracking-[0.2em] uppercase">
+                    <span className="text-[12px] font-black">
                       Add New Question
                     </span>
                   </Button>
@@ -1056,7 +1056,7 @@ export default function QuestDetailPage() {
                     <div className="bg-primary/10 mb-3 rounded-full p-4">
                       <Plus className="text-primary h-6 w-6" />
                     </div>
-                    <p className="text-primary text-xl font-black tracking-tight uppercase">
+                    <p className="text-primary text-xl font-black tracking-tight">
                       New Question
                     </p>
                   </div>
@@ -1593,7 +1593,7 @@ export default function QuestDetailPage() {
               {/* Builder Defaults */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                  <h3 className="text-primary/70 text-sm font-black">
                     Builder Defaults
                   </h3>
                   <Separator className="mt-1 opacity-20" />
@@ -1621,7 +1621,7 @@ export default function QuestDetailPage() {
               {/* Submission Experience */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                  <h3 className="text-primary/70 text-sm font-black">
                     Submission Experience
                   </h3>
                   <Separator className="mt-1 opacity-20" />
@@ -1681,7 +1681,7 @@ export default function QuestDetailPage() {
               {/* Presentation Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                  <h3 className="text-primary/70 text-sm font-black">
                     Presentation
                   </h3>
                   <Separator className="mt-1 opacity-20" />
@@ -1725,7 +1725,7 @@ export default function QuestDetailPage() {
               {/* Integrations Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black tracking-widest uppercase">
+                  <h3 className="text-primary/70 text-sm font-black">
                     Integrations
                   </h3>
                   <Separator className="mt-1 opacity-20" />
@@ -1750,7 +1750,7 @@ export default function QuestDetailPage() {
 
                   {quest.webhookEnabled && (
                     <div className="animate-in fade-in slide-in-from-top-2 space-y-2">
-                      <Label className="text-muted-foreground/60 text-[10px] font-black tracking-widest uppercase">
+                      <Label className="text-muted-foreground/60 text-[10px] font-black">
                         Webhook Endpoint URL
                       </Label>
                       <Input
@@ -1770,7 +1770,7 @@ export default function QuestDetailPage() {
               {/* Danger Zone */}
               <section className="space-y-6 pt-10">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-destructive/70 text-sm font-black tracking-widest uppercase">
+                  <h3 className="text-destructive/70 text-sm font-black">
                     Danger Zone
                   </h3>
                   <Separator className="bg-destructive/20 mt-1" />
@@ -1851,7 +1851,7 @@ export default function QuestDetailPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold tracking-tight">Quest Assistant</h3>
-                  <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                  <p className="text-muted-foreground text-[10px] font-medium">
                     AI Integration Hub
                   </p>
                 </div>
@@ -1881,7 +1881,7 @@ export default function QuestDetailPage() {
 
                       {/* Suggested Prompts */}
                       <div className="flex flex-col gap-2 px-2">
-                        <p className="text-muted-foreground mb-1 text-[10px] font-bold tracking-widest uppercase">
+                        <p className="text-muted-foreground mb-1 text-[10px] font-bold">
                           Suggested Actions
                         </p>
                         {[
@@ -1926,7 +1926,7 @@ export default function QuestDetailPage() {
                                 return (
                                   <div
                                     key={pIdx}
-                                    className="animate-in fade-in slide-in-from-left-2 mb-2 flex items-center gap-2.5 text-[10px] font-bold tracking-widest uppercase"
+                                    className="animate-in fade-in slide-in-from-left-2 mb-2 flex items-center gap-2.5 text-[10px] font-bold"
                                   >
                                     {part.status === "running" ? (
                                       <>
@@ -1968,7 +1968,7 @@ export default function QuestDetailPage() {
                               message.parts.length === 0 && (
                                 <div className="flex items-center gap-2.5 py-1">
                                   <Loader className="text-muted-foreground h-3.5 w-3.5 animate-spin" />
-                                  <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                                  <span className="text-muted-foreground text-[10px] font-bold">
                                     Thinking...
                                   </span>
                                 </div>

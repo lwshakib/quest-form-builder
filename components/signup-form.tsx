@@ -36,7 +36,7 @@ export function SignUpForm({ className, ...props }: React.ComponentProps<"form">
         email,
         password,
         name,
-        callbackURL: "/quests",
+        callbackURL: "/sign-in",
       });
 
       if (error) {

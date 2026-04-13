@@ -10,7 +10,6 @@ import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/action
 import { aiService } from "@/services/ai.services";
 import { BUILDER_SYSTEM_PROMPT } from "@/lib/prompts";
 import { TOOLS_REGISTRY } from "@/lib/tools";
-import { zodToJsonSchema } from "zod-to-json-schema";
 
 // Allow the edge function to run for up to 30 seconds to accommodate image generation and multiple tool calls.
 export const maxDuration = 30;
@@ -51,7 +50,7 @@ Current Questions: ${JSON.stringify(currentQuest?.questions || [], null, 2)}
   `.trim();
 
   // Dynamically generate the documentation for the tools the AI is allowed to call.
-  // We use zodToJsonSchema to parse the tool validators into an understandable JSON schema format for the AI.
+  // We use the pre-defined JSON schemas in the TOOLS_REGISTRY to provide structured documentation for the AI.
   const toolsContext = `
 ### AVAILABLE TOOLS
 Here is the list of tools you can use, along with their input schemas and expected outputs:
@@ -62,7 +61,7 @@ ${Object.entries(TOOLS_REGISTRY)
   - **Description**: ${config.description}
   - **Input Schema**: ${
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jsonStringify(zodToJsonSchema(config.parameters as any))
+    jsonStringify(config.parameters as any)
   }
   - **Expected Output**: A string describing the result of the operation (e.g. Success or Error).
 `,

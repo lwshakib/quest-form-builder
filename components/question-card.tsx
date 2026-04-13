@@ -213,7 +213,7 @@ export function QuestionCard({
                 className="hover:bg-primary/5 group/trigger bg-background h-auto w-fit cursor-pointer gap-3 rounded-none border-none px-4 py-2 shadow-none transition-all outline-none focus:ring-0"
               >
                 <SelectValue>
-                  <span className="text-muted-foreground/60 group-hover/trigger:text-primary text-[10px] font-black tracking-[0.2em] uppercase transition-colors">
+                  <span className="text-muted-foreground/60 group-hover:text-primary text-[10px] font-black transition-colors">
                     {question.type.replace("_", " ")}
                   </span>
                 </SelectValue>
@@ -229,7 +229,7 @@ export function QuestionCard({
                     value={opt.id}
                     className="focus:bg-primary/10 focus:text-primary cursor-pointer rounded-none px-4 py-3 transition-colors"
                   >
-                    <span className="text-[10px] font-bold tracking-widest uppercase">
+                    <span className="text-[10px] font-bold">
                       {opt.label}
                     </span>
                   </SelectItem>
@@ -276,7 +276,7 @@ export function QuestionCard({
             <div className="flex items-center gap-3">
               <Label
                 htmlFor={`required-${question.id}`}
-                className="text-muted-foreground/60 cursor-pointer text-[10px] font-black tracking-widest uppercase"
+                className="text-muted-foreground/60 cursor-pointer text-[10px] font-black"
               >
                 Required
               </Label>
@@ -297,7 +297,7 @@ export function QuestionCard({
               onClick={onDuplicate}
             >
               <Copy className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-black tracking-widest uppercase">Duplicate</span>
+              <span className="text-[10px] font-black">Duplicate</span>
             </Button>
           </div>
 
@@ -461,7 +461,7 @@ export function QuestionCard({
                 variant="ghost"
                 size="sm"
                 onPointerDown={(e) => e.stopPropagation()}
-                className="text-primary/60 hover:text-primary hover:bg-primary/5 border-primary/5 ml-8 h-10 gap-3 rounded-lg border px-5 text-[10px] font-black tracking-[0.2em] uppercase shadow-sm transition-all"
+                className="text-primary/60 hover:text-primary hover:bg-primary/5 border-primary/5 ml-8 h-10 gap-3 rounded-lg border px-5 text-[10px] font-black shadow-sm transition-all"
                 onClick={() =>
                   onUpdate({
                     options: [
@@ -641,7 +641,7 @@ export function QuestionCard({
                     onPointerDown={(e) => e.stopPropagation()}
                     className="text-primary h-8 w-16 [appearance:textfield] border-none bg-transparent p-0 text-center font-black shadow-none focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="text-primary/60 text-[10px] font-black tracking-widest uppercase">
+                  <span className="text-primary/60 text-[10px] font-black">
                     Points
                   </span>
                 </div>
@@ -662,7 +662,7 @@ export function QuestionCard({
               <div className="space-y-2">
                 <div className="text-muted-foreground/60 flex items-center gap-2 px-2">
                   <MessageCircle className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-black tracking-widest uppercase">
+                  <span className="text-[10px] font-black">
                     Feedback for respondents
                   </span>
                 </div>

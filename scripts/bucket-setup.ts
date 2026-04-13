@@ -23,6 +23,7 @@ if (!bucketName || !endpoint || !accessKeyId || !secretAccessKey) {
 const s3Client = new S3Client({
   region,
   endpoint,
+  forcePathStyle: true,
   credentials: {
     accessKeyId,
     secretAccessKey,

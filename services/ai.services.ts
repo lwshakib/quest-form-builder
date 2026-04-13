@@ -38,24 +38,17 @@ interface ToolCallDelta {
   };
 }
 
-/**
- * Supported generation modes for image generation.
- */
-export type GenerateImageMode = "text-to-image" | "image-to-image" | "blend" | "inpaint";
 
 /**
  * Options for generating an image.
  */
 export interface GenerateImageOptions {
-  mode?: GenerateImageMode;
   prompt: string;
-  images?: (Blob | Buffer | File)[];
-  mask?: Blob | Buffer | File;
-  strength?: number;
   width?: number;
   height?: number;
   steps?: number;
   seed?: number;
+  guidance?: number;
 }
 
 /**
@@ -237,75 +230,56 @@ class AiService {
     });
   }
 
-  /**
-   * Generates or manipulates an image using the FLUX.1 [schnell] model.
-   * Optimized for lightning-fast image generation from text descriptions.
-   */
   async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
     const {
-      mode = "text-to-image",
       prompt,
-      images = [],
-      mask,
-      strength = 1.0,
       width = 1024,
       height = 1024,
       steps = 4, // Schnell is optimized for low steps (default 4)
       seed,
+      guidance = 7.5,
     } = options;
 
     try {
-      let response: Response;
-      const isFormDataNeeded = mode !== "text-to-image" || images.length > 0 || !!mask;
-
-      if (!isFormDataNeeded) {
-        response = await fetch(this.endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: IMAGE_GENERATION_MODEL_ID,
-            prompt,
-            width,
-            height,
-            steps,
-            seed,
-          }),
-        });
-      } else {
-        const form = new FormData();
-        form.append("model", IMAGE_GENERATION_MODEL_ID);
-        form.append("prompt", prompt);
-        if (width) form.append("width", width.toString());
-        if (height) form.append("height", height.toString());
-        if (steps) form.append("steps", steps.toString());
-        if (seed !== undefined) form.append("seed", seed.toString());
-
-        if (mode === "image-to-image" || mode === "inpaint") {
-          if (images[0]) form.append("image", images[0] as Blob);
-          if (strength !== undefined) form.append("strength", strength.toString());
-          if (mode === "inpaint" && mask) form.append("mask", mask as Blob);
-        } else if (mode === "blend") {
-          if (images[0]) form.append("image0", images[0] as Blob);
-          if (images[1]) form.append("image1", images[1] as Blob);
-        }
-
-        response = await fetch(this.endpoint, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${this.apiKey}` },
-          body: form,
-        });
-      }
+      console.log(`[AiService] Generating image with model: ${IMAGE_GENERATION_MODEL_ID}`);
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: IMAGE_GENERATION_MODEL_ID,
+          prompt,
+          width,
+          height,
+          steps: steps,
+          guidance,
+          seed,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Image generation failed (${response.status}): ${errorText}`);
       }
 
-      const arrayBuffer = await response.arrayBuffer();
-      const imageBuffer = Buffer.from(arrayBuffer);
+      const jsonResult = await response.json();
+      
+      // Look for the image data in various possible properties
+      let base64Image = jsonResult.image || jsonResult.result?.image;
+      
+      if (!base64Image) {
+        throw new Error(`Cloudflare AI error: ${JSON.stringify(jsonResult?.errors || jsonResult || "No image data found")}`);
+      }
+
+      // We MUST strip the data header (if present) before converting to Buffer to ensure it is valid binary
+      if (typeof base64Image === "string" && base64Image.includes("base64,")) {
+        base64Image = base64Image.split("base64,")[1];
+      }
+      
+      const imageBuffer = Buffer.from(base64Image, "base64");
+      
       const imageKey = `generated/${nanoid()}.png`;
       const uploadedKey = await s3Service.uploadFile(imageBuffer, imageKey, "image/png");
 

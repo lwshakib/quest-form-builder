@@ -64,6 +64,7 @@ export const auth = betterAuth({
   // Enable email verification workflow.
   emailVerification: {
     sendOnSignUp: true,
+    redirectTo: "/sign-in",
 
     /**
      * Sends a verification email to the user.

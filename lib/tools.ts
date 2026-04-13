@@ -39,27 +39,34 @@ const generateImageTool: GLMTool = {
       },
       width: { type: "integer", default: 1024 },
       height: { type: "integer", default: 1024 },
-      steps: {
+      num_inference_steps: {
         type: "integer",
-        default: 28,
-        description: "Optimization steps (20-35 recommended).",
+        default: 4,
+        description: "Optimization steps (1-8 allowed, 4 recommended).",
+      },
+      guidance: {
+        type: "number",
+        default: 7.5,
+        description: "Guidance scale (higher = more strict adherence to prompt).",
       },
     },
     required: ["prompt"],
   },
   handler: async (args, questId) => {
-    const { prompt, width, height, steps } = args as {
+    const { prompt, width, height, num_inference_steps, guidance } = args as {
       prompt: string;
       width?: number;
       height?: number;
-      steps?: number;
+      num_inference_steps?: number;
+      guidance?: number;
     };
     const result = await aiService.generateImage({
       prompt: prompt,
       width: width ?? 1024,
       height: height ?? 1024,
-      steps: steps ?? 28,
-      mode: "text-to-image",
+      // Flux-1-schnell has a hard maximum of 8 steps
+      steps: Math.min(num_inference_steps ?? 4, 8),
+      guidance: guidance ?? 7.5,
     });
 
     if (result.success && result.image) {
