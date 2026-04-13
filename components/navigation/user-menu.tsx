@@ -19,6 +19,7 @@ import { getSignedUrlForS3Key } from "@/lib/s3-client";
 export function UserMenu() {
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -30,16 +31,10 @@ export function UserMenu() {
     });
   };
 
-  if (!session) return null;
-
-  const user = session.user;
-  const initials = user.name ? user.name.charAt(0).toUpperCase() : "U";
-  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
-
   // Resolve S3 key to signed URL for display
   useEffect(() => {
     async function resolve() {
-      const src = user.image;
+      const src = session?.user?.image;
       if (src && !src.startsWith("http") && !src.startsWith("data:")) {
         try {
           const url = await getSignedUrlForS3Key(src);
@@ -53,7 +48,12 @@ export function UserMenu() {
       }
     }
     resolve();
-  }, [user.image]);
+  }, [session?.user?.image]);
+
+  if (!session) return null;
+
+  const user = session.user;
+  const initials = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
     <DropdownMenu>
