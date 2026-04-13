@@ -17,9 +17,11 @@ export function UsageText() {
 
   return (
     <div className="bg-muted/50 hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold md:flex">
-      <Zap className="text-primary h-3 w-3 fill-primary" />
+      <Zap className="text-primary fill-primary h-3 w-3" />
       <span>{credits !== null ? `${credits} Credits` : "---"}</span>
-      <span className="text-muted-foreground ml-1 border-l pl-2 uppercase tracking-tight">Free</span>
+      <span className="text-muted-foreground ml-1 border-l pl-2 tracking-tight uppercase">
+        Free
+      </span>
     </div>
   );
 }

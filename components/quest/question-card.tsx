@@ -229,9 +229,7 @@ export function QuestionCard({
                     value={opt.id}
                     className="focus:bg-primary/10 focus:text-primary cursor-pointer rounded-none px-4 py-3 transition-colors"
                   >
-                    <span className="text-[10px] font-bold">
-                      {opt.label}
-                    </span>
+                    <span className="text-[10px] font-bold">{opt.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -641,9 +639,7 @@ export function QuestionCard({
                     onPointerDown={(e) => e.stopPropagation()}
                     className="text-primary h-8 w-16 [appearance:textfield] border-none bg-transparent p-0 text-center font-black shadow-none focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="text-primary/60 text-[10px] font-black">
-                    Points
-                  </span>
+                  <span className="text-primary/60 text-[10px] font-black">Points</span>
                 </div>
 
                 {["SHORT_TEXT", "PARAGRAPH"].includes(question.type) && (
@@ -662,9 +658,7 @@ export function QuestionCard({
               <div className="space-y-2">
                 <div className="text-muted-foreground/60 flex items-center gap-2 px-2">
                   <MessageCircle className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-black">
-                    Feedback for respondents
-                  </span>
+                  <span className="text-[10px] font-black">Feedback for respondents</span>
                 </div>
                 <Textarea
                   value={question.feedback || ""}
@@ -681,4 +675,3 @@ export function QuestionCard({
     </div>
   );
 }
-

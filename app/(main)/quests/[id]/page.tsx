@@ -892,9 +892,7 @@ export default function QuestDetailPage() {
                           onChange={handleBannerUpload}
                           disabled={isUploadingBanner}
                         />
-                        <span className="text-muted-foreground text-xs font-medium">
-                          or
-                        </span>
+                        <span className="text-muted-foreground text-xs font-medium">or</span>
                         <Button
                           variant="ghost"
                           className="gap-2"
@@ -1025,9 +1023,7 @@ export default function QuestDetailPage() {
                             value={opt.id}
                             className="focus:bg-primary/10 focus:text-primary cursor-pointer rounded-none px-4 py-3 transition-colors"
                           >
-                            <span className="text-[10px] font-bold">
-                              {opt.label}
-                            </span>
+                            <span className="text-[10px] font-bold">{opt.label}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1042,9 +1038,7 @@ export default function QuestDetailPage() {
                     <div className="bg-primary/5 group-hover/btn:bg-primary/10 rounded-full p-2 transition-colors">
                       <Plus className="h-5 w-5" />
                     </div>
-                    <span className="text-[12px] font-black">
-                      Add New Question
-                    </span>
+                    <span className="text-[12px] font-black">Add New Question</span>
                   </Button>
                 </div>
               </div>
@@ -1073,9 +1067,7 @@ export default function QuestDetailPage() {
                     <div className="bg-primary/10 mb-3 rounded-full p-4">
                       <Plus className="text-primary h-6 w-6" />
                     </div>
-                    <p className="text-primary text-xl font-black tracking-tight">
-                      New Question
-                    </p>
+                    <p className="text-primary text-xl font-black tracking-tight">New Question</p>
                   </div>
                 ) : (
                   /* If dragging an existing question: Render the full QuestionCard */
@@ -1610,9 +1602,7 @@ export default function QuestDetailPage() {
               {/* Builder Defaults */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black">
-                    Builder Defaults
-                  </h3>
+                  <h3 className="text-primary/70 text-sm font-black">Builder Defaults</h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1638,9 +1628,7 @@ export default function QuestDetailPage() {
               {/* Submission Experience */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black">
-                    Submission Experience
-                  </h3>
+                  <h3 className="text-primary/70 text-sm font-black">Submission Experience</h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1698,9 +1686,7 @@ export default function QuestDetailPage() {
               {/* Presentation Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black">
-                    Presentation
-                  </h3>
+                  <h3 className="text-primary/70 text-sm font-black">Presentation</h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1742,9 +1728,7 @@ export default function QuestDetailPage() {
               {/* Integrations Section */}
               <section className="space-y-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-primary/70 text-sm font-black">
-                    Integrations
-                  </h3>
+                  <h3 className="text-primary/70 text-sm font-black">Integrations</h3>
                   <Separator className="mt-1 opacity-20" />
                 </div>
 
@@ -1787,9 +1771,7 @@ export default function QuestDetailPage() {
               {/* Danger Zone */}
               <section className="space-y-6 pt-10">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-destructive/70 text-sm font-black">
-                    Danger Zone
-                  </h3>
+                  <h3 className="text-destructive/70 text-sm font-black">Danger Zone</h3>
                   <Separator className="bg-destructive/20 mt-1" />
                 </div>
 
@@ -1922,7 +1904,9 @@ export default function QuestDetailPage() {
                     <>
                       {messages.map((message, idx) => (
                         <Message from={message.role} key={idx}>
-                          <MessageContent>                            {(() => {
+                          <MessageContent>
+                            {" "}
+                            {(() => {
                               const reasoningParts = message.parts.filter(
                                 (p) => p.type === "reasoning" || p.type === "tool",
                               );
@@ -1966,7 +1950,7 @@ export default function QuestDetailPage() {
                                                     : "complete"
                                                 }
                                               >
-                                                <div className="text-muted-foreground mt-1 whitespace-pre-wrap text-xs italic">
+                                                <div className="text-muted-foreground mt-1 text-xs whitespace-pre-wrap italic">
                                                   {part.content}
                                                 </div>
                                               </ChainOfThoughtStep>
@@ -1980,7 +1964,11 @@ export default function QuestDetailPage() {
                                               <ChainOfThoughtStep
                                                 key={pIdx}
                                                 label={toolName}
-                                                icon={part.name?.toLowerCase().includes("image") ? Wand2 : Terminal}
+                                                icon={
+                                                  part.name?.toLowerCase().includes("image")
+                                                    ? Wand2
+                                                    : Terminal
+                                                }
                                                 status={
                                                   part.status === "running"
                                                     ? "active"
@@ -2011,8 +1999,6 @@ export default function QuestDetailPage() {
                                 </>
                               );
                             })()}
-
-
                             {/* Initial Loading / Thinking State - Only if no parts yet */}
                             {message.role === "assistant" &&
                               isChatLoading &&

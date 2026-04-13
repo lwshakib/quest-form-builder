@@ -512,7 +512,12 @@ export default function ShareQuestPage() {
                               >
                                 {image && (
                                   <div className="border-border/40 bg-accent/5 relative aspect-video w-full overflow-hidden border-b">
-                                    <S3Image src={image} alt={label} fill className="object-cover" />
+                                    <S3Image
+                                      src={image}
+                                      alt={label}
+                                      fill
+                                      className="object-cover"
+                                    />
                                   </div>
                                 )}
                                 <div className="flex w-full items-start gap-4 p-4">

@@ -18,7 +18,7 @@ const plans = [
       "Standard analytics",
     ],
     highlight: false,
-    icon: <Zap className="h-5 w-5 text-muted-foreground" />,
+    icon: <Zap className="text-muted-foreground h-5 w-5" />,
   },
   {
     name: "Pro",
@@ -33,7 +33,7 @@ const plans = [
       "Custom branding",
     ],
     highlight: true,
-    icon: <Rocket className="h-5 w-5 text-primary" />,
+    icon: <Rocket className="text-primary h-5 w-5" />,
   },
   {
     name: "Enterprise",
@@ -48,7 +48,7 @@ const plans = [
       "White-labeling",
     ],
     highlight: false,
-    icon: <Shield className="h-5 w-5 text-muted-foreground" />,
+    icon: <Shield className="text-muted-foreground h-5 w-5" />,
   },
 ];
 
@@ -56,20 +56,21 @@ export default function BillingPage() {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-12 md:py-20">
       <div className="mb-16 text-center">
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-4xl font-black tracking-tight md:text-5xl"
         >
           Subscription <span className="text-primary">Plans</span>
         </motion.h1>
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="text-muted-foreground mx-auto mt-4 max-w-2xl text-lg font-medium"
         >
-          Choose the best plan for your data collection needs. All plans include our premium design system.
+          Choose the best plan for your data collection needs. All plans include our premium design
+          system.
         </motion.p>
       </div>
 
@@ -82,22 +83,24 @@ export default function BillingPage() {
             transition={{ delay: 0.1 * (index + 1) }}
             className={cn(
               "bg-background group relative flex flex-col rounded-3xl border p-8 transition-all duration-300",
-              plan.highlight 
-                ? "border-primary/50 ring-primary/20 shadow-primary/10 shadow-2xl ring-4" 
-                : "border-border/50 hover:border-primary/20 hover:shadow-xl"
+              plan.highlight
+                ? "border-primary/50 ring-primary/20 shadow-primary/10 shadow-2xl ring-4"
+                : "border-border/50 hover:border-primary/20 hover:shadow-xl",
             )}
           >
             {plan.highlight && (
-              <div className="bg-primary absolute -top-4 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-black tracking-widest text-primary-foreground uppercase">
+              <div className="bg-primary text-primary-foreground absolute -top-4 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-black tracking-widest uppercase">
                 Most Popular
               </div>
             )}
 
             <div className="mb-8 flex items-center justify-between">
-              <div className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-2xl",
-                plan.highlight ? "bg-primary/10" : "bg-muted"
-              )}>
+              <div
+                className={cn(
+                  "flex h-12 w-12 items-center justify-center rounded-2xl",
+                  plan.highlight ? "bg-primary/10" : "bg-muted",
+                )}
+              >
                 {plan.icon}
               </div>
               <div className="text-right">
@@ -107,16 +110,14 @@ export default function BillingPage() {
             </div>
 
             <h3 className="text-xl font-bold">{plan.name}</h3>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              {plan.description}
-            </p>
+            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{plan.description}</p>
 
-            <div className="my-8 h-px w-full bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+            <div className="via-border/50 my-8 h-px w-full bg-gradient-to-r from-transparent to-transparent" />
 
             <ul className="flex-1 space-y-4">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
-                  <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                  <div className="bg-primary/20 text-primary mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full">
                     <Check className="h-2.5 w-2.5" />
                   </div>
                   <span className="text-sm font-semibold">{feature}</span>
@@ -124,10 +125,10 @@ export default function BillingPage() {
               ))}
             </ul>
 
-            <Button 
+            <Button
               className={cn(
                 "mt-8 h-12 w-full rounded-2xl font-black tracking-widest uppercase transition-all active:scale-[0.98]",
-                plan.highlight ? "shadow-primary/20 shadow-lg" : "variant-outline"
+                plan.highlight ? "shadow-primary/20 shadow-lg" : "variant-outline",
               )}
               variant={plan.highlight ? "default" : "outline"}
               disabled
@@ -138,7 +139,7 @@ export default function BillingPage() {
         ))}
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}

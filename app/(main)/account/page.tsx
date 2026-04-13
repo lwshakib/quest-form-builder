@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ModeToggle } from '@/components/layout/mode-toggle';
-import { UserMenu } from '@/components/navigation/user-menu';
-import { ProfileImageUpload } from '@/components/profile/profile-image-upload';
-import { UsageText } from '@/components/profile/usage-text';
-import { authClient } from '@/lib/auth-client';
+import { useState, useEffect } from "react";
+import { ModeToggle } from "@/components/layout/mode-toggle";
+import { UserMenu } from "@/components/navigation/user-menu";
+import { ProfileImageUpload } from "@/components/profile/profile-image-upload";
+import { UsageText } from "@/components/profile/usage-text";
+import { authClient } from "@/lib/auth-client";
 import {
   Card,
   CardContent,
@@ -13,10 +13,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Laptop,
   Smartphone,
@@ -29,10 +29,10 @@ import {
   Trash2,
   Link as LinkIcon,
   Unlink,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+} from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface SessionData {
   token: string;
@@ -51,16 +51,12 @@ interface AccountData {
  * connected authentication accounts, and active device sessions.
  */
 export default function AccountPage() {
-  const {
-    data: session,
-    isPending: isSessionPending,
-    refetch,
-  } = authClient.useSession();
+  const { data: session, isPending: isSessionPending, refetch } = authClient.useSession();
   const router = useRouter();
 
   // Profile Update State
   const [isUpdatingName, setIsUpdatingName] = useState(false);
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState("");
 
   // Dynamic Data State
   const [sessions, setSessions] = useState<SessionData[]>([]);
@@ -91,7 +87,7 @@ export default function AccountPage() {
           setAccounts(accRes.data as any);
         }
       } catch (err) {
-        console.error('Failed to fetch account data:', err);
+        console.error("Failed to fetch account data:", err);
       } finally {
         setIsLoadingSessions(false);
         setIsLoadingAccounts(false);
@@ -113,9 +109,9 @@ export default function AccountPage() {
       await authClient.updateUser({
         name: userName,
       });
-      toast.success('Profile updated successfully');
+      toast.success("Profile updated successfully");
     } catch {
-      toast.error('Failed to update profile');
+      toast.error("Failed to update profile");
     } finally {
       setIsUpdatingName(false);
     }
@@ -128,16 +124,16 @@ export default function AccountPage() {
     try {
       await authClient.revokeSession({ token });
       setSessions((prev) => prev.filter((s) => s.token !== token));
-      toast.success('Session terminated');
+      toast.success("Session terminated");
     } catch {
-      toast.error('Failed to revoke session');
+      toast.error("Failed to revoke session");
     }
   };
 
   /**
    * Links a social provider to the current account
    */
-  const handleLinkSocial = async (providerId: 'google') => {
+  const handleLinkSocial = async (providerId: "google") => {
     try {
       await authClient.linkSocial({
         provider: providerId,
@@ -164,9 +160,7 @@ export default function AccountPage() {
 
       toast.success(`${providerId} account unlinked`);
       // Update local state to reflect removal
-      setAccounts((prev) =>
-        prev.filter((acc) => acc.providerId !== providerId),
-      );
+      setAccounts((prev) => prev.filter((acc) => acc.providerId !== providerId));
     } catch {
       toast.error(`Error unlinking ${providerId}`);
     }
@@ -175,60 +169,56 @@ export default function AccountPage() {
   if (isSessionPending) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary" />
+        <Loader2 className="text-primary size-8 animate-spin" />
       </div>
     );
   }
 
   if (!session) {
-    router.replace('/sign-in');
+    router.replace("/sign-in");
     return null;
   }
 
   // Derived state for supported providers
-  const isGoogleLinked = accounts.some((acc) => acc.providerId === 'google');
+  const isGoogleLinked = accounts.some((acc) => acc.providerId === "google");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background selection:bg-primary/10">
+    <div className="bg-background selection:bg-primary/10 flex min-h-screen flex-col">
       <main className="flex-1 p-4 md:p-8 lg:p-12">
-        <div className="mx-auto max-w-6xl w-full">
+        <div className="mx-auto w-full max-w-6xl">
           {/* Page Heading */}
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-foreground">
+            <h1 className="text-foreground mb-2 text-4xl font-extrabold tracking-tight">
               Settings
             </h1>
             <p className="text-muted-foreground text-lg">
-              Manage your personal information, connected accounts, and
-              security.
+              Manage your personal information, connected accounts, and security.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
             {/* LEFT COLUMN: Profile Spotlight */}
-            <div className="lg:sticky lg:top-24 space-y-6 lg:col-span-1">
-              <Card className="overflow-hidden border shadow-lg bg-card ring-1 ring-border/50">
-                <CardContent className="pt-10 pb-8 flex flex-col items-center text-center">
+            <div className="space-y-6 lg:sticky lg:top-24 lg:col-span-1">
+              <Card className="bg-card ring-border/50 overflow-hidden border shadow-lg ring-1">
+                <CardContent className="flex flex-col items-center pt-10 pb-8 text-center">
                   <ProfileImageUpload
                     src={session.user.image}
                     name={session.user.name}
                     className="mb-6"
                     onSuccess={() => refetch()}
                   />
-                  <div className="space-y-2 w-full px-4 overflow-hidden">
-                    <h2
-                      className="text-2xl font-bold truncate"
-                      title={session.user.name || ''}
-                    >
+                  <div className="w-full space-y-2 overflow-hidden px-4">
+                    <h2 className="truncate text-2xl font-bold" title={session.user.name || ""}>
                       {session.user.name}
                     </h2>
                     <p
-                      className="text-sm text-muted-foreground truncate"
-                      title={session.user.email || ''}
+                      className="text-muted-foreground truncate text-sm"
+                      title={session.user.email || ""}
                     >
                       {session.user.email}
                     </p>
-                    <div className="pt-4 flex justify-center">
-                      <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground ring-1 ring-inset ring-border">
+                    <div className="flex justify-center pt-4">
+                      <span className="bg-muted text-muted-foreground ring-border inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset">
                         <ShieldCheck className="mr-1 size-3" />
                         Active Account
                       </span>
@@ -238,15 +228,15 @@ export default function AccountPage() {
               </Card>
 
               <Card className="bg-muted/30 border-dashed">
-                <CardContent className="p-4 text-xs text-muted-foreground leading-relaxed">
-                  Your profile information is shared across Quest Form Builder services
-                  to help us provide a consistent and personalized experience.
+                <CardContent className="text-muted-foreground p-4 text-xs leading-relaxed">
+                  Your profile information is shared across Quest Form Builder services to help us
+                  provide a consistent and personalized experience.
                 </CardContent>
               </Card>
             </div>
 
             {/* RIGHT COLUMN: Configuration and Security */}
-            <div className="lg:col-span-2 space-y-8 min-w-0">
+            <div className="min-w-0 space-y-8 lg:col-span-2">
               {/* Basic Information Card */}
               <Card className="shadow-sm">
                 <CardHeader>
@@ -268,11 +258,11 @@ export default function AccountPage() {
                   </div>
                   <div className="space-y-2 opacity-70">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="flex items-center gap-2 text-sm font-medium bg-muted p-2 rounded-md border max-w-md">
-                      <Mail className="size-4 text-muted-foreground" />
+                    <div className="bg-muted flex max-w-md items-center gap-2 rounded-md border p-2 text-sm font-medium">
+                      <Mail className="text-muted-foreground size-4" />
                       {session.user.email}
                     </div>
-                    <p className="text-[11px] text-muted-foreground italic">
+                    <p className="text-muted-foreground text-[11px] italic">
                       Contact support to change your primary account email.
                     </p>
                   </div>
@@ -303,36 +293,34 @@ export default function AccountPage() {
                 <CardContent className="space-y-4">
                   {isLoadingAccounts ? (
                     <div className="flex justify-center py-6">
-                      <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                      <Loader2 className="text-muted-foreground size-6 animate-spin" />
                     </div>
                   ) : (
                     <div className="grid gap-3">
                       {/* Google Connection Row */}
-                      <div className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/30 transition-all group">
+                      <div className="hover:bg-muted/30 group flex items-center justify-between rounded-xl border p-4 transition-all">
                         <div className="flex items-center gap-4">
-                          <div className="p-2.5 rounded-lg bg-secondary ring-1 ring-border group-hover:scale-105 transition-transform">
+                          <div className="bg-secondary ring-border rounded-lg p-2.5 ring-1 transition-transform group-hover:scale-105">
                             <Globe className="size-5" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold">Google</p>
-                            <p className="text-xs text-muted-foreground">
-                              Social Authentication
-                            </p>
+                            <p className="text-muted-foreground text-xs">Social Authentication</p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-3">
                           {isGoogleLinked ? (
                             <>
-                              <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-1 rounded">
-                                <div className="size-1.5 rounded-full bg-muted-foreground" />
+                              <span className="text-muted-foreground bg-muted flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-bold tracking-wider uppercase">
+                                <div className="bg-muted-foreground size-1.5 rounded-full" />
                                 Connected
                               </span>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs gap-1.5 text-destructive hover:bg-destructive/10"
-                                onClick={() => handleUnlinkAccount('google')}
+                                className="text-destructive hover:bg-destructive/10 h-8 gap-1.5 text-xs"
+                                onClick={() => handleUnlinkAccount("google")}
                               >
                                 <Unlink className="size-3" />
                                 Disconnect
@@ -342,8 +330,8 @@ export default function AccountPage() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              className="h-8 text-xs gap-1.5"
-                              onClick={() => handleLinkSocial('google')}
+                              className="h-8 gap-1.5 text-xs"
+                              onClick={() => handleLinkSocial("google")}
                             >
                               <LinkIcon className="size-3" />
                               Connect
@@ -353,22 +341,18 @@ export default function AccountPage() {
                       </div>
 
                       {/* Email/Password Info (Implicitly connected if signed in) */}
-                      <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/20 opacity-80">
+                      <div className="bg-muted/20 flex items-center justify-between rounded-xl border p-4 opacity-80">
                         <div className="flex items-center gap-4">
-                          <div className="p-2.5 rounded-lg bg-background ring-1 ring-border">
+                          <div className="bg-background ring-border rounded-lg p-2.5 ring-1">
                             <Mail className="size-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold">
-                              Email & Password
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Standard Credentials
-                            </p>
+                            <p className="text-sm font-semibold">Email & Password</p>
+                            <p className="text-muted-foreground text-xs">Standard Credentials</p>
                           </div>
                         </div>
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-1 rounded">
-                          <div className="size-1.5 rounded-full bg-muted-foreground" />
+                        <span className="text-muted-foreground bg-muted flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-bold tracking-wider uppercase">
+                          <div className="bg-muted-foreground size-1.5 rounded-full" />
                           Primary
                         </span>
                       </div>
@@ -381,47 +365,43 @@ export default function AccountPage() {
               <Card className="shadow-sm">
                 <CardHeader>
                   <CardTitle>Active Sessions</CardTitle>
-                  <CardDescription>
-                    Devices currently logged in to your account.
-                  </CardDescription>
+                  <CardDescription>Devices currently logged in to your account.</CardDescription>
                 </CardHeader>
                 <CardContent className="px-2 sm:px-6">
                   {isLoadingSessions ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                      <Loader2 className="text-muted-foreground size-6 animate-spin" />
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {sessions.map((sess) => (
                         <div
                           key={sess.token}
-                          className="flex items-center justify-between gap-4 p-3 rounded-xl border bg-card hover:shadow-sm transition-all min-w-0"
+                          className="bg-card flex min-w-0 items-center justify-between gap-4 rounded-xl border p-3 transition-all hover:shadow-sm"
                         >
-                          <div className="flex items-center gap-3 overflow-hidden min-w-0">
-                            <div className="p-2 bg-muted rounded-lg shrink-0">
-                              {sess.userAgent?.includes('Mobi') ? (
-                                <Smartphone className="size-4 text-muted-foreground" />
+                          <div className="flex min-w-0 items-center gap-3 overflow-hidden">
+                            <div className="bg-muted shrink-0 rounded-lg p-2">
+                              {sess.userAgent?.includes("Mobi") ? (
+                                <Smartphone className="text-muted-foreground size-4" />
                               ) : (
-                                <Laptop className="size-4 text-muted-foreground" />
+                                <Laptop className="text-muted-foreground size-4" />
                               )}
                             </div>
-                            <div className="truncate min-w-0">
-                              <p className="text-sm font-semibold truncate flex items-center gap-2">
-                                {sess.userAgent || 'Unknown Browser'}
+                            <div className="min-w-0 truncate">
+                              <p className="flex items-center gap-2 truncate text-sm font-semibold">
+                                {sess.userAgent || "Unknown Browser"}
                                 {sess.token === session.session.token && (
-                                  <span className="shrink-0 text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter border">
+                                  <span className="bg-muted text-muted-foreground shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-bold tracking-tighter uppercase">
                                     Current
                                   </span>
                                 )}
                               </p>
-                              <p className="text-[10px] text-muted-foreground">
-                                Last used:{' '}
-                                {new Date(sess.updatedAt).toLocaleDateString()}{' '}
-                                at{' '}
-                                {new Date(sess.updatedAt).toLocaleTimeString(
-                                  [],
-                                  { hour: '2-digit', minute: '2-digit' },
-                                )}
+                              <p className="text-muted-foreground text-[10px]">
+                                Last used: {new Date(sess.updatedAt).toLocaleDateString()} at{" "}
+                                {new Date(sess.updatedAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
                               </p>
                             </div>
                           </div>
@@ -430,7 +410,7 @@ export default function AccountPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-destructive hover:bg-destructive/10 shrink-0 size-8"
+                              className="text-destructive hover:bg-destructive/10 size-8 shrink-0"
                               onClick={() => handleRevokeSession(sess.token)}
                               title="Revoke session"
                             >
@@ -450,4 +430,3 @@ export default function AccountPage() {
     </div>
   );
 }
-

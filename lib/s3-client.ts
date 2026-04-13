@@ -50,7 +50,7 @@ export async function uploadFileToS3(file: File): Promise<{ secureUrl: string; k
  */
 export async function getSignedUrlForS3Key(key: string): Promise<string> {
   if (!key) return "";
-  
+
   // If it's a full URL (e.g., from old Cloudinary data, or youtube), don't sign it
   if (key.startsWith("http://") || key.startsWith("https://") || key.startsWith("blob:")) {
     return key;

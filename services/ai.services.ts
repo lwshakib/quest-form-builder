@@ -38,7 +38,6 @@ interface ToolCallDelta {
   };
 }
 
-
 /**
  * Options for generating an image.
  */
@@ -294,21 +293,23 @@ class AiService {
       }
 
       const jsonResult = await response.json();
-      
+
       // Look for the image data in various possible properties
       let base64Image = jsonResult.image || jsonResult.result?.image;
-      
+
       if (!base64Image) {
-        throw new Error(`Cloudflare AI error: ${JSON.stringify(jsonResult?.errors || jsonResult || "No image data found")}`);
+        throw new Error(
+          `Cloudflare AI error: ${JSON.stringify(jsonResult?.errors || jsonResult || "No image data found")}`,
+        );
       }
 
       // We MUST strip the data header (if present) before converting to Buffer to ensure it is valid binary
       if (typeof base64Image === "string" && base64Image.includes("base64,")) {
         base64Image = base64Image.split("base64,")[1];
       }
-      
+
       const imageBuffer = Buffer.from(base64Image, "base64");
-      
+
       const imageKey = `generated/${nanoid()}.png`;
       const uploadedKey = await s3Service.uploadFile(imageBuffer, imageKey, "image/png");
 
@@ -324,7 +325,10 @@ class AiService {
       console.error("[GENERATE_IMAGE_EXCEPTION]", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "An unexpected error occurred during image generation",
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred during image generation",
         prompt,
         model: IMAGE_GENERATION_MODEL_ID,
       };

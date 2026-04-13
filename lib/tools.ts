@@ -35,7 +35,8 @@ const generateImageTool: GLMTool = {
     properties: {
       prompt: {
         type: "string",
-        description: "Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user.",
+        description:
+          "Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user.",
       },
       width: { type: "integer", default: 1024 },
       height: { type: "integer", default: 1024 },

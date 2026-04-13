@@ -4,42 +4,63 @@ First off, thank you for considering contributing to Quest! ❤️ We're excited
 
 All types of contributions are welcome, from bug reports to new feature implementations.
 
-## 🛠️ Development Setup
+## 🛠️ Development Setup & Workflow
 
-To get started with local development, follow these steps:
+To get started with local development and contribute, follow these detailed steps:
 
-1.  **Prerequisites**:
-    - [Bun](https://bun.sh/) (Recommended runtime)
-    - A PostgreSQL instance (Use [Neon](https://neon.tech/) for easy cloud setup)
-    - Cloudinary, Resend, and Google Gemini API keys for full functionality
+### 1. Fork & Clone
 
-2.  **Clone and Install**:
-
+1.  **Fork the repository**: Click the "Fork" button at the top right of the GitHub page.
+2.  **Clone your fork**:
     ```bash
-    git clone https://github.com/lwshakib/quest-form-builder.git
+    git clone https://github.com/YOUR_USERNAME/quest-form-builder.git
     cd quest-form-builder
+    ```
+3.  **Add Upstream Remote**: Add the original repository as an upstream to keep your fork synced:
+    ```bash
+    git remote add upstream https://github.com/lwshakib/quest-form-builder.git
+    ```
+
+### 2. Prerequisites & Installation
+
+1.  Ensure you have **[Bun](https://bun.sh/)** installed.
+2.  Install dependencies:
+    ```bash
     bun install
     ```
 
-3.  **Environment Configuration**:
-    Copy `.env.example` to `.env` and fill in the required keys:
-    - `DATABASE_URL` for Prisma
-    - `BETTER_AUTH_SECRET` & `GOOGLE_CLIENT_ID/SECRET` for auth
-    - `GOOGLE_API_KEY` for Gemini AI
-    - `CLOUDINARY_*` for media hosting
-    - `RESEND_API_KEY` for emails
-    - AI Worker URLs for GLM and Flux
+### 3. Environment Configuration
 
-4.  **Database Migration**:
-
+1.  Copy `.env.example` to `.env`:
     ```bash
-    bun x prisma migrate dev
+    cp .env.example .env
+    ```
+2.  Fill in the required keys in `.env`:
+    - **Database**: `DATABASE_URL` for Prisma (e.g., Neon).
+    - **Auth**: `BETTER_AUTH_SECRET` & `GOOGLE_CLIENT_ID/SECRET`.
+    - **Media Hosting**: `AWS_*` variables for S3 or Cloudflare R2 bucket.
+    - **Emails**: `RESEND_API_KEY`.
+    - **AI**: `CLOUDFLARE_AI_GATEWAY_*` variables or standard provider keys.
+3.  Initialize your storage bucket:
+    ```bash
+    bun run bucket:setup
     ```
 
-5.  **Run Development Server**:
-    ```bash
-    bun dev
-    ```
+### 4. Database Migration
+
+Run the migrations to build your local schema:
+
+```bash
+bun x prisma migrate dev
+```
+
+### 5. Running the App
+
+Start the development server:
+
+```bash
+bun dev
+```
 
 ## 🤝 How Can I Contribute?
 
@@ -54,16 +75,38 @@ To get started with local development, follow these steps:
 - Start by opening an issue for discussion to ensure alignment with the project's vision.
 - Focus on how the enhancement improves the "premium" user experience.
 
-### Pull Requests
+### Branching, Committing, and Pull Requests
 
-1.  Fork the repository and create your feature branch from `main`.
-2.  If you've added logic, ensure the code is linted and formatted:
+1.  **Create a Branch**:
+    Ensure you are up to date and create a feature branch:
+
     ```bash
-    bun run lint
-    bun run format:check
+    git checkout main
+    git pull upstream main
+    git checkout -b feat/your-feature-name
     ```
-3.  Follow the commit style guide below.
-4.  Open your pull request! 🌌
+
+2.  **Work and Format**:
+    Make your changes, then ensure the code is formatted and linted:
+
+    ```bash
+    bun run format
+    bun run lint
+    ```
+
+3.  **Commit Your Changes**:
+    Follow the Conventional Commits style:
+
+    ```bash
+    git add .
+    git commit -m "feat: add your detailed description"
+    ```
+
+4.  **Push and Open a Pull Request**:
+    ```bash
+    git push origin feat/your-feature-name
+    ```
+    Go to the original repository on GitHub, click **Compare & pull request**, and provide a clear description of your changes! 🌌
 
 ## 📏 Style Guide
 

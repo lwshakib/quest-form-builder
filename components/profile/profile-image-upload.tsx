@@ -67,7 +67,10 @@ export function ProfileImageUpload({ src, name, className, onSuccess }: ProfileI
   };
 
   return (
-    <div className={`group relative cursor-pointer ${className}`} onClick={() => fileInputRef.current?.click()}>
+    <div
+      className={`group relative cursor-pointer ${className}`}
+      onClick={() => fileInputRef.current?.click()}
+    >
       <input
         type="file"
         ref={fileInputRef}
@@ -75,8 +78,8 @@ export function ProfileImageUpload({ src, name, className, onSuccess }: ProfileI
         accept="image/*"
         onChange={handleFileChange}
       />
-      
-      <Avatar className="h-28 w-28 border-4 border-background shadow-2xl transition-transform duration-300 group-hover:scale-105">
+
+      <Avatar className="border-background h-28 w-28 border-4 shadow-2xl transition-transform duration-300 group-hover:scale-105">
         <AvatarImage src={resolvedSrc || undefined} className="object-cover" />
         <AvatarFallback className="bg-muted text-muted-foreground text-3xl font-bold">
           {initials}

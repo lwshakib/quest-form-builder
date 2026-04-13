@@ -66,25 +66,24 @@ export function S3Image({ src, className, fallbackClassName, ...props }: S3Image
 
   if (isLoading) {
     return (
-      <div className={cn("flex items-center justify-center bg-accent/5", fallbackClassName)}>
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/20" />
+      <div className={cn("bg-accent/5 flex items-center justify-center", fallbackClassName)}>
+        <Loader2 className="text-muted-foreground/20 h-6 w-6 animate-spin" />
       </div>
     );
   }
 
   if (error || !resolvedSrc) {
     return (
-      <div className={cn("flex items-center justify-center bg-destructive/5 text-destructive text-xs", fallbackClassName)}>
+      <div
+        className={cn(
+          "bg-destructive/5 text-destructive flex items-center justify-center text-xs",
+          fallbackClassName,
+        )}
+      >
         Failed to load image
       </div>
     );
   }
 
-  return (
-    <Image
-      {...props}
-      src={resolvedSrc}
-      className={className}
-    />
-  );
+  return <Image {...props} src={resolvedSrc} className={className} />;
 }

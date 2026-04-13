@@ -1035,7 +1035,7 @@ export async function markQuestResponsesAsRead(questId: string) {
 /**
  * Updates the authenticated user's profile image.
  * Handles S3 upload and cleans up the previous avatar to prevent storage bloat.
- * 
+ *
  * @param {string} base64 - The new profile image as a base64 string.
  */
 export async function updateUserAvatar(base64: string) {
@@ -1044,19 +1044,19 @@ export async function updateUserAvatar(base64: string) {
   });
 
   if (!session) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   try {
     // 1. Prepare file buffer from base64 string
-    const [header, data] = base64.split(',');
-    const contentType = header.split(';')[0].split(':')[1];
-    const buffer = Buffer.from(data, 'base64');
-    
+    const [header, data] = base64.split(",");
+    const contentType = header.split(";")[0].split(":")[1];
+    const buffer = Buffer.from(data, "base64");
+
     // Determine file extension
-    let extension = contentType.split('/')[1] || 'png';
-    if (extension === 'jpeg') extension = 'jpg';
-    
+    let extension = contentType.split("/")[1] || "png";
+    if (extension === "jpeg") extension = "jpg";
+
     // Generate a unique key for the avatar
     const key = `avatars/${session.user.id}-${Date.now()}.${extension}`;
 
@@ -1069,10 +1069,10 @@ export async function updateUserAvatar(base64: string) {
       select: { image: true },
     });
 
-    if (user?.image && !user.image.startsWith('http')) {
+    if (user?.image && !user.image.startsWith("http")) {
       console.log(`[DeepDelete] Purging old user avatar: ${user.image}`);
       await s3Service.deleteFile(user.image).catch((err) => {
-        console.error('Failed to purge old avatar from S3:', err);
+        console.error("Failed to purge old avatar from S3:", err);
       });
     }
 
@@ -1082,10 +1082,10 @@ export async function updateUserAvatar(base64: string) {
       data: { image: key },
     });
 
-    revalidatePath('/account');
+    revalidatePath("/account");
     return updatedUser;
   } catch (err) {
-    console.error('Avatar update failed:', err);
-    throw new Error('Failed to update profile image.');
+    console.error("Avatar update failed:", err);
+    throw new Error("Failed to update profile image.");
   }
 }

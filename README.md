@@ -74,8 +74,19 @@ graph TD
     ```
 
 3.  **Environment Setup**:
-    1. Environment Setup: Ensure your .env has the correct AWS_* variables for Cloudflare R2.
-    2. Initialize Bucket: Run the following command once to configure your R2 bucket:
+    1. Copy `.env.example` to `.env`:
+       ```bash
+       cp .env.example .env
+       ```
+    2. Fill in the required environment variables:
+       - `NEXT_PUBLIC_BASE_URL` & `BETTER_AUTH_URL` (usually `http://localhost:3000`)
+       - `DATABASE_URL` (your PostgreSQL connection string)
+       - `BETTER_AUTH_SECRET` (generate a random string)
+       - `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` (for Google OAuth)
+       - `AWS_*` variables (for S3 or Cloudflare R2 bucket)
+       - `RESEND_API_KEY` (for email notifications)
+       - `CLOUDFLARE_AI_GATEWAY_*` variables (for AI features)
+    3. Initialize Bucket: Run the following command once to configure your R2/S3 bucket CORS/policies:
        ```bash
        bun run bucket:setup
        ```

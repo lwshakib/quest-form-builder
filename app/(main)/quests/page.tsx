@@ -198,9 +198,7 @@ export default function QuestsPage() {
                       <FileText className="mr-2 h-4 w-4" /> Rename
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteQuest(quest.id)}
-                    >
+                    <DropdownMenuItem onClick={() => handleDeleteQuest(quest.id)}>
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
