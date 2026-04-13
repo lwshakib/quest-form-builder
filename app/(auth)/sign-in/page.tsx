@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { LoginForm } from "@/components/login-form";
+import { Logo } from "@/components/layout/logo";
+import { LoginForm } from "@/components/auth/login-form";
 import { motion } from "motion/react";
 import Image from "next/image";
 
@@ -51,3 +51,4 @@ export default function SignInPage() {
     </div>
   );
 }
+

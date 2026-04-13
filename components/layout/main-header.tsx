@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
-import { UserMenu } from "@/components/user-menu";
-import { Logo } from "@/components/logo";
-import { ModeToggle } from "@/components/mode-toggle";
+import { UserMenu } from "@/components/navigation/user-menu";
+import { Logo } from "@/components/layout/logo";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -26,10 +26,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PublishDialog } from "@/components/publish-dialog";
-import { GlobalSearch } from "@/components/global-search";
-import { NotificationsMenu } from "@/components/notifications-menu";
-import { InfoMenu } from "@/components/info-menu";
+import { PublishDialog } from "@/components/quest/publish-dialog";
+import { GlobalSearch } from "@/components/layout/global-search";
+import { NotificationsMenu } from "@/components/navigation/notifications-menu";
+import { InfoMenu } from "@/components/navigation/info-menu";
 
 export function MainHeader() {
   const pathname = usePathname();
@@ -433,3 +433,4 @@ export function MainHeader() {
     </>
   );
 }
+

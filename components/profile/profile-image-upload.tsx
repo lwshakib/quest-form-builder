@@ -3,8 +3,10 @@
 import { useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { updateUserAvatar } from "@/lib/actions";
+import { getSignedUrlForS3Key } from "@/lib/s3-client";
+import { useEffect } from "react";
 
 interface ProfileImageUploadProps {
   src?: string | null;
@@ -16,8 +18,27 @@ interface ProfileImageUploadProps {
 export function ProfileImageUpload({ src, name, className, onSuccess }: ProfileImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
 
   const initials = name ? name.charAt(0).toUpperCase() : "U";
+
+  // Resolve S3 key to signed URL for display
+  useEffect(() => {
+    async function resolve() {
+      if (src && !src.startsWith("http") && !src.startsWith("data:")) {
+        try {
+          const url = await getSignedUrlForS3Key(src);
+          setResolvedSrc(url);
+        } catch (err) {
+          console.error("Failed to resolve avatar URL:", err);
+          setResolvedSrc(null);
+        }
+      } else {
+        setResolvedSrc(src || null);
+      }
+    }
+    resolve();
+  }, [src]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,18 +54,11 @@ export function ProfileImageUpload({ src, name, className, onSuccess }: ProfileI
     reader.onloadend = async () => {
       try {
         const base64String = reader.result as string;
-        const { error } = await authClient.updateUser({
-          image: base64String,
-        });
-
-        if (error) {
-          toast.error(error.message || "Failed to update image");
-        } else {
-          toast.success("Profile image updated");
-          onSuccess?.();
-        }
+        await updateUserAvatar(base64String);
+        toast.success("Profile image updated");
+        onSuccess?.();
       } catch (err) {
-        toast.error("An error occurred while uploading");
+        toast.error(err instanceof Error ? err.message : "Failed to update image");
       } finally {
         setIsUploading(false);
       }
@@ -63,7 +77,7 @@ export function ProfileImageUpload({ src, name, className, onSuccess }: ProfileI
       />
       
       <Avatar className="h-28 w-28 border-4 border-background shadow-2xl transition-transform duration-300 group-hover:scale-105">
-        <AvatarImage src={src || undefined} className="object-cover" />
+        <AvatarImage src={resolvedSrc || undefined} className="object-cover" />
         <AvatarFallback className="bg-muted text-muted-foreground text-3xl font-bold">
           {initials}
         </AvatarFallback>

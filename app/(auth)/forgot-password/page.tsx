@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Loader2, Mail, ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Logo } from "@/components/logo";
+import { Logo } from "@/components/layout/logo";
 import Image from "next/image";
 
 export default function ForgotPasswordPage() {
@@ -161,3 +161,4 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+

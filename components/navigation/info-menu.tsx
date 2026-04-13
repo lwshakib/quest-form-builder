@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { HelpCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";

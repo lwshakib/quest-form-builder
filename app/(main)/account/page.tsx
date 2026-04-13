@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ModeToggle } from '@/components/mode-toggle';
-import { UserMenu } from '@/components/user-menu';
-import { ProfileImageUpload } from '@/components/profile-image-upload';
-import { UsageText } from '@/components/usage-text';
+import { ModeToggle } from '@/components/layout/mode-toggle';
+import { UserMenu } from '@/components/navigation/user-menu';
+import { ProfileImageUpload } from '@/components/profile/profile-image-upload';
+import { UsageText } from '@/components/profile/usage-text';
 import { authClient } from '@/lib/auth-client';
 import {
   Card,
@@ -450,3 +450,4 @@ export default function AccountPage() {
     </div>
   );
 }
+

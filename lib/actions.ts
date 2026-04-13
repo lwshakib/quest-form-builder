@@ -13,6 +13,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { TEMPLATES } from "./templates";
+import { s3Service } from "@/services/s3.services";
 
 /**
  * Creates a new, empty Quest for the currently authenticated user.
@@ -299,6 +300,25 @@ export async function updateQuest(
     throw new Error("Unauthorized");
   }
 
+  // 1. Fetch current quest to check for existing media if we are updating the background
+  if ("backgroundImageUrl" in data) {
+    const currentQuest = await prisma.quest.findUnique({
+      where: { id, userId: session.user.id },
+      select: { backgroundImageUrl: true },
+    });
+
+    if (currentQuest?.backgroundImageUrl) {
+      const oldKey = currentQuest.backgroundImageUrl;
+      const newKey = data.backgroundImageUrl;
+
+      // If the key is changing (or being removed) and it's an S3 key, delete the old file
+      if (oldKey !== newKey && !oldKey.startsWith("http")) {
+        console.log(`[DeepDelete] Purging old quest background: ${oldKey}`);
+        await s3Service.deleteFile(oldKey).catch(console.error);
+      }
+    }
+  }
+
   const quest = await prisma.quest.update({
     where: {
       id,
@@ -409,10 +429,45 @@ export async function deleteQuest(id: string) {
     throw new Error("Unauthorized");
   }
 
+  // 1. Fetch the quest with its questions to identify associated media
+  const quest = await prisma.quest.findUnique({
+    where: {
+      id,
+      userId: session.user.id,
+    },
+    include: {
+      questions: true,
+    },
+  });
+
+  if (!quest) return;
+
+  // 2. Cleanup Quest-level media (Background)
+  if (quest.backgroundImageUrl && !quest.backgroundImageUrl.startsWith("http")) {
+    console.log(`[DeepDelete] Purging quest background: ${quest.backgroundImageUrl}`);
+    await s3Service.deleteFile(quest.backgroundImageUrl).catch(console.error);
+  }
+
+  // 4. Cleanup Question-level media
+  for (const question of quest.questions) {
+    if (question.type === "IMAGE" || question.type === "VIDEO") {
+      // For these types, the 'options' field (if it exists) contains the media key
+      const options = question.options as any[];
+      if (Array.isArray(options) && options[0]) {
+        const key = typeof options[0] === "string" ? options[0] : options[0].image;
+        if (key && !key.startsWith("http")) {
+          console.log(`[DeepDelete] Purging question media: ${key}`);
+          await s3Service.deleteFile(key).catch(console.error);
+        }
+      }
+    }
+  }
+
+  // 5. Finalize the database deletion (Cascading deletes questions/responses)
   await prisma.quest.delete({
     where: {
       id,
-      userId: session.user.id, // Security: Ensure user owns the quest
+      userId: session.user.id,
     },
   });
 
@@ -512,6 +567,26 @@ export async function deleteQuestion(id: string, questId: string) {
 
   if (!session) throw new Error("Unauthorized");
 
+  // 1. Fetch the question to identify associated media
+  const question = await prisma.question.findUnique({
+    where: { id, questId },
+  });
+
+  if (!question) return;
+
+  // 2. Cleanup Question-level media (if applicable)
+  if (question.type === "IMAGE" || question.type === "VIDEO") {
+    const options = question.options as any[];
+    if (Array.isArray(options) && options[0]) {
+      const key = typeof options[0] === "string" ? options[0] : options[0].image;
+      if (key && !key.startsWith("http")) {
+        console.log(`[DeepDelete] Purging question media: ${key}`);
+        await s3Service.deleteFile(key).catch(console.error);
+      }
+    }
+  }
+
+  // 3. Delete from database
   await prisma.question.delete({
     where: { id, questId },
   });
@@ -955,4 +1030,62 @@ export async function markQuestResponsesAsRead(questId: string) {
 
   revalidatePath("/quests");
   revalidatePath(`/quests/${questId}`);
+}
+
+/**
+ * Updates the authenticated user's profile image.
+ * Handles S3 upload and cleans up the previous avatar to prevent storage bloat.
+ * 
+ * @param {string} base64 - The new profile image as a base64 string.
+ */
+export async function updateUserAvatar(base64: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
+
+  try {
+    // 1. Prepare file buffer from base64 string
+    const [header, data] = base64.split(',');
+    const contentType = header.split(';')[0].split(':')[1];
+    const buffer = Buffer.from(data, 'base64');
+    
+    // Determine file extension
+    let extension = contentType.split('/')[1] || 'png';
+    if (extension === 'jpeg') extension = 'jpg';
+    
+    // Generate a unique key for the avatar
+    const key = `avatars/${session.user.id}-${Date.now()}.${extension}`;
+
+    // 2. Upload to S3 (Cloudflare R2)
+    await s3Service.uploadFile(buffer, key, contentType);
+
+    // 3. Cleanup existing avatar if it's an S3-managed key
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { image: true },
+    });
+
+    if (user?.image && !user.image.startsWith('http')) {
+      console.log(`[DeepDelete] Purging old user avatar: ${user.image}`);
+      await s3Service.deleteFile(user.image).catch((err) => {
+        console.error('Failed to purge old avatar from S3:', err);
+      });
+    }
+
+    // 4. Update user record in the database
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: { image: key },
+    });
+
+    revalidatePath('/account');
+    return updatedUser;
+  } catch (err) {
+    console.error('Avatar update failed:', err);
+    throw new Error('Failed to update profile image.');
+  }
 }

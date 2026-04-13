@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
-import { Logo } from "@/components/logo";
+import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -193,3 +193,4 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
+

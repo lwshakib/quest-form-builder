@@ -7,7 +7,7 @@ import { Plus, Loader2, User, Briefcase, GraduationCap, History } from "lucide-r
 import { TEMPLATES, Template } from "@/lib/templates";
 import { createQuestFromTemplate, createQuest, getRecentTemplates } from "@/lib/actions";
 import { toast } from "sonner";
-import Image from "next/image";
+import { S3Image } from "@/components/quest/s3-image";
 
 export default function TemplatesPage() {
   const router = useRouter();
@@ -125,7 +125,7 @@ export default function TemplatesPage() {
                     onClick={() => handleCreate(template.id)}
                   >
                     <div className="bg-muted border-border/50 group-hover:border-primary/30 relative aspect-video overflow-hidden rounded-xl border transition-all">
-                      <Image
+                      <S3Image
                         src={
                           template.backgroundImage ||
                           "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1000&auto=format&fit=crop"
@@ -158,3 +158,4 @@ export default function TemplatesPage() {
     </div>
   );
 }
+

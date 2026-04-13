@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { SignUpForm } from "@/components/signup-form";
+import { Logo } from "@/components/layout/logo";
+import { SignUpForm } from "@/components/auth/signup-form";
 import { motion } from "motion/react";
 import Image from "next/image";
 
@@ -52,3 +52,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+

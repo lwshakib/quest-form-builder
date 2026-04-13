@@ -4,13 +4,13 @@
  * to anonymous and authenticated users before they enter the dashboard.
  */
 
-import CTASection from "@/components/cta-section";
-import FeaturesSection from "@/components/features-section";
-import FaqSection from "@/components/faq-section";
-import HowItWorksSection from "@/components/how-it-works-section";
-import FooterSection from "@/components/footer";
-import HeroSection from "@/components/hero-section";
-import SimplePricing from "@/components/pricing";
+import CTASection from "@/components/marketing/cta-section";
+import FeaturesSection from "@/components/marketing/features-section";
+import FaqSection from "@/components/marketing/faq-section";
+import HowItWorksSection from "@/components/marketing/how-it-works-section";
+import FooterSection from "@/components/marketing/footer";
+import HeroSection from "@/components/marketing/hero-section";
+import SimplePricing from "@/components/marketing/pricing";
 
 export default function Home() {
   return (
@@ -38,3 +38,4 @@ export default function Home() {
     </div>
   );
 }
+

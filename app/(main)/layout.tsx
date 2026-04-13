@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { MainHeader } from "@/components/main-header";
+import { MainHeader } from "@/components/layout/main-header";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,3 +14,4 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     </div>
   );
 }
+

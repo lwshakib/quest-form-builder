@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   manifest: "/favicon_io/site.webmanifest",
 };
 
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 /**
@@ -84,3 +84,4 @@ export default function RootLayout({
     </html>
   );
 }
+

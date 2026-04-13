@@ -4,19 +4,13 @@
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics, smart automation, and a seamless user experience.
 
-## 📱 App Demo
+![Demo image 1](public/app-demo/01.png)
 
-### Dashboard
+![Demo image 2](public/app-demo/02.png)
 
-| Light Mode                                              | Dark Mode                                             |
-| ------------------------------------------------------- | ----------------------------------------------------- |
-| ![Dashboard Light](public/app-demo/dashboard-light.png) | ![Dashboard Dark](public/app-demo/dashboard-dark.png) |
+![Demo image 3](public/app-demo/03.png)
 
-### Form Editor
-
-| Light Mode                                    | Dark Mode                                   |
-| --------------------------------------------- | ------------------------------------------- |
-| ![Form Light](public/app-demo/form-light.png) | ![Form Dark](public/app-demo/form-dark.png) |
+![Demo image 4](public/app-demo/04.png)
 
 ## 🧩 How it Works
 

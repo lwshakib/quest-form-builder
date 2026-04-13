@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { S3Image } from "@/components/s3-image";
+import { S3Image } from "@/components/quest/s3-image";
 
 import {
   MessageSquare,
@@ -78,7 +78,7 @@ import {
 } from "@/lib/actions";
 import { SUGGESTED_ACTIONS } from "@/lib/constants";
 import { toast } from "sonner";
-import { QuestionCard } from "@/components/question-card";
+import { QuestionCard } from "@/components/quest/question-card";
 import {
   Select,
   SelectContent,

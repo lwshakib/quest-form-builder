@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getPublicQuest, submitResponse } from "@/lib/actions";
-import Image from "next/image";
+import { S3Image } from "@/components/quest/s3-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,8 +20,8 @@ import {
 import { Loader2, CheckCircle2, Send, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/logo";
-import { ModeToggle } from "@/components/mode-toggle";
+import { Logo } from "@/components/layout/logo";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 import { authClient } from "@/lib/auth-client";
 
 interface Question {
@@ -357,7 +357,7 @@ export default function ShareQuestPage() {
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
               <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
-                <Image
+                <S3Image
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
                   fill
@@ -457,7 +457,7 @@ export default function ShareQuestPage() {
                               >
                                 {image && (
                                   <div className="bg-accent/5 border-border/40 relative aspect-video w-full overflow-hidden border-b">
-                                    <Image
+                                    <S3Image
                                       src={image}
                                       alt={label}
                                       fill
@@ -512,7 +512,7 @@ export default function ShareQuestPage() {
                               >
                                 {image && (
                                   <div className="border-border/40 bg-accent/5 relative aspect-video w-full overflow-hidden border-b">
-                                    <Image src={image} alt={label} fill className="object-cover" />
+                                    <S3Image src={image} alt={label} fill className="object-cover" />
                                   </div>
                                 )}
                                 <div className="flex w-full items-start gap-4 p-4">
@@ -658,7 +658,7 @@ export default function ShareQuestPage() {
                               if (!url) return null;
 
                               return (
-                                <Image src={url} alt={q.title} fill className="object-contain" />
+                                <S3Image src={url} alt={q.title} fill className="object-contain" />
                               );
                             })()}
                           </div>

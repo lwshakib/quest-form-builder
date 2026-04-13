@@ -5,13 +5,13 @@
 
 "use client";
 import Link from "next/link";
-import { Logo } from "@/components/logo";
+import { Logo } from "@/components/layout/logo";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
-import { UserMenu } from "@/components/user-menu";
+import { UserMenu } from "@/components/navigation/user-menu";
 
 // Navigation links for the landing page
 const menuItems = [
@@ -147,3 +147,4 @@ export const HeroHeader = () => {
     </header>
   );
 };
+

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { S3Image } from "@/components/s3-image";
+import { S3Image } from "@/components/quest/s3-image";
 
 // Predefined set of question types supported by the builder.
 const TYPE_OPTIONS = [
@@ -681,3 +681,4 @@ export function QuestionCard({
     </div>
   );
 }
+

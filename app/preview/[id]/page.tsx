@@ -20,8 +20,8 @@ import { Loader2, Eye, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
-import { ModeToggle } from "@/components/mode-toggle";
-import Image from "next/image";
+import { ModeToggle } from "@/components/layout/mode-toggle";
+import { S3Image } from "@/components/quest/s3-image";
 
 interface Question {
   id: string;
@@ -205,7 +205,7 @@ export default function PreviewQuestPage() {
           <div className="space-y-6">
             {quest?.backgroundImageUrl && (
               <div className="border-border/50 bg-background relative h-40 overflow-hidden rounded-lg border shadow-sm sm:h-56">
-                <Image
+                <S3Image
                   src={quest.backgroundImageUrl}
                   alt="Quest header image"
                   fill
@@ -425,7 +425,7 @@ export default function PreviewQuestPage() {
                               if (!url) return null;
 
                               return (
-                                <Image src={url} alt={q.title} fill className="object-contain" />
+                                <S3Image src={url} alt={q.title} fill className="object-contain" />
                               );
                             })()}
                           </div>
