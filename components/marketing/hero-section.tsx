@@ -190,14 +190,16 @@ export default function HeroSection() {
                 <div className="ring-background bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg ring-1 inset-shadow-2xs shadow-zinc-950/15 dark:inset-shadow-white/20">
                   <Image
                     className="bg-background relative hidden aspect-15/8 rounded-2xl dark:block"
-                    src="/app-demo/form-dark.png"
+                    // Dark Image 
+                    src="/app-demo/04.png"
                     alt="app screen"
                     width="2700"
                     height="1440"
                   />
                   <Image
                     className="border-border/25 relative z-2 aspect-15/8 rounded-2xl border dark:hidden"
-                    src="/app-demo/form-light.png"
+                    // Light Image
+                    src="/app-demo/03.png" 
                     alt="app screen"
                     width="2700"
                     height="1440"
