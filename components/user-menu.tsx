@@ -31,13 +31,7 @@ export function UserMenu() {
   if (!session) return null;
 
   const user = session.user;
-  const initials = user.name
-    ? user.name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-    : "U";
+  const initials = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
     <DropdownMenu>
