@@ -1,9 +1,9 @@
 /**
  * Tool definitions for the GLM-4.7-Flash model.
  * Each tool is defined as a self-contained object in the TOOLS_REGISTRY.
+ * This version uses direct JSON schemas instead of Zod for tool definitions.
  */
 
-import { z } from "zod";
 import {
   updateQuest,
   createQuestion,
@@ -11,7 +11,7 @@ import {
   deleteQuestion,
   getQuestById,
 } from "@/lib/actions";
-import { generateImage } from "@/llm/generateImage";
+import { aiService } from "@/services/ai.services";
 
 /**
  * Interface representing a tool definition for the GLM model.
@@ -19,7 +19,7 @@ import { generateImage } from "@/llm/generateImage";
  */
 export interface GLMTool {
   description: string; // The text that tells the AI *when* and *why* to use this tool
-  parameters: z.ZodObject<z.ZodRawShape>; // Zod schema mapping the expected JSON input
+  parameters: Record<string, unknown>; // Direct JSON schema mapping the expected input
   handler: (args: Record<string, unknown>, questId: string) => Promise<string>; // The execution logic executed on the server
 }
 
@@ -28,24 +28,25 @@ export interface GLMTool {
  */
 
 // Tool 1: generateImageTool
-// Invokes the Flux model to render new background images for Quests
 const generateImageTool: GLMTool = {
   description: "Generate a high-quality background image for the quest based on a prompt.",
-  parameters: z.object({
-    prompt: z
-      .string()
-      .describe(
-        "Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user.",
-      ),
-    width: z.number().int().optional().default(1024),
-    height: z.number().int().optional().default(1024),
-    steps: z
-      .number()
-      .int()
-      .optional()
-      .default(28)
-      .describe("Optimization steps (20-35 recommended)."),
-  }),
+  parameters: {
+    type: "object",
+    properties: {
+      prompt: {
+        type: "string",
+        description: "Visual description of the desired image. IMPORTANT: Never add text contents or labels on the image unless explicitly requested by the user.",
+      },
+      width: { type: "integer", default: 1024 },
+      height: { type: "integer", default: 1024 },
+      steps: {
+        type: "integer",
+        default: 28,
+        description: "Optimization steps (20-35 recommended).",
+      },
+    },
+    required: ["prompt"],
+  },
   handler: async (args, questId) => {
     const { prompt, width, height, steps } = args as {
       prompt: string;
@@ -53,8 +54,7 @@ const generateImageTool: GLMTool = {
       height?: number;
       steps?: number;
     };
-    // Ping the AI Generation backend with parameters
-    const result = await generateImage({
+    const result = await aiService.generateImage({
       prompt: prompt,
       width: width ?? 1024,
       height: height ?? 1024,
@@ -62,90 +62,90 @@ const generateImageTool: GLMTool = {
       mode: "text-to-image",
     });
 
-    // If generated successfully, automatically assign it to the Quest via DB actions
     if (result.success && result.image) {
       await updateQuest(questId, { backgroundImageUrl: result.image });
       return `Success: Background image generated and applied. URL: ${result.image}`;
     }
 
-    // Return explicit error to the AI so it can self-correct or inform the user
     return `Error: ${result.error || "Failed to generate image"}`;
   },
 };
 
 // Tool 2: updateQuestTool
-// Allows the AI to modify top-level settings of the form/quest
 const updateQuestTool: GLMTool = {
   description: "Update quest details like title, description, settings, or background image.",
-  parameters: z.object({
-    title: z.string().optional(),
-    description: z.string().optional(),
-    backgroundImageUrl: z.string().optional(),
-    isQuiz: z.boolean().optional(),
-    showProgressBar: z.boolean().optional(),
-    shuffleQuestionOrder: z.boolean().optional(),
-  }),
+  parameters: {
+    type: "object",
+    properties: {
+      title: { type: "string" },
+      description: { type: "string" },
+      backgroundImageUrl: { type: "string" },
+      isQuiz: { type: "boolean" },
+      showProgressBar: { type: "boolean" },
+      shuffleQuestionOrder: { type: "boolean" },
+    },
+    required: [],
+  },
   handler: async (props, questId) => {
-    // Perform database mutation immediately
     await updateQuest(questId, props as Parameters<typeof updateQuest>[1]);
     return `Successfully updated quest details: ${Object.keys(props).join(", ")}`;
   },
 };
 
 // Tool 3: createQuestionsTool
-// Crucial tool for bulk-adding questions so the AI can rapidly create whole surveys at once
 const createQuestionsTool: GLMTool = {
   description: "Add multiple new questions to the quest at once.",
-  parameters: z.object({
-    questions: z.array(
-      z.object({
-        type: z
-          .enum([
-            "SHORT_TEXT",
-            "PARAGRAPH",
-            "MULTIPLE_CHOICE",
-            "CHECKBOXES",
-            "DROPDOWN",
-            "DATE",
-            "TIME",
-            "VIDEO",
-            "IMAGE",
-          ])
-          .describe("The input type. Strictly use the provided enum."),
-        title: z.string().describe("Clear, context-specific question title. No placeholders."),
-        description: z.string().optional().describe("Helpful hint or context for the question."),
-        required: z.boolean().optional().describe("Whether the question is mandatory."),
-        options: z
-          .array(z.string())
-          .optional()
-          .describe("List of choices for MULTIPLE_CHOICE, CHECKBOXES, or DROPDOWN."),
-      }),
-    ),
-  }),
+  parameters: {
+    type: "object",
+    properties: {
+      questions: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+              enum: [
+                "SHORT_TEXT",
+                "PARAGRAPH",
+                "MULTIPLE_CHOICE",
+                "CHECKBOXES",
+                "DROPDOWN",
+                "DATE",
+                "TIME",
+                "VIDEO",
+                "IMAGE",
+              ],
+              description: "The input type.",
+            },
+            title: { type: "string", description: "Clear, context-specific question title." },
+            description: { type: "string", description: "Helpful hint or context." },
+            required: { type: "boolean", description: "Whether the question is mandatory." },
+            options: {
+              type: "array",
+              items: { type: "string" },
+              description: "List of choices for choice-based questions.",
+            },
+          },
+          required: ["type", "title"],
+        },
+      },
+    },
+    required: ["questions"],
+  },
   handler: async (args, questId) => {
     const { questions } = args as {
       questions: Array<{
-        type:
-          | "SHORT_TEXT"
-          | "PARAGRAPH"
-          | "MULTIPLE_CHOICE"
-          | "CHECKBOXES"
-          | "DROPDOWN"
-          | "DATE"
-          | "TIME"
-          | "VIDEO"
-          | "IMAGE";
+        type: any;
         title: string;
         description?: string;
         required?: boolean;
         options?: string[];
       }>;
     };
-    // Retrieve current questions to figure out the proper sequential numbering (order factor)
     const latestQuest = await getQuestById(questId);
     let startOrder = latestQuest?.questions?.length || 0;
 
-    // Build each question sequentially.
     for (const q of questions) {
       await createQuestion(
         questId,
@@ -162,12 +162,15 @@ const createQuestionsTool: GLMTool = {
 };
 
 // Tool 4: deleteQuestionTool
-// Single action deletion utility based on question ID
 const deleteQuestionTool: GLMTool = {
   description: "Delete a specific question by its unique ID.",
-  parameters: z.object({
-    questionId: z.string(),
-  }),
+  parameters: {
+    type: "object",
+    properties: {
+      questionId: { type: "string" },
+    },
+    required: ["questionId"],
+  },
   handler: async (args, questId) => {
     const { questionId } = args as { questionId: string };
     await deleteQuestion(questionId, questId);
@@ -176,19 +179,23 @@ const deleteQuestionTool: GLMTool = {
 };
 
 // Tool 5: updateQuestionTool
-// Patch an existing single question (ideal for fixing typos or inserting options)
 const updateQuestionTool: GLMTool = {
   description: "Update the content or settings of an existing question.",
-  parameters: z.object({
-    questionId: z.string().describe("The unique ID of the question to update."),
-    title: z.string().optional().describe("New title for the question."),
-    description: z.string().optional().describe("New description or hint."),
-    required: z.boolean().optional().describe("Whether the question should be mandatory."),
-    options: z
-      .array(z.string())
-      .optional()
-      .describe("Updated list of options for choice-based questions."),
-  }),
+  parameters: {
+    type: "object",
+    properties: {
+      questionId: { type: "string", description: "The unique ID of the question to update." },
+      title: { type: "string", description: "New title for the question." },
+      description: { type: "string", description: "New description or hint." },
+      required: { type: "boolean", description: "Whether the question should be mandatory." },
+      options: {
+        type: "array",
+        items: { type: "string" },
+        description: "Updated list of options.",
+      },
+    },
+    required: ["questionId"],
+  },
   handler: async (args, questId) => {
     const { questionId, ...props } = args as {
       questionId: string;
@@ -204,8 +211,6 @@ const updateQuestionTool: GLMTool = {
 
 /**
  * --- Tools Registry ---
- * Maps tool names to their respective tool definitions to be securely
- * exported to the AI API routing layer without passing the actual code.
  */
 export const TOOLS_REGISTRY = {
   generateImage: generateImageTool,
@@ -215,5 +220,4 @@ export const TOOLS_REGISTRY = {
   updateQuestion: updateQuestionTool,
 };
 
-// Exports valid parameter key types
 export type ToolName = keyof typeof TOOLS_REGISTRY;

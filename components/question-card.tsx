@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Image as ImageIcon, Upload, Loader2 } from "lucide-react";
-import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
+import { uploadFileToS3 } from "@/lib/s3-client";
 import { toast } from "sonner";
 import {
   Select,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import NextImage from "next/image";
+import { S3Image } from "@/components/s3-image";
 
 // Predefined set of question types supported by the builder.
 const TYPE_OPTIONS = [
@@ -102,7 +102,7 @@ export function QuestionCard({
     setIsUploading(true);
     try {
       // Direct client-side upload via our secure helper
-      const { secureUrl } = await uploadFileToCloudinary(file);
+      const { secureUrl } = await uploadFileToS3(file);
       onUpdate({ options: [secureUrl] });
       toast.success(`${type === "IMAGE" ? "Image" : "Video"} uploaded successfully`);
     } catch (error: unknown) {
@@ -155,7 +155,7 @@ export function QuestionCard({
 
     setIsUploading(true);
     try {
-      const { secureUrl } = await uploadFileToCloudinary(file);
+      const { secureUrl } = await uploadFileToS3(file);
       const newOptions = [...(question.options || [])];
       const current = newOptions[index];
       const currentValue = getOptionValue(current);
@@ -435,7 +435,7 @@ export function QuestionCard({
                       {/* Render Option Image Preview if one exists */}
                       {optionImage && (
                         <div className="group/img relative ml-8 w-full max-w-sm">
-                          <NextImage
+                          <S3Image
                             src={optionImage}
                             alt="Option"
                             className="border-border max-h-72 w-full rounded-md border object-contain"
@@ -616,7 +616,7 @@ export function QuestionCard({
               {/* Main Image Preview */}
               {question.options?.[0] && (
                 <div className="border-border/50 bg-accent/5 group/preview relative mt-4 flex max-h-[400px] items-center justify-center overflow-hidden rounded-xl border">
-                  <NextImage
+                  <S3Image
                     src={typeof question.options![0] === "string" ? question.options![0] : ""}
                     alt="Preview"
                     className="max-h-[400px] max-w-full object-contain transition-transform duration-500"

@@ -49,7 +49,7 @@ graph TD
 - **AI Engine**: [Google Gemini](https://sdk.vercel.ai/), [GLM-4.7-Flash](https://bigmodel.cn/), & [Flux-2-Klein](https://blackforestlabs.ai/)
 - **Auth**: [Better-Auth](https://better-auth.com/) (Secure, flexible authentication)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), & [Motion](https://www.motion.dev/)
-- **Media**: [Cloudinary](https://cloudinary.com/) (Image hosting and optimization)
+- **Media**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) (S3-compatible storage with Signed URLs)
 - **Emails**: [Resend](https://resend.com/) & [React Email](https://react.email/)
 - **State**: [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
 
@@ -61,7 +61,7 @@ graph TD
 - PostgreSQL database
 - Google OAuth Credentials
 - Google Gemini API Key
-- Cloudinary Account
+- Cloudflare R2 Bucket (or any S3-compatible storage)
 - Resend API Key
 
 ### Installation
@@ -80,7 +80,11 @@ graph TD
     ```
 
 3.  **Environment Setup**:
-    Create a `.env` file based on `.env.example` and fill in your keys.
+    1. Environment Setup: Ensure your .env has the correct AWS_* variables for Cloudflare R2.
+    2. Initialize Bucket: Run the following command once to configure your R2 bucket:
+       ```bash
+       bun run bucket:setup
+       ```
 
 4.  **Database Migration**:
 

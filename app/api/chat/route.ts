@@ -7,7 +7,7 @@
  */
 
 import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/actions";
-import { streamText } from "@/llm/streamText";
+import { aiService } from "@/services/ai.services";
 import { BUILDER_SYSTEM_PROMPT } from "@/lib/prompts";
 import { TOOLS_REGISTRY } from "@/lib/tools";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -79,8 +79,8 @@ ${Object.entries(TOOLS_REGISTRY)
     ...messages, // The back-and-forth chat history from the interface
   ];
 
-  // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history and questId.
-  const stream = await streamText(history, questId);
+  // Initialize the streaming process using our custom GLM orchestrator, passing the compiled history, questId, and TOOLS_REGISTRY.
+  const stream = await aiService.streamText(history, questId, TOOLS_REGISTRY);
 
   // Return the stream directly to the client interface so it can render text and tool operations in real-time.
   return new Response(stream, {

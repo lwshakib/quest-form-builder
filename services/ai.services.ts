@@ -1,0 +1,335 @@
+import { s3Service } from "@/services/s3.services";
+import { nanoid } from "nanoid";
+import { CHAT_MODEL_ID, IMAGE_GENERATION_MODEL_ID } from "@/lib/constants";
+
+/**
+ * Interface for OpenAI-compatible tool call.
+ */
+export interface GLMToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+/**
+ * Interface for OpenAI-compatible chat messages.
+ */
+export interface GLMMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string | null;
+  reasoning_content?: string;
+  tool_call_id?: string;
+  tool_calls?: GLMToolCall[];
+}
+
+/**
+ * Interface for tool call delta in stream.
+ */
+interface ToolCallDelta {
+  index: number;
+  id?: string;
+  type?: string;
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+}
+
+/**
+ * Supported generation modes for image generation.
+ */
+export type GenerateImageMode = "text-to-image" | "image-to-image" | "blend" | "inpaint";
+
+/**
+ * Options for generating an image.
+ */
+export interface GenerateImageOptions {
+  mode?: GenerateImageMode;
+  prompt: string;
+  images?: (Blob | Buffer | File)[];
+  mask?: Blob | Buffer | File;
+  strength?: number;
+  width?: number;
+  height?: number;
+  steps?: number;
+  seed?: number;
+}
+
+/**
+ * The result of an image generation operation.
+ */
+export interface GenerateImageResult {
+  success: boolean;
+  image?: string;
+  publicId?: string;
+  prompt: string;
+  width?: number;
+  height?: number;
+  model: string;
+  error?: string;
+}
+
+class AiService {
+  private endpoint: string;
+  private apiKey: string;
+
+  constructor(endpoint: string, apiKey: string) {
+    this.endpoint = endpoint;
+    this.apiKey = apiKey;
+  }
+
+  /**
+   * Formats the tools for the model's 'tools' request parameter.
+   * Simple mapping since tools now provide their own JSON schema.
+   */
+  private getToolSchema(toolsRegistry: any) {
+    return Object.entries(toolsRegistry).map(([name, config]: [string, any]) => ({
+      type: "function",
+      function: {
+        name,
+        description: config.description,
+        parameters: config.parameters,
+      },
+    }));
+  }
+
+  /**
+   * Main streaming utility for building and manipulating quest items.
+   * Optimized for GLM-4.7-Flash with tool calling and reasoning support.
+   */
+  async streamText(messages: GLMMessage[], questId: string, toolsRegistry: any) {
+    const encoder = new TextEncoder();
+    const conversation: GLMMessage[] = [...messages];
+
+    return new ReadableStream({
+      start: async (controller) => {
+        const sendChunk = (data: Record<string, unknown>) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        };
+
+        const runTurn = async (): Promise<void> => {
+          const response = await fetch(this.endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.apiKey}`,
+              // "x-session-affinity": questId, // Optional: for prompt caching
+            },
+            body: JSON.stringify({
+              model: CHAT_MODEL_ID,
+              messages: conversation,
+              stream: true,
+              tools: this.getToolSchema(toolsRegistry),
+              tool_choice: "auto",
+            }),
+          });
+
+          if (!response.body) return;
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          const assistantMessage: GLMMessage = { role: "assistant", content: "" };
+          const currentToolCalls: { name: string; arguments: string; id: string }[] = [];
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              const cleanLine = line.trim();
+              if (!cleanLine.startsWith("data: ") || cleanLine === "data: [DONE]") continue;
+
+              try {
+                const data = JSON.parse(cleanLine.slice(6));
+                if (!data.choices || data.choices.length === 0) continue;
+
+                const delta = data.choices[0].delta;
+
+                if (delta.tool_calls) {
+                  delta.tool_calls.forEach((tc: ToolCallDelta) => {
+                    const index = tc.index;
+                    if (!currentToolCalls[index]) {
+                      currentToolCalls[index] = {
+                        name: tc.function?.name || "",
+                        arguments: tc.function?.arguments || "",
+                        id: tc.id || "",
+                      };
+                    } else if (tc.function) {
+                      currentToolCalls[index].arguments += tc.function.arguments || "";
+                    }
+                  });
+                }
+
+                if (delta.content) {
+                  assistantMessage.content = (assistantMessage.content || "") + delta.content;
+                  sendChunk({ content: delta.content });
+                }
+
+                if (delta.reasoning_content) {
+                  assistantMessage.reasoning_content =
+                    (assistantMessage.reasoning_content || "") + delta.reasoning_content;
+                  sendChunk({ reasoning: delta.reasoning_content });
+                }
+              } catch (jsonErr) {
+                console.error("JSON parse error on line:", cleanLine, jsonErr);
+              }
+            }
+          }
+
+          if (currentToolCalls.length > 0) {
+            assistantMessage.tool_calls = currentToolCalls.map((tc) => ({
+              id: tc.id,
+              type: "function",
+              function: { name: tc.name, arguments: tc.arguments },
+            }));
+
+            conversation.push(assistantMessage);
+
+            for (const tc of currentToolCalls) {
+              try {
+                sendChunk({ toolCall: tc.name });
+                const args = JSON.parse(tc.arguments || "{}");
+                const toolConfig = toolsRegistry[tc.name];
+
+                const result = toolConfig
+                  ? await toolConfig.handler(args, questId)
+                  : `Error: Tool ${tc.name} not found.`;
+
+                conversation.push({
+                  role: "tool",
+                  tool_call_id: tc.id,
+                  content: result,
+                });
+
+                sendChunk({ toolCall: tc.name, result });
+              } catch (err) {
+                const errorMessage = `Error executing tool: ${err instanceof Error ? err.message : String(err)}`;
+                conversation.push({
+                  role: "tool",
+                  tool_call_id: tc.id,
+                  content: errorMessage,
+                });
+                sendChunk({ toolCall: tc.name, error: errorMessage });
+              }
+            }
+            await runTurn();
+          }
+        };
+
+        try {
+          await runTurn();
+        } catch (err) {
+          sendChunk({
+            error: `Orchestration error: ${err instanceof Error ? err.message : String(err)}`,
+          });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+  }
+
+  /**
+   * Generates or manipulates an image using the FLUX.1 [schnell] model.
+   * Optimized for lightning-fast image generation from text descriptions.
+   */
+  async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
+    const {
+      mode = "text-to-image",
+      prompt,
+      images = [],
+      mask,
+      strength = 1.0,
+      width = 1024,
+      height = 1024,
+      steps = 4, // Schnell is optimized for low steps (default 4)
+      seed,
+    } = options;
+
+    try {
+      let response: Response;
+      const isFormDataNeeded = mode !== "text-to-image" || images.length > 0 || !!mask;
+
+      if (!isFormDataNeeded) {
+        response = await fetch(this.endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: IMAGE_GENERATION_MODEL_ID,
+            prompt,
+            width,
+            height,
+            steps,
+            seed,
+          }),
+        });
+      } else {
+        const form = new FormData();
+        form.append("model", IMAGE_GENERATION_MODEL_ID);
+        form.append("prompt", prompt);
+        if (width) form.append("width", width.toString());
+        if (height) form.append("height", height.toString());
+        if (steps) form.append("steps", steps.toString());
+        if (seed !== undefined) form.append("seed", seed.toString());
+
+        if (mode === "image-to-image" || mode === "inpaint") {
+          if (images[0]) form.append("image", images[0] as Blob);
+          if (strength !== undefined) form.append("strength", strength.toString());
+          if (mode === "inpaint" && mask) form.append("mask", mask as Blob);
+        } else if (mode === "blend") {
+          if (images[0]) form.append("image0", images[0] as Blob);
+          if (images[1]) form.append("image1", images[1] as Blob);
+        }
+
+        response = await fetch(this.endpoint, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${this.apiKey}` },
+          body: form,
+        });
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Image generation failed (${response.status}): ${errorText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const imageBuffer = Buffer.from(arrayBuffer);
+      const imageKey = `generated/${nanoid()}.png`;
+      const uploadedKey = await s3Service.uploadFile(imageBuffer, imageKey, "image/png");
+
+      return {
+        success: true,
+        image: uploadedKey, // Return the key (path)
+        prompt,
+        width,
+        height,
+        model: IMAGE_GENERATION_MODEL_ID,
+      };
+    } catch (error) {
+      console.error("[GENERATE_IMAGE_EXCEPTION]", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "An unexpected error occurred during image generation",
+        prompt,
+        model: IMAGE_GENERATION_MODEL_ID,
+      };
+    }
+  }
+}
+
+export const aiService = new AiService(
+  process.env.CLOUDFLARE_AI_GATEWAY_ENDPOINT!,
+  process.env.CLOUDFLARE_AI_GATEWAY_API_KEY!,
+);

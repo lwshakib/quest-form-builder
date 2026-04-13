@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+import { S3Image } from "@/components/s3-image";
 
 import {
   MessageSquare,
@@ -18,7 +18,7 @@ import {
   X,
   Send,
 } from "lucide-react";
-import { uploadFileToCloudinary } from "@/lib/cloudinary-client";
+import { uploadFileToS3 } from "@/lib/s3-client";
 import { Loader } from "@/components/ai-elements/loader";
 import {
   Conversation,
@@ -657,7 +657,7 @@ export default function QuestDetailPage() {
 
     setIsUploadingBanner(true);
     try {
-      const { secureUrl } = await uploadFileToCloudinary(file);
+      const { secureUrl } = await uploadFileToS3(file);
       const updated = await updateQuest(id as string, {
         backgroundImageUrl: secureUrl,
       });
@@ -775,7 +775,7 @@ export default function QuestDetailPage() {
               <div className="group/banner-control relative mb-6">
                 {quest.backgroundImageUrl ? (
                   <div className="border-border/50 group/banner relative h-48 w-full overflow-hidden rounded-xl border shadow-sm sm:h-64">
-                    <Image
+                    <S3Image
                       src={quest.backgroundImageUrl}
                       alt="Quest Banner"
                       fill

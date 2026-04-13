@@ -13,11 +13,14 @@
     "db:generate": "bun x prisma generate",
     "db:migrate": "bun x prisma generate && bun x prisma migrate dev --name init",
     "db:studio": "bun x prisma studio",
-    "db:reset": "bun x prisma migrate reset"
+    "db:reset": "bun x prisma migrate reset",
+    "bucket:setup": "bun run scripts/bucket-setup.ts",
+    "bucket:teardown": "bun run scripts/bucket-teardown.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.15",
     "@aws-sdk/client-s3": "^3.1029.0",
+    "@aws-sdk/s3-request-presigner": "^3.1029.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -57,7 +60,6 @@
     "ai": "^6.0.116",
     "better-auth": "^1.4.15",
     "class-variance-authority": "^0.7.1",
-    "cloudinary": "^2.9.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
