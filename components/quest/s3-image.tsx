@@ -85,5 +85,5 @@ export function S3Image({ src, className, fallbackClassName, ...props }: S3Image
     );
   }
 
-  return <Image {...props} src={resolvedSrc} className={className} />;
+  return <Image alt={props.alt || ""} {...props} src={resolvedSrc} className={className} />;
 }

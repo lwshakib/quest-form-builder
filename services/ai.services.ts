@@ -77,8 +77,10 @@ class AiService {
    * Formats the tools for the model's 'tools' request parameter.
    * Simple mapping since tools now provide their own JSON schema.
    */
-  private getToolSchema(toolsRegistry: any) {
-    return Object.entries(toolsRegistry).map(([name, config]: [string, any]) => ({
+  private getToolSchema(
+    toolsRegistry: Record<string, { description: string; parameters: unknown }>,
+  ) {
+    return Object.entries(toolsRegistry).map(([name, config]) => ({
       type: "function",
       function: {
         name,
@@ -92,7 +94,18 @@ class AiService {
    * Main streaming utility for building and manipulating quest items.
    * Optimized for GLM-4.7-Flash with tool calling and reasoning support.
    */
-  async streamText(messages: GLMMessage[], questId: string, toolsRegistry: any) {
+  async streamText(
+    messages: GLMMessage[],
+    questId: string,
+    toolsRegistry: Record<
+      string,
+      {
+        description: string;
+        handler: (args: Record<string, unknown>, qId: string) => Promise<string>;
+        parameters: unknown;
+      }
+    >,
+  ) {
     const encoder = new TextEncoder();
     const conversation: GLMMessage[] = [...messages];
 

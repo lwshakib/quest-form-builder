@@ -92,7 +92,6 @@ ${Object.entries(TOOLS_REGISTRY)
   }
 
   let hasProducedValue = false;
-  const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
   // Create a TransformStream to monitor the content passing through

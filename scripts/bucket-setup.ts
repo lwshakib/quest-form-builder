@@ -38,8 +38,9 @@ async function setup() {
     try {
       await s3Client.send(new HeadBucketCommand({ Bucket: bucketName }));
       console.log(`Bucket "${bucketName}" already exists.`);
-    } catch (error: any) {
-      if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
+    } catch (error: unknown) {
+      const err = error as { name?: string; $metadata?: { httpStatusCode?: number } };
+      if (err.name === "NotFound" || err.$metadata?.httpStatusCode === 404) {
         // 2. Create bucket
         console.log(`Creating bucket "${bucketName}"...`);
         await s3Client.send(new CreateBucketCommand({ Bucket: bucketName }));

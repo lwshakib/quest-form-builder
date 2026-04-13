@@ -452,7 +452,7 @@ export async function deleteQuest(id: string) {
   for (const question of quest.questions) {
     if (question.type === "IMAGE" || question.type === "VIDEO") {
       // For these types, the 'options' field (if it exists) contains the media key
-      const options = question.options as any[];
+      const options = question.options as Array<{ image?: string } | string>;
       if (Array.isArray(options) && options[0]) {
         const key = typeof options[0] === "string" ? options[0] : options[0].image;
         if (key && !key.startsWith("http")) {
@@ -576,7 +576,7 @@ export async function deleteQuestion(id: string, questId: string) {
 
   // 2. Cleanup Question-level media (if applicable)
   if (question.type === "IMAGE" || question.type === "VIDEO") {
-    const options = question.options as any[];
+    const options = question.options as Array<{ image?: string } | string>;
     if (Array.isArray(options) && options[0]) {
       const key = typeof options[0] === "string" ? options[0] : options[0].image;
       if (key && !key.startsWith("http")) {

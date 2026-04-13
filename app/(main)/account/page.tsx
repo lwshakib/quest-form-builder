@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ModeToggle } from "@/components/layout/mode-toggle";
-import { UserMenu } from "@/components/navigation/user-menu";
 import { ProfileImageUpload } from "@/components/profile/profile-image-upload";
-import { UsageText } from "@/components/profile/usage-text";
 import { authClient } from "@/lib/auth-client";
 import {
   Card,
@@ -22,7 +19,6 @@ import {
   Smartphone,
   Loader2,
   CheckCircle2,
-  ChevronLeft,
   Mail,
   ShieldCheck,
   Globe,
@@ -32,7 +28,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 interface SessionData {
   token: string;
@@ -78,13 +73,13 @@ export default function AccountPage() {
         // 1. Fetch Active Sessions
         const sessRes = await authClient.listSessions();
         if (sessRes.data) {
-          setSessions(sessRes.data as any);
+          setSessions(sessRes.data as unknown as SessionData[]);
         }
 
         // 2. Fetch Connected Accounts
         const accRes = await authClient.listAccounts();
         if (accRes.data) {
-          setAccounts(accRes.data as any);
+          setAccounts(accRes.data as unknown as AccountData[]);
         }
       } catch (err) {
         console.error("Failed to fetch account data:", err);

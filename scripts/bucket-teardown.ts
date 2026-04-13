@@ -59,8 +59,9 @@ async function teardown() {
     await s3Client.send(new DeleteBucketCommand({ Bucket: bucketName }));
     console.log(`Bucket "${bucketName}" deleted successfully.`);
     console.log("S3 teardown complete.");
-  } catch (error: any) {
-    if (error.name === "NoSuchBucket") {
+  } catch (error: unknown) {
+    const err = error as { name?: string };
+    if (err.name === "NoSuchBucket") {
       console.log(`Bucket "${bucketName}" does not exist.`);
     } else {
       console.error("Error during S3 teardown:", error);

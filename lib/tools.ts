@@ -144,7 +144,7 @@ const createQuestionsTool: GLMTool = {
   handler: async (args, questId) => {
     const { questions } = args as {
       questions: Array<{
-        type: any;
+        type: string;
         title: string;
         description?: string;
         required?: boolean;

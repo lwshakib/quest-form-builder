@@ -39,7 +39,7 @@ import {
   ChainOfThoughtContent,
   ChainOfThoughtStep,
 } from "@/components/ai-elements/chain-of-thought";
-import { Copy, CheckCircle2, Brain, Wand2, Terminal } from "lucide-react";
+import { Copy, Brain, Wand2, Terminal } from "lucide-react";
 import { Pie, PieChart, LabelList } from "recharts";
 import {
   ChartContainer,
