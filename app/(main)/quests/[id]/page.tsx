@@ -33,8 +33,13 @@ import {
   MessageActions,
   MessageAction,
 } from "@/components/ai-elements/message";
-import { Reasoning, ReasoningTrigger, ReasoningContent } from "@/components/ai-elements/reasoning";
-import { Copy, CheckCircle2 } from "lucide-react";
+import {
+  ChainOfThought,
+  ChainOfThoughtHeader,
+  ChainOfThoughtContent,
+  ChainOfThoughtStep,
+} from "@/components/ai-elements/chain-of-thought";
+import { Copy, CheckCircle2, Brain, Wand2, Terminal } from "lucide-react";
 import { Pie, PieChart, LabelList } from "recharts";
 import {
   ChartContainer,
@@ -226,6 +231,7 @@ export default function QuestDetailPage() {
       }[];
     }[]
   >([]);
+  const [thoughtsOpen, setThoughtsOpen] = useState<{ [id: string]: boolean }>({});
 
   type ChatMessage = (typeof messages)[number];
 
@@ -335,6 +341,8 @@ export default function QuestDetailPage() {
                   return { ...m, parts };
                 }),
               );
+              // Collapse thoughts when text starts streaming
+              setThoughtsOpen((prev) => ({ ...prev, [assistantId]: false }));
             }
 
             if (data.reasoning) {
@@ -354,6 +362,8 @@ export default function QuestDetailPage() {
                   return { ...m, parts };
                 }),
               );
+              // Ensure thoughts are open while reasoning
+              setThoughtsOpen((prev) => ({ ...prev, [assistantId]: true }));
             }
 
             if (data.toolCall) {
@@ -366,6 +376,10 @@ export default function QuestDetailPage() {
                   );
 
                   if (data.result || data.error) {
+                    // Reasoning is usually considered "in progress" if tools are running
+                    // But we keep thoughts open until the final text actually starts
+                    setThoughtsOpen((prev) => ({ ...prev, [assistantId]: true }));
+
                     if (existingIdx !== -1) {
                       parts[existingIdx] = {
                         ...parts[existingIdx],
@@ -1904,62 +1918,96 @@ export default function QuestDetailPage() {
                     <>
                       {messages.map((message, idx) => (
                         <Message from={message.role} key={idx}>
-                          <MessageContent>
-                            {message.parts.map((part, pIdx) => {
-                              if (part.type === "reasoning") {
-                                return (
-                                  <Reasoning
-                                    key={pIdx}
-                                    isStreaming={
-                                      isChatLoading &&
-                                      idx === messages.length - 1 &&
-                                      pIdx === message.parts.length - 1
-                                    }
-                                  >
-                                    <ReasoningTrigger />
-                                    <ReasoningContent>{part.content || ""}</ReasoningContent>
-                                  </Reasoning>
-                                );
-                              }
-
-                              if (part.type === "tool") {
-                                return (
-                                  <div
-                                    key={pIdx}
-                                    className="animate-in fade-in slide-in-from-left-2 mb-2 flex items-center gap-2.5 text-[10px] font-bold"
-                                  >
-                                    {part.status === "running" ? (
-                                      <>
-                                        <Loader className="text-primary h-3 w-3 animate-spin" />
-                                        <span className="text-primary">
-                                          Running {part.name?.replace(/([A-Z])/g, " $1")}...
-                                        </span>
-                                      </>
-                                    ) : part.status === "success" ? (
-                                      <>
-                                        <div className="rounded-full bg-green-500/10 p-0.5">
-                                          <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
-                                        </div>
-                                        <span className="text-muted-foreground/80">
-                                          {part.name?.replace(/([A-Z])/g, " $1")} Success
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <X className="h-3 w-3 text-red-500" />
-                                        <span className="text-red-500">
-                                          {part.name?.replace(/([A-Z])/g, " $1")} Failed
-                                        </span>
-                                      </>
-                                    )}
-                                  </div>
-                                );
-                              }
+                          <MessageContent>                            {(() => {
+                              const reasoningParts = message.parts.filter(
+                                (p) => p.type === "reasoning" || p.type === "tool",
+                              );
+                              const textParts = message.parts.filter((p) => p.type === "text");
+                              const isThinking =
+                                reasoningParts.some((p) => p.status === "running") ||
+                                (isChatLoading &&
+                                  idx === messages.length - 1 &&
+                                  message.parts.length > 0 &&
+                                  message.parts[message.parts.length - 1].type !== "text");
 
                               return (
-                                <MessageResponse key={pIdx}>{part.content || ""}</MessageResponse>
+                                <>
+                                  {reasoningParts.length > 0 && (
+                                    <ChainOfThought
+                                      className="mb-4"
+                                      open={thoughtsOpen[message.id || ""] ?? isThinking}
+                                      onOpenChange={(open) =>
+                                        setThoughtsOpen((prev) => ({
+                                          ...prev,
+                                          [message.id || ""]: open,
+                                        }))
+                                      }
+                                    >
+                                      <ChainOfThoughtHeader>
+                                        {isThinking ? "Thinking..." : "Chain of Thought"}
+                                      </ChainOfThoughtHeader>
+                                      <ChainOfThoughtContent>
+                                        {reasoningParts.map((part, pIdx) => {
+                                          if (part.type === "reasoning") {
+                                            return (
+                                              <ChainOfThoughtStep
+                                                key={pIdx}
+                                                label="Reasoning"
+                                                icon={Brain}
+                                                status={
+                                                  isChatLoading &&
+                                                  idx === messages.length - 1 &&
+                                                  part === message.parts[message.parts.length - 1]
+                                                    ? "active"
+                                                    : "complete"
+                                                }
+                                              >
+                                                <div className="text-muted-foreground mt-1 whitespace-pre-wrap text-xs italic">
+                                                  {part.content}
+                                                </div>
+                                              </ChainOfThoughtStep>
+                                            );
+                                          }
+
+                                          if (part.type === "tool") {
+                                            const toolName =
+                                              part.name?.replace(/([A-Z])/g, " $1") || "Tool";
+                                            return (
+                                              <ChainOfThoughtStep
+                                                key={pIdx}
+                                                label={toolName}
+                                                icon={part.name?.toLowerCase().includes("image") ? Wand2 : Terminal}
+                                                status={
+                                                  part.status === "running"
+                                                    ? "active"
+                                                    : part.status === "error"
+                                                      ? "pending" // Or map to a new error status if needed
+                                                      : "complete"
+                                                }
+                                              >
+                                                {part.status === "error" && (
+                                                  <div className="mt-1 text-xs text-red-500">
+                                                    Failed to execute {toolName.toLowerCase()}
+                                                  </div>
+                                                )}
+                                              </ChainOfThoughtStep>
+                                            );
+                                          }
+                                          return null;
+                                        })}
+                                      </ChainOfThoughtContent>
+                                    </ChainOfThought>
+                                  )}
+
+                                  {textParts.map((part, pIdx) => (
+                                    <MessageResponse key={pIdx}>
+                                      {part.content || ""}
+                                    </MessageResponse>
+                                  ))}
+                                </>
                               );
-                            })}
+                            })()}
+
 
                             {/* Initial Loading / Thinking State - Only if no parts yet */}
                             {message.role === "assistant" &&
