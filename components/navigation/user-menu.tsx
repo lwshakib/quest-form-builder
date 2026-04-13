@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
@@ -81,6 +81,13 @@ export function UserMenu() {
         >
           <User className="text-muted-foreground h-4 w-4" />
           <span className="text-sm font-semibold">Account</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="flex cursor-pointer items-center gap-3 rounded-lg py-2 transition-colors"
+          onClick={() => router.push("/billing")}
+        >
+          <CreditCard className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm font-semibold">Billing</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
