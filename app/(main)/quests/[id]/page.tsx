@@ -76,6 +76,7 @@ import {
   markQuestResponsesAsRead,
   getUserCredits,
 } from "@/lib/actions";
+import { SUGGESTED_ACTIONS } from "@/lib/constants";
 import { toast } from "sonner";
 import { QuestionCard } from "@/components/question-card";
 import {
@@ -1900,20 +1901,21 @@ export default function QuestDetailPage() {
                         <p className="text-muted-foreground mb-1 text-[10px] font-bold">
                           Suggested Actions
                         </p>
-                        {[
-                          "Create a 5-question survey about customer satisfaction",
-                          "Generate a vibrant cyber-punk background image",
-                          "Make this quest a quiz with progress bar enabled",
-                        ].map((prompt, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setInput(prompt)}
-                            className="bg-muted/30 hover:bg-muted/60 border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-xs transition-all active:scale-[0.98]"
-                          >
-                            <span className="line-clamp-1">{prompt}</span>
-                            <Plus className="h-3 w-3 opacity-50" />
-                          </button>
-                        ))}
+                        {(() => {
+                          const shuffled = [...SUGGESTED_ACTIONS]
+                            .sort(() => 0.5 - Math.random())
+                            .slice(0, 3);
+                          return shuffled.map((prompt, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setInput(prompt)}
+                              className="bg-muted/30 hover:bg-muted/60 border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-xs transition-all active:scale-[0.98]"
+                            >
+                              <span className="line-clamp-1">{prompt}</span>
+                              <Plus className="h-3 w-3 opacity-50" />
+                            </button>
+                          ));
+                        })()}
                       </div>
                     </div>
                   ) : (

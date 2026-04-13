@@ -42,13 +42,10 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="border-primary/10 hover:bg-primary/5 relative h-10 w-10 rounded-full border p-0 transition-all duration-300"
-        >
-          <Avatar className="border-background h-9 w-9 border-2 shadow-inner">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+          <Avatar className="h-9 w-9">
             <AvatarImage src={user.image || undefined} alt={user.name} />
-            <AvatarFallback className="from-primary/80 to-primary text-primary-foreground bg-gradient-to-br font-bold">
+            <AvatarFallback className="bg-muted text-muted-foreground font-bold">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -63,27 +60,19 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="group flex cursor-pointer items-center gap-3 rounded-lg py-2 transition-colors"
+          className="flex cursor-pointer items-center gap-3 rounded-lg py-2 transition-colors"
           onClick={() => router.push("/account")}
         >
-          <div className="bg-muted/50 group-hover:bg-primary/10 group-hover:text-primary flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200">
-            <User className="h-4 w-4" />
-          </div>
-          <span className="text-muted-foreground group-hover:text-foreground text-sm font-semibold transition-colors">
-            Account
-          </span>
+          <User className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm font-semibold">Account</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="group focus:bg-destructive/5 flex cursor-pointer items-center gap-3 rounded-lg py-2 transition-colors"
+          className="flex cursor-pointer items-center gap-3 rounded-lg py-2 transition-colors"
           onClick={handleLogout}
         >
-          <div className="bg-muted/50 group-hover:bg-destructive/10 group-hover:text-destructive flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200">
-            <LogOut className="h-4 w-4" />
-          </div>
-          <span className="text-muted-foreground group-hover:text-destructive text-sm font-semibold transition-colors">
-            Log out
-          </span>
+          <LogOut className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm font-semibold">Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
