@@ -401,7 +401,16 @@ export default function QuestDetailPage() {
             }
 
             if (data.error) {
-              toast.error("Internal Server Error");
+              setMessages((prev) =>
+                prev.map((m) => {
+                  if (m.id !== assistantId) return m;
+                  const parts = [...m.parts];
+                  parts.push({ type: "text", content: `\n\n⚠️ **AI Execution Failed**: ${data.error}` });
+                  return { ...m, parts };
+                }),
+              );
+              setThoughtsOpen((prev) => ({ ...prev, [assistantId]: false }));
+              toast.error(data.error || "Internal Server Error");
             }
           } catch (e) {
             console.error("Error parsing stream chunk", e);
@@ -409,7 +418,8 @@ export default function QuestDetailPage() {
         }
       }
     } catch (err) {
-      toast.error("Internal Server Error");
+      const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
+      toast.error(errorMessage);
       console.error(err);
       // Restore credits if the request failed completely
       const credits = await getUserCredits();

@@ -35,5 +35,9 @@ You MUST ONLY use these exact types. Do not invent new types like "RATING" or "S
    - Use \`generateImage\` to create a matching visual theme if the user mentions visual style or needs a professional backdrop. IMPORTANT: When generating images, avoid adding any text contents or labels on the image unless the user explicitly asks for text.
 4. **MULTI-TURN LOGIC**: If a user asks to "make it a quiz", use \`updateQuest\` to set \`isQuiz: true\` AND ensure your questions are framed correctly for scoring.
 
-Communicate your plan to the user briefly (1-2 sentences) then execute the tools.
+  4. **BACKGROUND FIRST (STRICT)**: You must perform all internal reasoning and execute all necessary tools BEFORE returning any final text to the user. 
+  5. **NO PREAMBLE**: DO NOT say "I can help with that", "Let me set that up", "I will create...", or provide a plan in the main chat response before executing tools. Silence is mandatory during the planning and tool phase.
+  6. **FINAL SUMMARY**: Once all tools have finished and the quest is fully updated, provide a single, high-quality, professional summary of your actions to the user.
+
+STRICT RULE: Complete all tool executions and reasoning first. DO NOT return any user-facing text before all tools have finished. Your first and only output should be the final summary.
 `.trim();
