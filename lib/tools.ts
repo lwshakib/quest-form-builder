@@ -1,7 +1,6 @@
 /**
- * Tool definitions for the GLM-4.7-Flash model.
+ * Tool definitions for the AI orchestration engine.
  * Each tool is defined as a self-contained object in the TOOLS_REGISTRY.
- * This version uses direct JSON schemas instead of Zod for tool definitions.
  */
 
 import {
@@ -15,10 +14,9 @@ import { generateImage } from "@/llm/generate-image";
 const aiService = { generateImage };
 
 /**
- * Interface representing a tool definition for the GLM model.
- * This structure maps exactly to the expected OpenAI-style tool spec.
+ * Interface representing a tool definition for the Quest orchestrator.
  */
-export interface GLMTool {
+export interface QuestTool {
   description: string; // The text that tells the AI *when* and *why* to use this tool
   parameters: Record<string, unknown>; // Direct JSON schema mapping the expected input
   handler: (args: Record<string, unknown>, questId: string) => Promise<string>; // The execution logic executed on the server
@@ -29,7 +27,7 @@ export interface GLMTool {
  */
 
 // Tool 1: generateImageTool
-const generateImageTool: GLMTool = {
+const generateImageTool: QuestTool = {
   description: "Generate a high-quality background image for the quest based on a prompt.",
   parameters: {
     type: "object",
@@ -81,7 +79,7 @@ const generateImageTool: GLMTool = {
 };
 
 // Tool 2: updateQuestTool
-const updateQuestTool: GLMTool = {
+const updateQuestTool: QuestTool = {
   description: "Update quest details like title, description, settings, or background image.",
   parameters: {
     type: "object",
@@ -102,7 +100,7 @@ const updateQuestTool: GLMTool = {
 };
 
 // Tool 3: createQuestionsTool
-const createQuestionsTool: GLMTool = {
+const createQuestionsTool: QuestTool = {
   description: "Add multiple new questions to the quest at once.",
   parameters: {
     type: "object",
@@ -171,7 +169,7 @@ const createQuestionsTool: GLMTool = {
 };
 
 // Tool 4: deleteQuestionTool
-const deleteQuestionTool: GLMTool = {
+const deleteQuestionTool: QuestTool = {
   description: "Delete a specific question by its unique ID.",
   parameters: {
     type: "object",
@@ -188,7 +186,7 @@ const deleteQuestionTool: GLMTool = {
 };
 
 // Tool 5: updateQuestionTool
-const updateQuestionTool: GLMTool = {
+const updateQuestionTool: QuestTool = {
   description: "Update the content or settings of an existing question.",
   parameters: {
     type: "object",

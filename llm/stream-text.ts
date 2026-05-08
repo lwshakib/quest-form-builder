@@ -1,13 +1,13 @@
 import { client } from "./client";
 import { CHAT_MODEL_ID } from "./constants";
-import type { GLMMessage, ToolRegistry } from "./types";
+import type { QuestMessage, ToolRegistry } from "./types";
 import type { Content, Part } from "@google/genai";
 
 /**
- * Transforms the generic GLMMessage structure into Google GenAI's content format.
- * Gemini 3 expects tool results to be part of a 'user' role turn containing functionResponse parts.
+ * Transforms the generic QuestMessage structure into Google GenAI's content format.
+ * Gemini expects tool results to be part of a 'user' role turn containing functionResponse parts.
  */
-function transformMessages(messages: GLMMessage[]): Content[] {
+function transformMessages(messages: QuestMessage[]): Content[] {
   return messages
     .filter((msg) => msg.role !== "system")
     .map((msg) => {
@@ -59,7 +59,7 @@ function transformMessages(messages: GLMMessage[]): Content[] {
  * Streams text from Gemini 3.1 Flash with recursive tool calling support.
  */
 export async function streamText(
-  messages: GLMMessage[],
+  messages: QuestMessage[],
   questId: string,
   toolsRegistry: ToolRegistry,
 ) {

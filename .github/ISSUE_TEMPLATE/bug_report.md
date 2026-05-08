@@ -21,11 +21,13 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Quest Context (if applicable)**
+
 - Quest ID: [e.g. cln...]
 - Component: [e.g. Editor, AI Chat, Analytics, Share Page]
 - Environment: [e.g. Local Development, Production]
 
 **Technical Details**
+
 - Browser: [e.g. Chrome, Firefox, Safari]
 - OS: [e.g. Windows, macOS]
 - Console Errors: [Paste any relevant console output here]

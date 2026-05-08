@@ -1,42 +1,36 @@
 /**
- * Interface for OpenAI-compatible tool call.
+ * QuestToolCall represents a tool call initiated by the model.
  */
-export interface GLMToolCall {
+export interface QuestToolCall {
   id: string;
   type: "function";
   function: {
     name: string;
-    arguments: string;
+    arguments: string; // JSON string of arguments
   };
 }
 
 /**
- * Interface for OpenAI-compatible chat messages.
+ * QuestMessage represents a single message in the conversation.
+ * It's a provider-agnostic format that we transform for specific LLMs (like Gemini).
  */
-export interface GLMMessage {
+export interface QuestMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
-  reasoning_content?: string;
+  reasoning_content?: string | null;
+  tool_calls?: QuestToolCall[];
   tool_call_id?: string;
-  tool_calls?: GLMToolCall[];
+  id?: string;
 }
 
 /**
- * Represents a single part of a message in the Gemini model.
+ * QuestPart represents a single part of a message (text or tool call).
  */
-export interface GLMPart {
-  text?: string;
-  thought?: boolean;
-  functionCall?: {
-    name: string;
-    args: Record<string, unknown>;
-    id: string;
-  };
-  functionResponse?: {
-    name: string;
-    response: Record<string, unknown>;
-    id: string;
-  };
+export interface QuestPart {
+  type: "text" | "reasoning" | "tool";
+  content?: string;
+  name?: string;
+  status?: "running" | "success" | "error";
 }
 
 /**
