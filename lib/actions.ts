@@ -13,7 +13,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { TEMPLATES } from "./templates";
-import { s3Service } from "@/services/s3.services";
+import { s3Service } from "@/lib/s3";
 
 /**
  * Creates a new, empty Quest for the currently authenticated user.

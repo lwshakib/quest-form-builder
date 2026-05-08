@@ -7,11 +7,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
-import { Resend } from "resend";
+import { resend } from "./resend";
 import { AuthEmailTemplate } from "@/components/emails/auth-email-template";
-
-// Initialize the Resend client for sending transactional emails
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * The 'auth' instance manages session validation, user registration,

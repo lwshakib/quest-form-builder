@@ -3,8 +3,8 @@
  * Using short names as per the Cloudflare AI Gateway requirements.
  */
 
-export const CHAT_MODEL_ID = "glm-4.7-flash";
-export const IMAGE_GENERATION_MODEL_ID = "flux-1-schnell";
+export const CHAT_MODEL_ID = "gemini-3.1-flash-image-preview";
+export const IMAGE_GENERATION_MODEL_ID = "gemini-3.1-flash-image-preview";
 
 /**
  * A diverse pool of over 30 project-specific actions for the Quest Assistant.
