@@ -585,6 +585,7 @@ function SidebarMenuSkeleton({
   // Random width between 50 to 90%.
   const [width, setWidth] = React.useState("0%");
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWidth(`${Math.floor(Math.random() * 40) + 50}%`);
   }, []);
 
