@@ -11,7 +11,8 @@ import {
   deleteQuestion,
   getQuestById,
 } from "@/lib/actions";
-import { aiService } from "@/services/ai.services";
+import { generateImage } from "@/llm/generate-image";
+const aiService = { generateImage };
 
 /**
  * Interface representing a tool definition for the GLM model.
