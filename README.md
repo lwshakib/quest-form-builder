@@ -40,7 +40,7 @@ graph TD
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components)
 - **Package Manager**: [pnpm](https://pnpm.io/) (Fast, efficient, and reliable)
 - **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL (Hosted on [Neon](https://neon.tech/))
-- **AI Engine**: [Google Gemini 3.1 Flash](https://aistudio.google.com/) & [Flux-2-Klein](https://blackforestlabs.ai/)
+- **AI Engine**: [Google Gemini 3.1 Flash](https://aistudio.google.com/) (Smart orchestration and analysis)
 - **Auth**: [Better-Auth](https://better-auth.com/) (Secure, flexible authentication)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), & [Motion](https://www.motion.dev/)
 - **Media**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) (S3-compatible storage with Signed URLs)
