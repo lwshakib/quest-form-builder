@@ -38,7 +38,7 @@ export async function uploadFileToS3(file: File): Promise<{ secureUrl: string; k
   // or we can just return the key as `secureUrl` since the components expect it.
   // Wait, components expect a URL they can use in an `<img src="...">`.
   // S3 bucket is private right now based on our S3Service?
-  // Let's check `bun-setup.ts`: it sets CORS, but doesn't set it to public.
+  // Let's check `bucket-setup.ts`: it sets CORS, but doesn't set it to public.
   // Actually, if we just store the key in the database, the components need to fetch the signed URL to display it.
   // The user prompt mentioned: "As requested, we will now store only the S3 path (e.g., quest-backgrounds/unique-id.png) in the database instead of a full URL. This requires the frontend to call the /api/s3/signed-url endpoint or a similar service to generate a viewable URL before rendering."
 

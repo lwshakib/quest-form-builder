@@ -51,7 +51,7 @@ graph TD
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) installed
+- [pnpm](https://pnpm.io/) installed
 - PostgreSQL database
 - Google OAuth Credentials
 - Google Gemini API Key
@@ -70,7 +70,7 @@ graph TD
 2.  **Install dependencies**:
 
     ```bash
-    bun install
+    pnpm install
     ```
 
 3.  **Environment Setup**:
@@ -88,18 +88,18 @@ graph TD
        - `CLOUDFLARE_AI_GATEWAY_*` variables (for AI features)
     3. Initialize Bucket: Run the following command once to configure your R2/S3 bucket CORS/policies:
        ```bash
-       bun run bucket:setup
+       pnpm run bucket:setup
        ```
 
 4.  **Database Migration**:
 
     ```bash
-    bun x prisma migrate dev
+    pnpm exec prisma migrate dev
     ```
 
 5.  **Start Development**:
     ```bash
-    bun dev
+    pnpm run dev
     ```
 
 ## 🤝 Contributing
