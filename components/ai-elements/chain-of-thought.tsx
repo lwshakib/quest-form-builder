@@ -72,7 +72,7 @@ export const ChainOfThoughtHeader = memo(
           {...props}
         >
           <BrainIcon className="size-4" />
-          <span className="flex-1 text-left">{children ?? "Chain of Thought"}</span>
+          <span className="flex-1 text-left">{children ?? "Thought"}</span>
           <ChevronDownIcon
             className={cn("size-4 transition-transform", isOpen ? "rotate-180" : "rotate-0")}
           />
