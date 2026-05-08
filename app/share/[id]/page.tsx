@@ -63,6 +63,15 @@ export default function ShareQuestPage() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
+  const particles = useState(() =>
+    [...Array(20)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 5}s`,
+      scale: Math.random() * 2,
+    })),
+  )[0];
+
   const { data: session, isPending: isSessionLoading } = authClient.useSession();
 
   useEffect(() => {
@@ -82,9 +91,11 @@ export default function ShareQuestPage() {
 
     if (requiredQuestions.length === 0) {
       const filledCount = relevantQuestions.filter((q: Question) => isQuestionFilled(q.id)).length;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProgress(
         relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
       );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFormValid(true); // Always valid if nothing is required
       return;
     }
@@ -92,11 +103,16 @@ export default function ShareQuestPage() {
     const filledRequiredCount = requiredQuestions.filter((q: Question) =>
       isQuestionFilled(q.id),
     ).length;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFormValid(filledRequiredCount === requiredQuestions.length);
   }, [answers, quest]);
 
-  const startTime = useRef<number>(Date.now());
+  const startTime = useRef<number>(0);
+  useEffect(() => {
+    startTime.current = Date.now();
+  }, []);
 
   useEffect(() => {
     async function loadQuest() {
@@ -268,15 +284,15 @@ export default function ShareQuestPage() {
     return (
       <div className="bg-background flex min-h-screen flex-col items-center justify-center overflow-hidden p-6 text-center select-none">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
+          {particles.map((p, i) => (
             <div
               key={i}
               className="bg-primary/20 absolute h-2 w-2 animate-pulse rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                transform: `scale(${Math.random() * 2})`,
+                left: p.left,
+                top: p.top,
+                animationDelay: p.delay,
+                transform: `scale(${p.scale})`,
               }}
             />
           ))}
