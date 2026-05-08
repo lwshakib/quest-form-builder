@@ -21,19 +21,17 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Quest Context (if applicable)**
-
 - Quest ID: [e.g. cln...]
-- Quest URL: [if public]
-- Component: [e.g. Editor, Analytics, Share Page]
+- Component: [e.g. Editor, AI Chat, Analytics, Share Page]
+- Environment: [e.g. Local Development, Production]
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
-
-- OS: [e.g. Windows, macOS, Linux]
+**Technical Details**
 - Browser: [e.g. Chrome, Firefox, Safari]
-- Version: [e.g. 120.0.0]
+- OS: [e.g. Windows, macOS]
+- Console Errors: [Paste any relevant console output here]
+
+**Screenshots/Videos**
+If applicable, add screenshots or a screen recording to help explain your problem.
 
 **Additional context**
-Add any other context about the problem here.
+Add any other context about the problem here (e.g. recent changes you made).

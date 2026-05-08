@@ -26,7 +26,7 @@ graph TD
 ## ✨ Features
 
 - **🚀 Professional Editor**: Intuitive drag-and-drop interface for building complex forms and quizzes in minutes.
-- **🧠 AI Powered**: Leverages **Google Gemini** for smart form generation and **GLM-4.7-Flash** for rapid data analysis.
+- **🧠 AI Powered**: Leverages **Google Gemini 3.1 Flash** for smart form generation and rapid data analysis.
 - **🎨 Visual Excellence**: Premium aesthetics with **Tailwind CSS 4**, custom glassmorphism, and smooth **Motion** animations.
 - **📊 Advanced Analytics**: Monitor responses and trends as they happen with beautiful **Recharts** integrations.
 - **🛠️ Quiz Mode**: Built-in support for graded quizzes with points, correct answers, and instant feedback.
@@ -38,9 +38,9 @@ graph TD
 ## 🛠️ Technology Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server Components)
-- **Runtime**: [Bun](https://bun.sh/) (Fastest JS runtime)
+- **Package Manager**: [pnpm](https://pnpm.io/) (Fast, efficient, and reliable)
 - **Database**: [Prisma](https://www.prisma.io/) with PostgreSQL (Hosted on [Neon](https://neon.tech/))
-- **AI Engine**: [Google Gemini](https://sdk.vercel.ai/), [GLM-4.7-Flash](https://bigmodel.cn/), & [Flux-2-Klein](https://blackforestlabs.ai/)
+- **AI Engine**: [Google Gemini 3.1 Flash](https://aistudio.google.com/) & [Flux-2-Klein](https://blackforestlabs.ai/)
 - **Auth**: [Better-Auth](https://better-auth.com/) (Secure, flexible authentication)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), & [Motion](https://www.motion.dev/)
 - **Media**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) (S3-compatible storage with Signed URLs)

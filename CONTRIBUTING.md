@@ -23,10 +23,10 @@ To get started with local development and contribute, follow these detailed step
 
 ### 2. Prerequisites & Installation
 
-1.  Ensure you have **[Bun](https://bun.sh/)** installed.
+1.  Ensure you have **[Node.js](https://nodejs.org/)** and **[pnpm](https://pnpm.io/)** installed.
 2.  Install dependencies:
     ```bash
-    bun install
+    pnpm install
     ```
 
 ### 3. Environment Configuration
@@ -43,7 +43,7 @@ To get started with local development and contribute, follow these detailed step
     - **AI**: `CLOUDFLARE_AI_GATEWAY_*` variables or standard provider keys.
 3.  Initialize your storage bucket:
     ```bash
-    bun run bucket:setup
+    pnpm run bucket:setup
     ```
 
 ### 4. Database Migration
@@ -51,7 +51,7 @@ To get started with local development and contribute, follow these detailed step
 Run the migrations to build your local schema:
 
 ```bash
-bun x prisma migrate dev
+pnpm exec prisma migrate dev
 ```
 
 ### 5. Running the App
@@ -59,7 +59,7 @@ bun x prisma migrate dev
 Start the development server:
 
 ```bash
-bun dev
+pnpm run dev
 ```
 
 ## 🤝 How Can I Contribute?
@@ -90,8 +90,8 @@ bun dev
     Make your changes, then ensure the code is formatted and linted:
 
     ```bash
-    bun run format
-    bun run lint
+    pnpm run format
+    pnpm run lint
     ```
 
 3.  **Commit Your Changes**:
