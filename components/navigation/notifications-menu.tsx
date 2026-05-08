@@ -50,6 +50,7 @@ export function NotificationsMenu() {
    * without needing a full-page reload.
    */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications();
 
     const interval = setInterval(fetchNotifications, 60000);
@@ -62,6 +63,7 @@ export function NotificationsMenu() {
    * finished viewing a response page and we want the red dot to disappear immediately.
    */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotifications();
   }, [pathname]);
 
