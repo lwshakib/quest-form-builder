@@ -69,6 +69,7 @@ export default function PreviewQuestPage() {
         if (Array.isArray(val)) return val.length > 0;
         return true;
       }).length;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProgress(
         relevantQuestions.length > 0 ? (filledCount / relevantQuestions.length) * 100 : 0,
       );
@@ -82,6 +83,7 @@ export default function PreviewQuestPage() {
       if (Array.isArray(val)) return val.length > 0;
       return true;
     }).length;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProgress((filledRequiredCount / requiredQuestions.length) * 100);
   }, [answers, quest]);
 

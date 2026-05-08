@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { s3Service } from "@/services/s3.services";
+import { s3Service } from "@/lib/s3";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 

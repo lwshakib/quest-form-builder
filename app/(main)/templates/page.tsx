@@ -21,11 +21,14 @@ export default function TemplatesPage() {
     if (query) {
       const template = TEMPLATES.find((t) => t.id === query);
       if (template) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearch(template.title);
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearch(query);
       }
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     getRecentTemplates().then(setRecentTemplateIds);
   }, [searchParams]);
 

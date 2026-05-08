@@ -7,8 +7,12 @@
  */
 
 import { getQuestById, getUserCredits, decrementUserCredits } from "@/lib/actions";
-import { aiService } from "@/services/ai.services";
-import { BUILDER_SYSTEM_PROMPT } from "@/lib/prompts";
+import { streamText } from "@/llm/stream-text";
+import { generateImage } from "@/llm/generate-image";
+// For compatibility with existing code that uses aiService.streamText
+const aiService = { streamText, generateImage };
+import { BUILDER_SYSTEM_PROMPT } from "@/llm/prompts";
+
 import { TOOLS_REGISTRY } from "@/lib/tools";
 
 // Allow the edge function to run for up to 30 seconds to accommodate image generation and multiple tool calls.

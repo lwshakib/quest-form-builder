@@ -62,6 +62,7 @@ export default function AccountPage() {
   // Initialize name from session
   useEffect(() => {
     if (session?.user?.name) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserName(session.user.name);
     }
   }, [session]);

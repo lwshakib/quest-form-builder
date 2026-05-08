@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { S3Image } from "@/components/quest/s3-image";
 
@@ -239,6 +239,11 @@ export default function QuestDetailPage() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [userCredits, setUserCredits] = useState<number | null>(null);
 
+  const shuffledSuggestedActions = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    return [...SUGGESTED_ACTIONS].sort(() => 0.5 - Math.random()).slice(0, 3);
+  }, []);
+
   /**
    * Effect: Load User Credits for AI Chat
    * Fetches the user's available credits from the backend when the component initially mounts.
@@ -304,6 +309,7 @@ export default function QuestDetailPage() {
       const decoder = new TextDecoder();
 
       // Initialize an empty assistant message template to progressively stream chunk content into
+      // eslint-disable-next-line react-hooks/purity
       const assistantId = `assistant-${Date.now()}`;
       setMessages((prev) => [...prev, { role: "assistant", id: assistantId, parts: [] }]);
 
@@ -516,6 +522,7 @@ export default function QuestDetailPage() {
     const insertIndex = atIndex !== undefined ? atIndex : questions.length;
 
     // Create a temporary local object with a 'temp' ID to show the card immediately.
+    // eslint-disable-next-line react-hooks/purity
     const optimisticId = `temp-${Date.now()}`;
     const newQuestion = {
       id: optimisticId,
@@ -1883,21 +1890,16 @@ export default function QuestDetailPage() {
                         <p className="text-muted-foreground mb-1 text-[10px] font-bold">
                           Suggested Actions
                         </p>
-                        {(() => {
-                          const shuffled = [...SUGGESTED_ACTIONS]
-                            .sort(() => 0.5 - Math.random())
-                            .slice(0, 3);
-                          return shuffled.map((prompt, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setInput(prompt)}
-                              className="bg-muted/30 hover:bg-muted/60 border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-xs transition-all active:scale-[0.98]"
-                            >
-                              <span className="line-clamp-1">{prompt}</span>
-                              <Plus className="h-3 w-3 opacity-50" />
-                            </button>
-                          ));
-                        })()}
+                        {shuffledSuggestedActions.map((prompt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setInput(prompt)}
+                            className="bg-muted/30 hover:bg-muted/60 border-border/50 text-muted-foreground hover:text-foreground flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-xs transition-all active:scale-[0.98]"
+                          >
+                            <span className="line-clamp-1">{prompt}</span>
+                            <Plus className="h-3 w-3 opacity-50" />
+                          </button>
+                        ))}
                       </div>
                     </div>
                   ) : (
@@ -1932,7 +1934,7 @@ export default function QuestDetailPage() {
                                       }
                                     >
                                       <ChainOfThoughtHeader>
-                                        {isThinking ? "Thinking..." : "Chain of Thought"}
+                                        {isThinking ? "Thinking" : "Thought"}
                                       </ChainOfThoughtHeader>
                                       <ChainOfThoughtContent>
                                         {reasoningParts.map((part, pIdx) => {
@@ -2007,7 +2009,7 @@ export default function QuestDetailPage() {
                                 <div className="flex items-center gap-2.5 py-1">
                                   <Loader className="text-muted-foreground h-3.5 w-3.5 animate-spin" />
                                   <span className="text-muted-foreground text-[10px] font-bold">
-                                    Thinking...
+                                    Thinking
                                   </span>
                                 </div>
                               )}
