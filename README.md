@@ -4,13 +4,15 @@
 
 Quest is a premium, high-performance form builder designed for researchers, marketers, and developers. Build stunning, interactive surveys, quizzes, and data collection tools with a focus on aesthetics, smart automation, and a seamless user experience.
 
-![Demo image 1](public/app-demo/01.png)
+<p align="center">
+  <img src="public/app-demo/01.png" width="49%" alt="Demo image 1" />
+  <img src="public/app-demo/02.png" width="49%" alt="Demo image 2" />
+</p>
 
-![Demo image 2](public/app-demo/02.png)
-
-![Demo image 3](public/app-demo/03.png)
-
-![Demo image 4](public/app-demo/04.png)
+<p align="center">
+  <img src="public/app-demo/03.png" width="49%" alt="Demo image 3" />
+  <img src="public/app-demo/04.png" width="49%" alt="Demo image 4" />
+</p>
 
 ## 🧩 How it Works
 
