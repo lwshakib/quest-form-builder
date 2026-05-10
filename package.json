@@ -15,7 +15,8 @@
     "db:studio": "pnpm exec prisma studio",
     "db:reset": "pnpm exec prisma migrate reset",
     "bucket:setup": "ts-node scripts/bucket-setup.ts",
-    "bucket:teardown": "ts-node scripts/bucket-teardown.ts"
+    "bucket:teardown": "ts-node scripts/bucket-teardown.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.15",
